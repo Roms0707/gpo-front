@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Configuration Multi-Pays</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 24px;
+        }
+
+        .test-section {
+            margin-bottom: 32px;
+        }
+
+        .test-section h2 {
+            color: #2d3748;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .button:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .result-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-box pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .color-swatch {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .country-card {
+            display: inline-block;
+            background: #f7fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 8px;
+            min-width: 200px;
+            transition: all 0.2s;
+        }
+
+        .country-card:hover {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .country-card.active {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .info-value {
+            color: #2d3748;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🌍 Test Configuration Multi-Pays</h1>
+            <p class="subtitle">Environnement: Staging | Supabase: jpksnvuiaptymrwnwnhn</p>
+        </div>
+
+        <div class="card test-section">
+            <h2>
+                🔍 Test 1: Détection GeoIP
+                <span id="geoip-status" class="status loading">En attente</span>
+            </h2>
+            <button class="button" onclick="testGeoIP()">Tester GeoIP</button>
+            <button class="button" onclick="clearCache()">Vider Cache</button>
+            <div id="geoip-result" class="result-box" style="display: none;">
+                <pre id="geoip-data"></pre>
+            </div>
+        </div>
+
+        <div class="card test-section">
+            <h2>
+                📋 Test 2: Récupération Configurations
+                <span id="config-status" class="status loading">En attente</span>
+            </h2>
+            <button class="button" onclick="testGetConfig('DEFAULT')">DEFAULT</button>
+            <button class="button" onclick="testGetConfig('TN')">Tunisia</button>
+            <button class="button" onclick="testGetConfig('ET')">Ethiopia</button>
+            <button class="button" onclick="testGetConfig('FR')">France (test)</button>
+            <div id="config-result" class="result-box" style="display: none;">
+                <pre id="config-data"></pre>
+            </div>
+        </div>
+
+        <div class="card test-section">
+            <h2>
+                🎨 Test 3: Application Thème
+                <span id="theme-status" class="status loading">En attente</span>
+            </h2>
+            <button class="button" onclick="testApplyTheme('DEFAULT')">Appliquer DEFAULT</button>
+            <button class="button" onclick="testApplyTheme('TN')">Appliquer Tunisia</button>
+            <button class="button" onclick="testApplyTheme('ET')">Appliquer Ethiopia</button>
+            <div id="theme-result" class="result-box" style="display: none;">
+                <div class="grid">
+                    <div>
+                        <div class="info-row">
+                            <span class="info-label">Primary:</span>
+                            <span class="info-value" id="theme-primary">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Secondary:</span>
+                            <span class="info-value" id="theme-secondary">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Background:</span>
+                            <span class="info-value" id="theme-background">-</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-row">
+                            <span class="info-label">Success:</span>
+                            <span class="info-value" id="theme-success">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Warning:</span>
+                            <span class="info-value" id="theme-warning">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Error:</span>
+                            <span class="info-value" id="theme-error">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card test-section">
+            <h2>
+                ✅ Test 4: Whitelist
+                <span id="whitelist-status" class="status loading">En attente</span>
+            </h2>
+            <button class="button" onclick="testWhitelist()">Vérifier Whitelist</button>
+            <div id="whitelist-result" class="result-box" style="display: none;">
+                <pre id="whitelist-data"></pre>
+            </div>
+        </div>
+
+        <div class="card test-section">
+            <h2>📊 Résumé Système</h2>
+            <div class="grid">
+                <div class="country-card" id="card-default">
+                    <h3>🟠 DEFAULT</h3>
+                    <p>Orange Arena</p>
+                    <small>Fallback configuration</small>
+                </div>
+                <div class="country-card" id="card-tn">
+                    <h3>🇹🇳 Tunisia</h3>
+                    <p>Orange Arena Tunisia</p>
+                    <small>Galaxy: 4471</small>
+                </div>
+                <div class="country-card" id="card-et">
+                    <h3>🇪🇹 Ethiopia</h3>
+                    <p>Ethio Arena</p>
+                    <small>Galaxy: 4763</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://jpksnvuiaptymrwnwnhn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impwa3NudnVpYXB0eW1yd253bmhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1Mjg2MDcsImV4cCI6MjA3ODEwNDYwN30.FE91H4WFbIOhTt74fHQUveDka1P6L2oM3ZX0Bk2ZR44';
+
+        async function testGeoIP() {
+            const status = document.getElementById('geoip-status');
+            const result = document.getElementById('geoip-result');
+            const data = document.getElementById('geoip-data');
+
+            status.className = 'status loading';
+            status.textContent = 'Chargement...';
+            result.style.display = 'block';
+            data.textContent = 'Appel en cours...';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/geoip`);
+                const json = await response.json();
+
+                status.className = 'status success';
+                status.textContent = 'Succès';
+                data.textContent = JSON.stringify(json, null, 2);
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Erreur';
+                data.textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        async function testGetConfig(countryCode) {
+            const status = document.getElementById('config-status');
+            const result = document.getElementById('config-result');
+            const data = document.getElementById('config-data');
+
+            status.className = 'status loading';
+            status.textContent = 'Chargement...';
+            result.style.display = 'block';
+            data.textContent = 'Récupération configuration...';
+
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/country_configurations?country_code=eq.${countryCode}&is_active=eq.true`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    }
+                );
+                const json = await response.json();
+
+                if (json.length > 0) {
+                    status.className = 'status success';
+                    status.textContent = 'Succès';
+                    data.textContent = JSON.stringify(json[0], null, 2);
+                } else {
+                    status.className = 'status error';
+                    status.textContent = 'Non trouvé';
+                    data.textContent = `Configuration "${countryCode}" non trouvée ou inactive`;
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Erreur';
+                data.textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        async function testApplyTheme(countryCode) {
+            const status = document.getElementById('theme-status');
+            const result = document.getElementById('theme-result');
+
+            status.className = 'status loading';
+            status.textContent = 'Chargement...';
+            result.style.display = 'block';
+
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/country_configurations?country_code=eq.${countryCode}&is_active=eq.true`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    }
+                );
+                const json = await response.json();
+
+                if (json.length > 0) {
+                    const colors = json[0].theme_colors;
+
+                    document.getElementById('theme-primary').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.primary}"></span>${colors.primary}`;
+                    document.getElementById('theme-secondary').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.secondary}"></span>${colors.secondary}`;
+                    document.getElementById('theme-background').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.background}"></span>${colors.background}`;
+                    document.getElementById('theme-success').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.success}"></span>${colors.success}`;
+                    document.getElementById('theme-warning').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.warning}"></span>${colors.warning}`;
+                    document.getElementById('theme-error').innerHTML =
+                        `<span class="color-swatch" style="background: ${colors.error}"></span>${colors.error}`;
+
+                    status.className = 'status success';
+                    status.textContent = 'Appliqué';
+
+                    // Highlight active card
+                    document.querySelectorAll('.country-card').forEach(card => {
+                        card.classList.remove('active');
+                    });
+                    const cardId = `card-${countryCode.toLowerCase()}`;
+                    document.getElementById(cardId)?.classList.add('active');
+                } else {
+                    status.className = 'status error';
+                    status.textContent = 'Erreur';
+                }
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Erreur';
+            }
+        }
+
+        async function testWhitelist() {
+            const status = document.getElementById('whitelist-status');
+            const result = document.getElementById('whitelist-result');
+            const data = document.getElementById('whitelist-data');
+
+            status.className = 'status loading';
+            status.textContent = 'Chargement...';
+            result.style.display = 'block';
+            data.textContent = 'Récupération whitelist...';
+
+            try {
+                const response = await fetch(
+                    `${SUPABASE_URL}/rest/v1/country_whitelist?is_active=eq.true`,
+                    {
+                        headers: {
+                            'apikey': SUPABASE_ANON_KEY,
+                            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                        }
+                    }
+                );
+                const json = await response.json();
+
+                status.className = 'status success';
+                status.textContent = `${json.length} pays`;
+                data.textContent = JSON.stringify(json, null, 2);
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = 'Erreur';
+                data.textContent = `Erreur: ${error.message}`;
+            }
+        }
+
+        function clearCache() {
+            localStorage.clear();
+            sessionStorage.clear();
+            alert('Cache vidé! Les données seront rechargées au prochain appel.');
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            testGeoIP();
+            testGetConfig('TN');
+            testWhitelist();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Time Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #gameContainer.waiting {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        #gameContainer.ready {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        #gameContainer.go {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+
+        #gameContainer.result {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        .content {
+            text-align: center;
+            color: white;
+            padding: 40px;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .message {
+            font-size: 24px;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .score-display {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .rating {
+            font-size: 32px;
+            margin: 20px 0;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 18px;
+        }
+
+        .stat-label {
+            opacity: 0.9;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            background: white;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .too-soon {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .emoji {
+            font-size: 64px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 36px; }
+            .message { font-size: 18px; }
+            .score-display { font-size: 56px; }
+            .rating { font-size: 24px; }
+            .stat-item { font-size: 16px; }
+            .stat-value { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer" class="waiting">
+        <div class="content fade-in" id="content">
+            <div class="emoji">⚡</div>
+            <h1>Reaction Time Test</h1>
+            <p class="message">
+                Click anywhere to start!<br>
+                <small style="font-size: 18px; opacity: 0.8;">
+                    Wait for the green screen, then click as fast as you can!
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const content = document.getElementById('content');
+
+        let gameState = 'start'; // start, waiting, ready, go, result
+        let startTime = 0;
+        let attempts = 0;
+        let scores = [];
+        let waitTimeout = null;
+        let goTimeout = null;
+
+        function updateContent(html) {
+            content.innerHTML = html;
+            content.className = 'content fade-in';
+        }
+
+        function getRating(ms) {
+            if (ms < 200) return { text: 'Excellent! 🏆', emoji: '🏆' };
+            if (ms < 250) return { text: 'Great! 🎯', emoji: '🎯' };
+            if (ms < 300) return { text: 'Good! 👍', emoji: '👍' };
+            if (ms < 400) return { text: 'Average 👌', emoji: '👌' };
+            return { text: 'Keep Practicing 💪', emoji: '💪' };
+        }
+
+        function getAverageScore() {
+            if (scores.length === 0) return 0;
+            return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        }
+
+        function getBestScore() {
+            if (scores.length === 0) return 0;
+            return Math.min(...scores);
+        }
+
+        function startGame() {
+            if (gameState === 'start' || gameState === 'result') {
+                gameState = 'waiting';
+                gameContainer.className = 'waiting';
+                updateContent(`
+                    <div class="emoji">⏱️</div>
+                    <h1>Get Ready...</h1>
+                    <p class="message pulse">Click when the screen turns GREEN!</p>
+                    <p class="message" style="font-size: 16px; opacity: 0.7; margin-top: 20px;">
+                        Don't click yet! Wait for green...
+                    </p>
+                `);
+
+                // Send game started message to parent
+                window.parent.postMessage({
+                    source: 'reactionTime',
+                    type: 'gameStarted'
+                }, '*');
+
+                // Wait a random time between 2-5 seconds
+                const waitTime = 2000 + Math.random() * 3000;
+
+                clearTimeout(waitTimeout);
+                clearTimeout(goTimeout);
+
+                waitTimeout = setTimeout(() => {
+                    gameState = 'ready';
+                    gameContainer.className = 'ready';
+                    updateContent(`
+                        <div class="emoji">⏳</div>
+                        <h1>Wait for it...</h1>
+                        <p class="message pulse">Almost there...</p>
+                    `);
+
+                    // After another 1-2 seconds, go green
+                    const readyTime = 1000 + Math.random() * 1000;
+
+                    goTimeout = setTimeout(() => {
+                        gameState = 'go';
+                        gameContainer.className = 'go';
+                        startTime = Date.now();
+                        updateContent(`
+                            <div class="emoji" style="font-size: 96px;">✓</div>
+                            <h1>CLICK NOW!</h1>
+                        `);
+                    }, readyTime);
+                }, waitTime);
+            }
+        }
+
+        function tooSoon() {
+            clearTimeout(waitTimeout);
+            clearTimeout(goTimeout);
+            gameState = 'result';
+            gameContainer.className = 'result';
+            content.className = 'content too-soon';
+
+            updateContent(`
+                <div class="emoji">❌</div>
+                <h1>Too Soon!</h1>
+                <p class="message">You clicked before the screen turned green.<br>Wait for it next time!</p>
+                <button onclick="startGame()">Try Again</button>
+            `);
+        }
+
+        function recordScore(reactionTime) {
+            attempts++;
+            scores.push(reactionTime);
+
+            const rating = getRating(reactionTime);
+            const avgScore = getAverageScore();
+            const bestScore = getBestScore();
+
+            gameState = 'result';
+            gameContainer.className = 'result';
+
+            updateContent(`
+                <div class="emoji">${rating.emoji}</div>
+                <h1>Your Reaction Time</h1>
+                <div class="score-display">${reactionTime} ms</div>
+                <div class="rating">${rating.text}</div>
+
+                ${scores.length > 1 ? `
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">This Attempt:</span>
+                        <span class="stat-value">${reactionTime} ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Average:</span>
+                        <span class="stat-value">${avgScore} ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Best:</span>
+                        <span class="stat-value" style="color: #2ecc71;">${bestScore} ms</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Attempts:</span>
+                        <span class="stat-value">${attempts}</span>
+                    </div>
+                </div>
+                ` : ''}
+
+                <button onclick="startGame()">Try Again</button>
+            `);
+
+            // Send score to parent
+            window.parent.postMessage({
+                source: 'reactionTime',
+                type: 'gameEnded',
+                stats: {
+                    score: reactionTime,
+                    attempts: attempts,
+                    average: avgScore,
+                    best: bestScore
+                }
+            }, '*');
+        }
+
+        gameContainer.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') return;
+
+            if (gameState === 'start' || gameState === 'result') {
+                startGame();
+            } else if (gameState === 'waiting' || gameState === 'ready') {
+                // Clicked too early
+                tooSoon();
+            } else if (gameState === 'go') {
+                // Record reaction time
+                const reactionTime = Date.now() - startTime;
+                recordScore(reactionTime);
+            }
+        });
+
+        // Prevent accidental zooming on mobile
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gesturechange', (e) => {
+            e.preventDefault();
+        });
+
+        document.addEventListener('gestureend', (e) => {
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>

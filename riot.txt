@@ -1,0 +1,2 @@
+# This file will be automatically generated during build
+# Add VITE_RIOT_KEY to your .env file

@@ -1,0 +1,673 @@
+@import 'react-international-phone/style.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables for theming */
+:root {
+  /* Dynamic theme colors - will be overridden by themeService */
+  --color-primary: #FF6B00;
+  --color-primary-dark: #0A391A;
+  --color-secondary: #22D862;
+  --color-accent: #FF6B00;
+  --color-background: #1B1C22;
+  --color-background-light: #2A2B35;
+  --color-background-dark: #0F1015;
+  --color-text: #FFFFFF;
+  --color-text-secondary: #B8B9C1;
+  --color-text-muted: #6B6C7E;
+  --color-success: #22D862;
+  --color-warning: #FFA500;
+  --color-error: #FF4444;
+  --color-info: #3B82F6;
+
+  /* Primary color shades */
+  --color-primary-50: #fff7ed;
+  --color-primary-100: #ffedd5;
+  --color-primary-200: #fed7aa;
+  --color-primary-300: #fdba74;
+  --color-primary-400: #fb923c;
+  --color-primary-500: #ff7900;
+  --color-primary-600: #ea580c;
+  --color-primary-700: #c2410c;
+  --color-primary-800: #9a3412;
+  --color-primary-900: #7c2d12;
+  --color-primary-950: #431407;
+
+  /* Secondary color shades */
+  --color-secondary-50: #f8fafc;
+  --color-secondary-100: #f1f5f9;
+  --color-secondary-200: #e2e8f0;
+  --color-secondary-300: #cbd5e1;
+  --color-secondary-400: #94a3b8;
+  --color-secondary-500: #64748b;
+  --color-secondary-600: #475569;
+  --color-secondary-700: #334155;
+  --color-secondary-800: #1e293b;
+  --color-secondary-900: #000000;
+  --color-secondary-950: #000000;
+
+  /* Accent color shades */
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309;
+  --color-accent-800: #92400e;
+  --color-accent-900: #78350f;
+  --color-accent-950: #451a03;
+
+  /* Success color shades */
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce7;
+  --color-success-200: #bbf7d0;
+  --color-success-300: #86efac;
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+  --color-success-800: #166534;
+  --color-success-900: #14532d;
+  --color-success-950: #052e16;
+
+  /* Warning color shades */
+  --color-warning-50: #fff7ed;
+  --color-warning-100: #ffedd5;
+  --color-warning-200: #fed7aa;
+  --color-warning-300: #fdba74;
+  --color-warning-400: #fb923c;
+  --color-warning-500: #ff7900;
+  --color-warning-600: #ea580c;
+  --color-warning-700: #c2410c;
+  --color-warning-800: #9a3412;
+  --color-warning-900: #7c2d12;
+  --color-warning-950: #431407;
+
+  /* Error color shades */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-200: #fecaca;
+  --color-error-300: #fca5a5;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-700: #b91c1c;
+  --color-error-800: #991b1b;
+  --color-error-900: #7f1d1d;
+  --color-error-950: #450a0a;
+
+  /* Info color shades */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-300: #93c5fd;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+  --color-info-800: #1e40af;
+  --color-info-900: #1e3a8a;
+  --color-info-950: #172554;
+
+  /* Light theme colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --toast-bg: #ffffff;
+  --toast-text: #1e293b;
+  --toast-border: #e2e8f0;
+
+  /* Phone input specific */
+  --bg-input: rgb(243 244 246);
+  --text-input: rgb(17 24 39);
+  --border-input: rgb(209 213 219);
+  --bg-hover: rgb(229 231 235);
+  --bg-disabled: rgb(243 244 246);
+  --bg-dropdown: #ffffff;
+}
+
+.dark {
+  /* Dark theme colors */
+  --bg-primary: #181818;
+  --bg-secondary: #1E1E1E;
+  --bg-tertiary: #111111;
+  --text-primary: #ffffff;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #94a3b8;
+  --border-primary: #3B3B3B;
+  --border-secondary: #4a5568;
+  --toast-bg: #1E1E1E;
+  --toast-text: #ffffff;
+  --toast-border: #3B3B3B;
+
+  /* Phone input specific for dark mode */
+  --bg-input: #1E1E1E;
+  --text-input: #ffffff;
+  --border-input: rgb(55 65 81);
+  --bg-hover: #2d2d2d;
+  --bg-disabled: #1a1a1a;
+  --bg-dropdown: #1E1E1E;
+}
+
+@layer base {
+  html {
+    @apply overflow-x-hidden;
+  }
+
+  body {
+    @apply bg-gray-50 dark:bg-dark-200 text-gray-900 dark:text-white font-sans transition-colors duration-200 overflow-x-hidden;
+    max-width: 100vw;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white dark:bg-primary-600 dark:hover:bg-primary-700;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-600 hover:bg-secondary-700 text-white dark:bg-secondary-600 dark:hover:bg-secondary-700;
+  }
+  
+  .btn-accent {
+    @apply bg-accent-500 hover:bg-accent-600 text-white dark:bg-accent-500 dark:hover:bg-accent-600;
+  }
+  
+  .btn-outline {
+    @apply border border-primary-600 text-primary-500 hover:bg-primary-600 hover:text-white dark:border-primary-600 dark:text-primary-400 dark:hover:bg-primary-600 dark:hover:text-white;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-800;
+  }
+  
+  .nav-link {
+    @apply text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200;
+  }
+  
+  .input {
+    @apply bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white transition-colors duration-200;
+  }
+  
+  .label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+  
+  .badge {
+    @apply px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .badge-live {
+    @apply bg-error-600 text-white;
+  }
+  
+  .badge-upcoming {
+    @apply bg-primary-600 text-white;
+  }
+  
+  .badge-completed {
+    @apply bg-gray-600 text-white;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-500 dark:to-secondary-500;
+  }
+
+  /* Tournament specific components */
+  .tournament-container {
+    @apply bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800;
+  }
+  
+  .tournament-section {
+    @apply bg-gray-50 dark:bg-dark-200 rounded-lg p-4 border border-gray-200 dark:border-gray-700;
+  }
+  
+  .tournament-text-primary {
+    @apply text-gray-900 dark:text-white;
+  }
+  
+  .tournament-text-secondary {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+  
+  .tournament-text-muted {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+  
+  .tournament-border {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+  
+  .tournament-tab {
+    @apply bg-white dark:bg-dark-100 border-gray-200 dark:border-gray-800;
+  }
+  
+  .tournament-tab-active {
+    @apply text-primary-500 border-primary-500;
+  }
+  
+  .tournament-tab-inactive {
+    @apply text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300;
+  }
+  /* Improved contrast text classes */
+  .text-high-contrast {
+    @apply text-white;
+  }
+  
+  .text-medium-contrast {
+    @apply text-gray-700 dark:text-gray-200;
+  }
+  
+  .text-gray-improved {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+  
+  .text-primary-improved {
+    @apply text-primary-600 dark:text-primary-400;
+  }
+  
+  .text-secondary-improved {
+    @apply text-secondary-600 dark:text-secondary-400;
+  }
+  
+  .text-info-improved {
+    @apply text-info-600 dark:text-info-300;
+  }
+  
+  .text-success-improved {
+    @apply text-success-600 dark:text-success-300;
+  }
+  
+  .text-warning-improved {
+    @apply text-warning-600 dark:text-warning-300;
+  }
+  
+  .text-error-improved {
+    @apply text-error-600 dark:text-error-300;
+  }
+  
+  /* Background with improved text contrast */
+  .bg-dark-with-text {
+    @apply bg-dark-200 text-gray-200;
+  }
+  
+  .bg-primary-with-text {
+    @apply bg-primary-600 dark:bg-primary-700 text-white;
+  }
+  
+  .bg-secondary-with-text {
+    @apply bg-secondary-600 dark:bg-secondary-700 text-white;
+  }
+  
+  .bg-info-with-text {
+    @apply bg-info-600 dark:bg-info-700 text-white;
+  }
+  
+  .bg-success-with-text {
+    @apply bg-success-600 dark:bg-success-700 text-white;
+  }
+  
+  .bg-warning-with-text {
+    @apply bg-warning-600 dark:bg-warning-700 text-white;
+  }
+  
+  .bg-error-with-text {
+    @apply bg-error-600 dark:bg-error-700 text-white;
+  }
+}
+
+/* Hero section with e-sports background */
+.hero-esports-bg {
+  background-image: linear-gradient(to bottom, rgba(15, 3, 30, 0.75), rgba(29, 6, 55, 0.85)), url('/football-stadium-hero.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  background-repeat: no-repeat;
+}
+
+.hero-esports-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255, 87, 34, 0.08) 0%, rgba(15, 3, 30, 0.15) 70%);
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .hero-esports-bg {
+    background-attachment: scroll;
+    background-position: center center;
+  }
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Enhanced countdown animation */
+@keyframes countdown-pulse {
+  0%, 100% {
+    transform: scale(1);
+    background-color: rgba(55, 65, 81, 1);
+  }
+  50% {
+    transform: scale(1.05);
+    background-color: rgba(75, 85, 99, 1);
+  }
+}
+
+.countdown-number {
+  animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+/* Button pop animation */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.6s ease-out forwards;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7c3aed;
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: #111111;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3B3B3B;
+}
+
+/* Hide scrollbar for mobile sliders */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 49;
+}
+
+/* Prevent body scroll when modal is open */
+.modal-open {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Enhanced styling for tournament rules */
+.prose h2 {
+  @apply text-2xl font-bold text-gray-900 dark:text-white mb-4 mt-6 border-b border-gray-300 dark:border-gray-700 pb-2;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold text-primary-600 dark:text-primary-400 mb-3 mt-5;
+}
+
+.prose h4 {
+  @apply text-lg font-medium text-secondary-600 dark:text-secondary-400 mb-2 mt-4;
+}
+
+.prose p {
+  @apply text-gray-700 dark:text-gray-200 mb-4 leading-relaxed;
+}
+
+.prose ul {
+  @apply list-disc pl-6 mb-4 space-y-2;
+}
+
+.prose li {
+  @apply text-gray-700 dark:text-gray-200;
+}
+
+.prose strong {
+  @apply text-gray-900 dark:text-white font-semibold;
+}
+
+.prose a {
+  @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary-500 pl-4 italic text-gray-600 dark:text-gray-300 my-4;
+}
+
+.prose code {
+  @apply bg-gray-200 dark:bg-dark-300 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200 text-sm;
+}
+
+.prose pre {
+  @apply bg-gray-200 dark:bg-dark-300 p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.prose table {
+  @apply w-full border-collapse my-4;
+}
+
+.prose th {
+  @apply bg-gray-200 dark:bg-dark-300 text-left p-2 font-medium text-gray-900 dark:text-white;
+}
+
+.prose td {
+  @apply border-t border-gray-300 dark:border-gray-700 p-2 text-gray-700 dark:text-gray-200;
+}
+
+.prose hr {
+  @apply border-gray-300 dark:border-gray-700 my-6;
+}
+
+.prose ol {
+  @apply list-decimal pl-6 mb-4 space-y-2;
+}
+
+/* Focus styles for better accessibility */
+a:focus, button:focus, [tabindex="0"]:focus {
+  @apply outline-none ring-2 ring-primary-500 ring-offset-1 ring-offset-white dark:ring-offset-dark-200;
+}
+
+/* Skip to content link for keyboard users */
+.skip-to-content {
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg;
+}
+
+/* Mobile tournament tab enhancements */
+@media (max-width: 640px) {
+  .tournament-tab-scroll-indicator {
+    position: relative;
+  }
+
+  .tournament-tab-scroll-indicator::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to left, var(--bg-primary) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Smooth snap scrolling for tabs */
+  .snap-x {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .snap-start {
+    scroll-snap-align: start;
+  }
+
+  /* Touch-friendly spacing */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Swipe gesture visual feedback */
+@keyframes swipe-hint {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(-10px);
+    opacity: 0.7;
+  }
+}
+
+.swipe-hint-animation {
+  animation: swipe-hint 2s ease-in-out infinite;
+}
+
+/* Mobile-optimized card layouts */
+@media (max-width: 768px) {
+  .mobile-card {
+    @apply rounded-lg shadow-md;
+  }
+
+  .mobile-card-compact {
+    @apply p-3 text-sm;
+  }
+
+  /* Sticky mobile elements */
+  .sticky-mobile {
+    position: sticky;
+    top: 64px; /* Below header */
+    z-index: 30;
+  }
+}
+
+/* Improved touch targets for mobile */
+@media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"], [role="tab"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem;
+  }
+
+  /* Larger tap areas for interactive elements */
+  .interactive-element {
+    position: relative;
+  }
+
+  .interactive-element::after {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -8px;
+  }
+}
+
+/* Phone input custom styling */
+.phone-input-wrapper {
+  @apply w-full;
+}
+
+.phone-input-custom .react-international-phone-input-container {
+  @apply w-full;
+}
+
+.phone-input-custom .react-international-phone-input {
+  @apply w-full text-gray-900 dark:text-white;
+}
+
+.phone-input-custom .react-international-phone-country-selector-button {
+  @apply bg-gray-100 dark:bg-dark-200 border-gray-300 dark:border-gray-700;
+}
+
+.phone-input-custom .react-international-phone-country-selector-button:hover {
+  @apply bg-gray-200 dark:bg-dark-300;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown {
+  @apply bg-dark-100 border-gray-700;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item {
+  @apply text-gray-200;
+}
+
+.dark .phone-input-custom .react-international-phone-country-selector-dropdown__list-item:hover {
+  @apply bg-dark-300;
+}
+
+.phone-input-custom .react-international-phone-input:focus {
+  @apply ring-2 ring-primary-500;
+}
