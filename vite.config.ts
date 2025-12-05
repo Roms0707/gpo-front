@@ -4,13 +4,9 @@ import { writeFileSync } from 'fs'
 import { resolve } from 'path'
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  // Default to staging mode if not specified
-  const envMode = mode === 'production' ? mode : 'staging';
-
-  // Load env file based on `mode` in the current working directory.
-  // By default, this will load .env.staging
-  const env = loadEnv(envMode, process.cwd(), '')
+export default defineConfig(() => {
+  // Load env file from .env
+  const env = loadEnv('', process.cwd(), '')
   
   return {
     plugins: [

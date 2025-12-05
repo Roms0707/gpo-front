@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --mode staging",
-    "build": "vite build --mode staging",
+    "dev": "vite",
+    "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview --mode staging",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check-translations": "node scripts/check-translations.cjs"
   },

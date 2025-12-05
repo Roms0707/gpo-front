@@ -4,49 +4,19 @@ Une plateforme de gestion de tournois e-sport.
 
 ## Configuration
 
-### Environnements
-
-L'application supporte deux environnements :
-
-- **Staging** (par défaut) : Utilise le fichier `.env.staging`
-- **Production** : Utilise le fichier `.env`
-
-Par défaut, tous les scripts npm (dev, build, preview) utilisent l'environnement **staging**.
-
 ### Configuration Initiale
 
-1. **Pour l'environnement de staging** :
-   ```bash
-   cp .env.example .env.staging
-   ```
-   Puis ajoutez vos clés API de staging dans le fichier `.env.staging`
-
-2. **Pour l'environnement de production** :
+1. Copiez le fichier d'exemple et configurez vos variables d'environnement :
    ```bash
    cp .env.example .env
    ```
-   Puis ajoutez vos clés API de production dans le fichier `.env`
 
-### Basculer vers la Production
-
-Pour déployer en production, vous devez modifier manuellement le fichier `vite.config.ts` :
-
-Changez cette ligne :
-```typescript
-const envMode = mode === 'production' ? mode : 'staging';
-```
-
-En :
-```typescript
-const envMode = 'production';
-```
-
-Et dans `package.json`, modifiez les scripts pour utiliser le mode production :
-```json
-"dev": "vite --mode production",
-"build": "vite build --mode production",
-"preview": "vite preview --mode production"
-```
+2. Modifiez le fichier `.env` et ajoutez vos clés API :
+   - Supabase URL et clé anonyme
+   - Twitch Client ID et Secret
+   - Galaxy API credentials
+   - Riot Games API key
+   - Project Configuration ID
 
 ## Scripts disponibles
 
