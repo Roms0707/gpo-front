@@ -69,8 +69,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     setState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      const configId = import.meta.env.VITE_PROJECT_CONFIG_ID || 'default';
-      const config = await projectConfigService.refreshConfiguration(configId);
+      const config = await projectConfigService.refreshConfiguration();
       await applyConfiguration(config);
     } catch (error) {
       console.error('[AppConfigContext] Error refreshing configuration:', error);
@@ -82,12 +81,11 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
   useEffect(() => {
     const initializeConfiguration = async () => {
       try {
+        console.log('[AppConfigContext] ═══════════════════════════════════════════');
         console.log('[AppConfigContext] Starting configuration initialization');
+        console.log('[AppConfigContext] Service will detect domain automatically');
 
-        const configId = import.meta.env.VITE_PROJECT_CONFIG_ID || 'default';
-        console.log(`[AppConfigContext] Loading config_id: ${configId}`);
-
-        const config = await projectConfigService.getProjectConfiguration(configId);
+        const config = await projectConfigService.getProjectConfiguration();
         await applyConfiguration(config);
       } catch (error) {
         console.error('[AppConfigContext] Error initializing configuration:', error);
@@ -100,29 +98,33 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
   }, []);
 
   useEffect(() => {
-    const configId = import.meta.env.VITE_PROJECT_CONFIG_ID || 'default';
+    if (state.isLoading || !state.configId) {
+      return;
+    }
+
     let realtimeChannel: RealtimeChannel | null = null;
 
     const setupRealtimeSubscription = async () => {
       try {
-        console.log('[AppConfigContext] 🔄 Setting up Realtime subscription for config_id:', configId);
+        console.log('[AppConfigContext] 🔄 Setting up Realtime subscription');
+        console.log('[AppConfigContext] Monitoring config_id:', state.configId);
 
         realtimeChannel = supabase
-          .channel(`project_configurations:${configId}`)
+          .channel(`project_configurations:${state.configId}`)
           .on(
             'postgres_changes',
             {
               event: 'UPDATE',
               schema: 'public',
               table: 'project_configurations',
-              filter: `config_id=eq.${configId}`,
+              filter: `config_id=eq.${state.configId}`,
             },
             async (payload) => {
               console.log('[AppConfigContext] 🎨 Configuration UPDATE detected via Realtime:', payload);
               console.log('[AppConfigContext] Refreshing configuration automatically...');
 
               try {
-                const config = await projectConfigService.refreshConfiguration(configId);
+                const config = await projectConfigService.refreshConfiguration();
                 await applyConfiguration(config);
                 console.log('[AppConfigContext] ✓ Configuration automatically refreshed and applied');
               } catch (error) {
@@ -146,7 +148,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
         supabase.removeChannel(realtimeChannel);
       }
     };
-  }, []);
+  }, [state.isLoading, state.configId]);
 
   const value: AppConfigContextState = {
     ...state,

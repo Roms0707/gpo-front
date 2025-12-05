@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Chargement...",
+    "loadingPage": "Chargement de la page...",
     "error": "Erreur",
     "success": "Succès",
     "cancel": "Annuler",

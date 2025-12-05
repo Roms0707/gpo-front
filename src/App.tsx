@@ -36,11 +36,15 @@ const CommunitiesPage = React.lazy(() => import('./pages/CommunitiesPage'));
 const VideoPlayerPage = React.lazy(() => import('./pages/VideoPlayerPage'));
 
 // Loading fallback component
-const PageLoadingFallback = () => (
-  <div className="min-h-screen pt-28 pb-16 flex items-center justify-center">
-    <LoadingSpinner size="lg" text="Chargement de la page..." />
-  </div>
-);
+const PageLoadingFallback = () => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="min-h-screen pt-28 pb-16 flex items-center justify-center">
+      <LoadingSpinner size="lg" text={t('common.loadingPage')} />
+    </div>
+  );
+};
 
 const AppContent = () => {
   useDynamicFavicon();

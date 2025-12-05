@@ -1,42 +1,69 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+
+interface FilteredTournamentsRequest {
+  status?: string;
+  game_id?: string;
+  user_country?: string;
+  is_whitelisted?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+interface FilteredTournamentsResponse {
+  success: boolean;
+  data?: any[];
+  total_count?: number;
+  error?: string;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
-Deno.serve(async (req)=>{
+
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
   if (!supabaseUrl || !supabaseKey) {
     console.error("[Filtered Tournaments] Missing Supabase environment variables");
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Server configuration error"
-    }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders
-      }
-    });
+    return new Response(
+      JSON.stringify({ success: false, error: "Server configuration error" }),
+      { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
   }
+
   const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false
     }
   });
+
   try {
-    const { status = 'all', game_id, user_country, limit = 50, offset = 0 } = await req.json();
-    console.log(`[Filtered Tournaments] Request received - Status: ${status}, Game ID: ${game_id}, Country: ${user_country}, Limit: ${limit}, Offset: ${offset}`);
-    let query = supabase.from('tournaments').select(`
+    const {
+      status = 'all',
+      game_id,
+      user_country,
+      is_whitelisted = false,
+      limit = 50,
+      offset = 0
+    } = await req.json() as FilteredTournamentsRequest;
+
+    console.log(`[Filtered Tournaments] Request received - Status: ${status}, Game ID: ${game_id}, Country: ${user_country}, Whitelisted: ${is_whitelisted}, Limit: ${limit}, Offset: ${offset}`);
+
+    let query = supabase
+      .from('tournaments')
+      .select(`
         id,
         title,
         description,
@@ -88,27 +115,40 @@ Deno.serve(async (req)=>{
           currency,
           redemption_code
         )
-      `, {
-      count: 'exact'
-    });
+      `, { count: 'exact' });
+
     if (game_id) {
       query = query.eq('game_id', game_id);
     }
-    if (user_country) {
+
+    // Only apply country filter if user is NOT whitelisted
+    // Whitelisted users (e.g., from France) can see ALL tournaments
+    if (user_country && !is_whitelisted) {
+      console.log(`[Filtered Tournaments] Applying country filter for ${user_country} (not whitelisted)`);
       query = query.or(`eligible_countries.is.null,eligible_countries.ilike.%${user_country}%`);
+    } else if (is_whitelisted) {
+      console.log(`[Filtered Tournaments] User is whitelisted - showing ALL tournaments regardless of country eligibility`);
     }
+
     const now = new Date().toISOString();
+    
     if (status === 'ongoing') {
-      query = query.lte('start_date', now).gte('end_date', now).eq('is_twitch_live', true);
+      query = query
+        .lte('start_date', now)
+        .gte('end_date', now)
+        .eq('is_twitch_live', true);
     } else if (status === 'upcoming') {
       query = query.gt('start_date', now);
     } else if (status === 'completed') {
       query = query.lt('end_date', now);
     }
-    query = query.range(offset, offset + limit - 1).order('start_date', {
-      ascending: false
-    });
+
+    query = query
+      .range(offset, offset + limit - 1)
+      .order('start_date', { ascending: false });
+
     const { data: tournaments, error: tournamentsError, count } = await query;
+
     if (tournamentsError) {
       console.error("[Filtered Tournaments] Error fetching tournaments:", {
         message: tournamentsError.message,
@@ -116,37 +156,38 @@ Deno.serve(async (req)=>{
         hint: tournamentsError.hint,
         code: tournamentsError.code
       });
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Error fetching tournaments",
-        details: tournamentsError.message,
-        code: tournamentsError.code
-      }), {
-        status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders
-        }
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Error fetching tournaments",
+          details: tournamentsError.message,
+          code: tournamentsError.code
+        }),
+        { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
-    const processedTournaments = (tournaments || []).map((tournament)=>{
+
+    const processedTournaments = (tournaments || []).map(tournament => {
       const now = new Date();
       const startDate = new Date(tournament.start_date);
       const endDate = new Date(tournament.end_date);
       const regStartDate = tournament.registration_start_date ? new Date(tournament.registration_start_date) : null;
       const regEndDate = tournament.registration_end_date ? new Date(tournament.registration_end_date) : null;
+
       let calculatedStatus = 'upcoming';
       if (now > endDate) {
         calculatedStatus = 'completed';
       } else if (now >= startDate && now <= endDate) {
         calculatedStatus = 'ongoing';
       }
+
       let registrationStatus = 'closed';
       if (regStartDate && now < regStartDate) {
         registrationStatus = 'not_started';
       } else if ((!regStartDate || now >= regStartDate) && (!regEndDate || now <= regEndDate)) {
         registrationStatus = 'open';
       }
+
       return {
         ...tournament,
         calculatedStatus,
@@ -172,31 +213,40 @@ Deno.serve(async (req)=>{
         max_backup_players: tournament.max_backup_players
       };
     });
+
     console.log(`[Filtered Tournaments] Successfully fetched ${processedTournaments.length} tournaments`);
-    return new Response(JSON.stringify({
-      success: true,
-      data: processedTournaments,
-      total_count: count || 0
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        data: processedTournaments,
+        total_count: count || 0
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
       }
-    });
+    );
+
   } catch (error) {
     console.error("[Filtered Tournaments] Unexpected error:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return new Response(JSON.stringify({
-      success: false,
-      error: "Internal server error",
-      details: errorMessage
-    }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "Internal server error",
+        details: errorMessage
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
       }
-    });
+    );
   }
 });

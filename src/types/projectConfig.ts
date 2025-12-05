@@ -35,6 +35,7 @@ export interface ProjectConfiguration {
   secondary_color: string;
   product_id: string | null;
   campaign_id: string | null;
+  domain?: string;
   extra_metadata: Record<string, any>;
   created_at: string;
   updated_at: string;

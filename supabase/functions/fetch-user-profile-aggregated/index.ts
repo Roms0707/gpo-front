@@ -1,54 +1,69 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+
+interface UserProfileRequest {
+  user_id: string;
+}
+
+interface UserProfileResponse {
+  success: boolean;
+  data?: any;
+  error?: string;
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey"
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
-Deno.serve(async (req)=>{
+
+Deno.serve(async (req) => {
   // Handle CORS
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
+
   // Initialize Supabase client
-  const supabase = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
   try {
-    const { user_id } = await req.json();
+    const { user_id } = await req.json() as UserProfileRequest;
     console.log(`[User Profile Aggregated] Request received for user: ${user_id}`);
+
     // Validate input
     if (!user_id) {
       console.error("[User Profile Aggregated] Missing user ID");
-      return new Response(JSON.stringify({
-        success: false,
-        error: "User ID is required"
-      }), {
-        status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders
-        }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "User ID is required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
+
     // 1. Get user details
-    const { data: userData, error: userError } = await supabase.from('users').select('*').eq('id', user_id).single();
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user_id)
+      .single();
+
     if (userError || !userData) {
       console.error("[User Profile Aggregated] User not found:", userError?.message);
-      return new Response(JSON.stringify({
-        success: false,
-        error: "User not found"
-      }), {
-        status: 404,
-        headers: {
-          "Content-Type": "application/json",
-          ...corsHeaders
-        }
-      });
+      return new Response(
+        JSON.stringify({ success: false, error: "User not found" }),
+        { status: 404, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
+
     // 2. Get gaming accounts with game publisher info
-    const { data: gamingAccounts, error: gamingAccountsError } = await supabase.from('game_publisher_id_for_users').select(`
+    const { data: gamingAccounts, error: gamingAccountsError } = await supabase
+      .from('game_publisher_id_for_users')
+      .select(`
         id,
         value,
         is_validated,
@@ -65,12 +80,17 @@ Deno.serve(async (req)=>{
             publisher
           )
         )
-      `).eq('user_id', user_id);
+      `)
+      .eq('user_id', user_id);
+
     if (gamingAccountsError) {
       console.error("[User Profile Aggregated] Error fetching gaming accounts:", gamingAccountsError.message);
     }
+
     // 3. Get player rankings
-    const { data: playerRankings, error: playerRankingsError } = await supabase.from('player_rankings').select(`
+    const { data: playerRankings, error: playerRankingsError } = await supabase
+      .from('player_rankings')
+      .select(`
         id,
         elo_rating,
         wins,
@@ -82,12 +102,17 @@ Deno.serve(async (req)=>{
           name,
           publisher
         )
-      `).eq('user_id', user_id);
+      `)
+      .eq('user_id', user_id);
+
     if (playerRankingsError) {
       console.error("[User Profile Aggregated] Error fetching player rankings:", playerRankingsError.message);
     }
+
     // 4. Get team rankings (for teams where user is a member)
-    const { data: teamRankings, error: teamRankingsError } = await supabase.from('team_rankings').select(`
+    const { data: teamRankings, error: teamRankingsError } = await supabase
+      .from('team_rankings')
+      .select(`
         id,
         elo_rating,
         wins,
@@ -104,12 +129,22 @@ Deno.serve(async (req)=>{
           name,
           publisher
         )
-      `).in('team_id', await supabase.from('team_members').select('team_id').eq('user_id', user_id).then(({ data })=>data?.map((tm)=>tm.team_id) || []));
+      `)
+      .in('team_id', await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user_id)
+        .then(({ data }) => data?.map(tm => tm.team_id) || [])
+      );
+
     if (teamRankingsError) {
       console.error("[User Profile Aggregated] Error fetching team rankings:", teamRankingsError.message);
     }
+
     // 5. Get tournament registrations
-    const { data: tournamentRegistrations, error: tournamentRegistrationsError } = await supabase.from('tournament_registrations').select(`
+    const { data: tournamentRegistrations, error: tournamentRegistrationsError } = await supabase
+      .from('tournament_registrations')
+      .select(`
         id,
         status,
         created_at,
@@ -120,17 +155,25 @@ Deno.serve(async (req)=>{
           end_date,
           status
         )
-      `).eq('user_id', user_id);
+      `)
+      .eq('user_id', user_id);
+
     if (tournamentRegistrationsError) {
       console.error("[User Profile Aggregated] Error fetching tournament registrations:", tournamentRegistrationsError.message);
     }
+
     // 6. Get aim trainer scores
-    const { data: aimTrainerScores, error: aimTrainerError } = await supabase.from('aim_trainer_scores').select('id, score, created_at').eq('user_id', user_id).order('created_at', {
-      ascending: false
-    }).limit(20);
+    const { data: aimTrainerScores, error: aimTrainerError } = await supabase
+      .from('aim_trainer_scores')
+      .select('id, score, created_at')
+      .eq('user_id', user_id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
     if (aimTrainerError) {
       console.error("[User Profile Aggregated] Error fetching aim trainer scores:", aimTrainerError.message);
     }
+
     // 7. Calculate tournament stats
     const now = new Date();
     let tournamentStats = {
@@ -139,13 +182,16 @@ Deno.serve(async (req)=>{
       ongoing: 0,
       completed: 0
     };
+
     if (tournamentRegistrations && tournamentRegistrations.length > 0) {
       tournamentStats.total = tournamentRegistrations.length;
-      for (const registration of tournamentRegistrations){
+      
+      for (const registration of tournamentRegistrations) {
         if (registration.tournaments) {
           const tournament = registration.tournaments;
           const startDate = new Date(tournament.start_date);
           const endDate = new Date(tournament.end_date);
+          
           if (now > endDate) {
             tournamentStats.completed++;
           } else if (now >= startDate && now <= endDate) {
@@ -156,16 +202,19 @@ Deno.serve(async (req)=>{
         }
       }
     }
+
     // 8. Process game rankings (combine player and team rankings)
     const gameRankings = [];
+    
     // Add player rankings
     if (playerRankings && playerRankings.length > 0) {
-      for (const ranking of playerRankings){
+      for (const ranking of playerRankings) {
         const totalMatches = ranking.wins + ranking.losses;
-        const winRate = totalMatches > 0 ? Math.round(ranking.wins / totalMatches * 100) : 0;
+        const winRate = totalMatches > 0 ? Math.round((ranking.wins / totalMatches) * 100) : 0;
+        
         gameRankings.push({
           game_name: ranking.games?.name || 'Unknown Game',
-          rank: 1,
+          rank: 1, // This would need to be calculated based on actual ranking logic
           tier: ranking.rank_tier,
           elo_rating: ranking.elo_rating,
           wins: ranking.wins,
@@ -175,14 +224,16 @@ Deno.serve(async (req)=>{
         });
       }
     }
+
     // Add team rankings
     if (teamRankings && teamRankings.length > 0) {
-      for (const ranking of teamRankings){
+      for (const ranking of teamRankings) {
         const totalMatches = ranking.wins + ranking.losses;
-        const winRate = totalMatches > 0 ? Math.round(ranking.wins / totalMatches * 100) : 0;
+        const winRate = totalMatches > 0 ? Math.round((ranking.wins / totalMatches) * 100) : 0;
+        
         gameRankings.push({
           game_name: ranking.games?.name || 'Unknown Game',
-          rank: 1,
+          rank: 1, // This would need to be calculated based on actual ranking logic
           tier: ranking.rank_tier,
           elo_rating: ranking.elo_rating,
           wins: ranking.wins,
@@ -194,6 +245,7 @@ Deno.serve(async (req)=>{
         });
       }
     }
+
     // 9. Aggregate response data
     const aggregatedData = {
       id: userData.id,
@@ -210,6 +262,7 @@ Deno.serve(async (req)=>{
       is_fortnite_validated: userData.is_fortnite_validated,
       fortnite_validation_data: userData.fortnite_validation_data,
       created_at: userData.created_at,
+      
       // Aggregated data
       gaming_accounts: gamingAccounts || [],
       game_rankings: gameRankings,
@@ -217,30 +270,36 @@ Deno.serve(async (req)=>{
       tournament_registrations: tournamentRegistrations || [],
       aim_trainer_scores: aimTrainerScores || []
     };
+
     console.log(`[User Profile Aggregated] Successfully aggregated profile data for user: ${user_id}`);
-    return new Response(JSON.stringify({
-      success: true,
-      data: aggregatedData
-    }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders
+
+    return new Response(
+      JSON.stringify({ success: true, data: aggregatedData }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
       }
-    });
+    );
+
   } catch (error) {
     console.error("[User Profile Aggregated] Error in fetch-user-profile-aggregated function:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return new Response(JSON.stringify({
-      success: false,
-      error: errorMessage,
-      details: error instanceof Error ? error.stack : undefined
-    }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : undefined
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
       }
-    });
+    );
   }
 });
