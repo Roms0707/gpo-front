@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette } from '../types/projectConfig';
+import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette, LegalVariables } from '../types/projectConfig';
 import { projectConfigService } from '../services/projectConfigService';
 import { tailwindColorService } from '../services/tailwindColorService';
 import { supabase } from '../lib/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
+import { APP_CONFIG } from '../constants';
 
 const AppConfigContext = createContext<AppConfigContextState | undefined>(undefined);
 
@@ -24,6 +25,15 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     productId: null,
     campaignId: null,
     tailwindPalette: null,
+    legalVariables: {
+      support_email: null,
+      legal_email: null,
+      privacy_email: null,
+      company_name: null,
+      company_address: null,
+      phone_number: null,
+      registration_number: null,
+    },
     isLoading: true,
   });
 
@@ -45,6 +55,16 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
 
     tailwindColorService.applyTailwindColors(palette);
 
+    const legalVariables: LegalVariables = {
+      support_email: config.support_email || null,
+      legal_email: config.legal_email || null,
+      privacy_email: config.privacy_email || null,
+      company_name: config.company_name || null,
+      company_address: config.company_address || null,
+      phone_number: config.phone_number || null,
+      registration_number: config.registration_number || null,
+    };
+
     setState({
       configId: config.config_id,
       configName: config.config_name,
@@ -57,6 +77,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       productId: config.product_id,
       campaignId: config.campaign_id,
       tailwindPalette: palette,
+      legalVariables,
       isLoading: false,
     });
 

@@ -1,9 +1,13 @@
 import React from 'react';
 import { Shield } from 'lucide-react';
 import LegalContentLayout from '../components/layout/LegalContentLayout';
-import { APP_CONFIG } from '../constants';
+import { useLegalVariables } from '../hooks/useLegalVariables';
+import { useAppConfig } from '../contexts/AppConfigContext';
 
 const PrivacyPage: React.FC = () => {
+  const legalVars = useLegalVariables();
+  const { brandName } = useAppConfig();
+
   return (
     <LegalContentLayout
       title="Politique de Confidentialité"
@@ -93,14 +97,14 @@ const PrivacyPage: React.FC = () => {
       <p>
         Ces prestataires sont contractuellement tenus de protéger vos données et de ne les utiliser que pour les finalités spécifiées.
       </p>
-      
+
       <h3>4.3 Exigences légales</h3>
       <p>
         Nous pouvons divulguer vos informations si nous sommes légalement tenus de le faire ou si nous croyons de bonne foi que cela est nécessaire pour :
       </p>
       <ul>
         <li>Respecter une obligation légale, réglementaire ou judiciaire</li>
-        <li>Protéger les droits, la propriété ou la sécurité d'Orange Arena, de nos utilisateurs ou du public</li>
+        <li>Protéger les droits, la propriété ou la sécurité de {brandName}, de nos utilisateurs ou du public</li>
       </ul>
 
       <h2>5. Transferts internationaux</h2>
@@ -181,9 +185,14 @@ const PrivacyPage: React.FC = () => {
         Si vous avez des questions concernant cette Politique de Confidentialité ou la manière dont nous traitons vos données, veuillez nous contacter à :
       </p>
       <p>
-        <strong>Société :</strong> {APP_CONFIG.CONTACT.COMPANY_NAME}<br />
-        <strong>Adresse :</strong> {APP_CONFIG.CONTACT.COMPANY_ADDRESS}<br />
-        <strong>Email :</strong> {APP_CONFIG.CONTACT.PRIVACY_EMAIL}
+        <strong>Société :</strong> {legalVars.getCompanyName()}<br />
+        <strong>Adresse :</strong> {legalVars.getCompanyAddress()}<br />
+        {legalVars.getPhoneNumber() && (
+          <>
+            <strong>Téléphone :</strong> {legalVars.getPhoneNumber()}<br />
+          </>
+        )}
+        <strong>Email :</strong> {legalVars.getPrivacyEmail()}
       </p>
       <p>
         Si vous n'êtes pas satisfait de notre réponse, vous avez le droit de déposer une plainte auprès de l'autorité de protection des données de votre pays de résidence.

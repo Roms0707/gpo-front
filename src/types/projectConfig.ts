@@ -22,6 +22,16 @@ export interface TailwindColorPalette {
   info: ColorShade;
 }
 
+export interface LegalVariables {
+  support_email: string | null;
+  legal_email: string | null;
+  privacy_email: string | null;
+  company_name: string | null;
+  company_address: string | null;
+  phone_number: string | null;
+  registration_number: string | null;
+}
+
 export interface ProjectConfiguration {
   id: string;
   config_id: string;
@@ -39,6 +49,13 @@ export interface ProjectConfiguration {
   extra_metadata: Record<string, any>;
   created_at: string;
   updated_at: string;
+  support_email?: string | null;
+  legal_email?: string | null;
+  privacy_email?: string | null;
+  company_name?: string | null;
+  company_address?: string | null;
+  phone_number?: string | null;
+  registration_number?: string | null;
 }
 
 export interface AppConfigContextState {
@@ -53,6 +70,7 @@ export interface AppConfigContextState {
   productId: string | null;
   campaignId: string | null;
   tailwindPalette: TailwindColorPalette | null;
+  legalVariables: LegalVariables;
   isLoading: boolean;
   refreshConfiguration: () => Promise<void>;
 }

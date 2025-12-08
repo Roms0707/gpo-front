@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { APP_CONFIG } from '../constants';
+import { useLegalVariables } from '../hooks/useLegalVariables';
 
 interface FormData {
   name: string;
@@ -17,6 +17,7 @@ interface FormData {
 const ContactPage: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const legalVars = useLegalVariables();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -95,8 +96,8 @@ const ContactPage: React.FC = () => {
                   <p className="text-gray-600 dark:text-gray-400 mb-3">
                     Envoyez-nous un email directement
                   </p>
-                  <a href="mailto:support@orangearena.com" className="text-primary-500 hover:text-primary-400 flex items-center">
-                    support@orangearena.com
+                  <a href={`mailto:${legalVars.getSupportEmail()}`} className="text-primary-500 hover:text-primary-400 flex items-center">
+                    {legalVars.getSupportEmail()}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </div>
