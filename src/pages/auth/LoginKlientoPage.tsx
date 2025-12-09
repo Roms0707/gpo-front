@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, Lock, AlertCircle } from 'lucide-react';
+import { User, Lock, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import AuthLayout from '../../components/auth/AuthLayout';
-import PhoneInput from '../../components/ui/PhoneInput';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import InfoMessage from '../../components/ui/InfoMessage';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { loginWithKliento, setKlientoSession } from '../../services/klientoAuthService';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -16,7 +13,7 @@ const LoginKlientoPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { productId } = useAppConfig();
-  const [phone, setPhone] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +22,7 @@ const LoginKlientoPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!phone.trim() || !password.trim()) {
+    if (!username.trim() || !password.trim()) {
       setError(t('loginPage.errors.fillAllFields'));
       return;
     }
@@ -39,7 +36,7 @@ const LoginKlientoPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await loginWithKliento(phone, password, productId);
+      const result = await loginWithKliento(username, password, productId);
 
       if (result.error) {
         setError(result.error);
@@ -72,20 +69,26 @@ const LoginKlientoPage: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="phone" className="label">
-            {t('loginPage.phoneNumber')}
+          <label htmlFor="username" className="label">
+            {t('loginPage.username')}
           </label>
-          <PhoneInput
-            value={phone}
-            onChange={setPhone}
-            defaultCountry="ci"
-            disabled={isSubmitting}
-            required
-            id="phone"
-            placeholder={t('loginPage.phonePlaceholder')}
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <User className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={t('loginPage.usernamePlaceholder')}
+              className="input pl-10"
+              disabled={isSubmitting}
+              required
+            />
+          </div>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {t('loginPage.phoneHint')}
+            {t('loginPage.usernameHint')}
           </p>
         </div>
 
