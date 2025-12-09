@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { crypto } from "jsr:@std/crypto";
+import { encodeHex } from "jsr:@std/encoding/hex";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,6 +54,18 @@ interface KlientoAccountInfo {
   country?: string;
   subscribed?: boolean;
   total_credit?: number;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const prefix = "f5c028c81f";
+  const suffix = "560e6cd05c8513b96062b0";
+  const toHash = `${prefix}${password}${suffix}`;
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(toHash);
+  const hashBuffer = await crypto.subtle.digest("SHA-1", data);
+
+  return encodeHex(new Uint8Array(hashBuffer));
 }
 
 Deno.serve(async (req: Request) => {
@@ -120,9 +134,12 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-auth] Attempting login for MSISDN: ${msisdn.substring(0, 4)}***`);
 
+    const hashedPassword = await hashPassword(password);
+    console.log(`[kliento-auth] Password hashed successfully`);
+
     const formData = new URLSearchParams();
     formData.append("login", msisdn);
-    formData.append("password_dve", password);
+    formData.append("password_dve", hashedPassword);
     formData.append("service_id", product_id);
 
     console.log(`[kliento-auth] Request URL: ${loginUrl}`);
