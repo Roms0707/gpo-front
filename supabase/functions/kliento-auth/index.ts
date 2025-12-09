@@ -120,11 +120,10 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-auth] Attempting login for MSISDN: ${msisdn.substring(0, 4)}***`);
 
-    const requestBody = {
-      login: msisdn,
-      password_dve: password,
-      service_id: product_id,
-    };
+    const formData = new URLSearchParams();
+    formData.append("login", msisdn);
+    formData.append("password_dve", password);
+    formData.append("service_id", product_id);
 
     console.log(`[kliento-auth] Request URL: ${loginUrl}`);
     console.log(`[kliento-auth] Request body: login=${msisdn.substring(0, 4)}***, service_id=${product_id}`);
@@ -132,10 +131,10 @@ Deno.serve(async (req: Request) => {
     const loginResponse = await fetch(loginUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
         ...(klientoConfig.api_key ? { "Authorization": `Bearer ${klientoConfig.api_key}` } : {}),
       },
-      body: JSON.stringify(requestBody),
+      body: formData.toString(),
     });
 
     const loginData: KlientoApiResponse = await loginResponse.json();
