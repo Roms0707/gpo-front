@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthStore } from '../stores/authStore';
-import { ArrowLeft, Save, Upload, User, Gamepad2, CheckCircle, Loader, AlertTriangle, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, Save, Upload, User, Gamepad2, CheckCircle, Loader } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { countries } from '../utils/countries';
 import { validateRiotId, validateUserProfile } from '../services/api';
@@ -33,7 +33,6 @@ const ProfileEditPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [isProfileCompletion, setIsProfileCompletion] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [username, setUsername] = useState(user?.username || '');
@@ -60,11 +59,6 @@ const ProfileEditPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Check if this is a profile completion flow
-    const urlParams = new URLSearchParams(window.location.search);
-    const isCompletion = urlParams.get('complete') === 'true';
-    setIsProfileCompletion(isCompletion);
-
     if (!user) {
       navigate('/login');
       return;
@@ -691,15 +685,8 @@ const ProfileEditPage: React.FC = () => {
 
       toast.success(t('profile.profileUpdatedSuccess'));
 
-      // Scroll to top before navigation
       window.scrollTo(0, 0);
-      
-      // Navigate based on whether this was profile completion or regular edit
-      if (isProfileCompletion) {
-        navigate('/');
-      } else {
-        navigate('/profile');
-      }
+      navigate('/profile');
       
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -721,95 +708,20 @@ const ProfileEditPage: React.FC = () => {
           <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
             <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
               <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">
-                {isProfileCompletion ? t('profile.completeYourProfile') : t('profile.editMyProfile')}
+                {t('profile.editMyProfile')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {isProfileCompletion
-                  ? t('profile.forTournamentsWeNeedMoreInfo')
-                  : t('profile.updateYourPersonalInfo')
-                }
+                {t('profile.updateYourPersonalInfo')}
               </p>
             </div>
             
             <form onSubmit={handleSaveProfile} className="p-6 space-y-6">
-              {/* Profile Completion Notice */}
-              {isProfileCompletion && (
-                <div className="bg-warning-100 dark:bg-warning-500/20 border border-warning-300 dark:border-warning-600/30 p-4 rounded-lg">
-                  <div className="flex items-start">
-                    <AlertTriangle className="h-5 w-5 text-warning-500 mr-3 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-warning-700 dark:text-warning-300">
-                      <p className="font-medium mb-2">{t('profile.requiredInfoForTournaments')}</p>
-                      <ul className="space-y-1">
-                        <li className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {t('profile.countryForEligibility')}
-                        </li>
-                        <li className="flex items-center">
-                          <Phone className="h-4 w-4 mr-2" />
-                          {t('profile.phoneForVerification')}
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {/* Required Information Section - Show first for profile completion */}
-              {isProfileCompletion && (
-                <div className="space-y-6">
-                  <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white">
-                    <User className="h-5 w-5 mr-2 text-primary-500" />
-                    {t('profile.requiredInformation')}
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {t('profile.countryOfResidenceRequired')} <span className="text-error-500">*</span>
-                      </label>
-                      <div className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white">
-                        {country ? (
-                          <span className="flex items-center">
-                            {countries.find(c => c.code === country)?.flag} {countries.find(c => c.code === country)?.name || country}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">{t('profile.notDefined')}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        🔒 {t('profile.countryDetectedAutomatically')}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {t('profile.phoneNumberOptional')} <span className="text-gray-500 dark:text-gray-400">{t('profile.optional')}</span>
-                      </label>
-                      <input
-                        type="tel"
-                        id="phoneNumber"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder="+33 6 12 34 56 78"
-                        disabled={isSubmitting || isLoading}
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {t('profile.internationalFormatRecommended')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
               {/* Avatar Section */}
-              <div className={isProfileCompletion ? 'border-t border-gray-200 dark:border-gray-800 pt-6' : ''}>
-                {!isProfileCompletion && (
-                  <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white mb-4">
-                    <User className="h-5 w-5 mr-2 text-primary-500" />
-                    {t('profile.personalInformation')}
-                  </h3>
-                )}
+              <div>
+                <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white mb-4">
+                  <User className="h-5 w-5 mr-2 text-primary-500" />
+                  {t('profile.personalInformation')}
+                </h3>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('profile.profilePhoto')}
                 </label>
@@ -903,7 +815,7 @@ const ProfileEditPage: React.FC = () => {
               </div>
 
               {/* Discord OAuth Integration */}
-              <div className={isProfileCompletion ? 'border-t border-gray-200 dark:border-gray-800 pt-6' : ''}>
+              <div>
                 <AccountIntegrationCard
                   title={t('discord.oauth.title')}
                   icon={
@@ -918,10 +830,10 @@ const ProfileEditPage: React.FC = () => {
               </div>
 
               {/* Gaming Account Integrations */}
-              <div className={`space-y-4 ${isProfileCompletion ? 'border-t border-gray-200 dark:border-gray-800 pt-6' : ''}`}>
+              <div className="space-y-4">
                 <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white">
                   <Gamepad2 className="h-5 w-5 mr-2 text-primary-500" />
-                  {t('profile.gamingAccounts')} {isProfileCompletion && <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-2">{t('profile.optional')}</span>}
+                  {t('profile.gamingAccounts')}
                 </h3>
                 
                 {/* Steam Account Integration */}
@@ -1068,81 +980,74 @@ const ProfileEditPage: React.FC = () => {
                 
                 <div className="bg-info-500/10 border border-info-600/30 p-4 rounded-lg">
                   <p className="text-info-700 dark:text-info-300 text-sm">
-                    <strong>💡 Astuce :</strong> {isProfileCompletion
-                      ? t('profile.tipAddAccountsNowOrLater')
-                      : t('profile.tipValidateAccountsToParticipate')
-                    }
+                    <strong>Tip:</strong> {t('profile.tipValidateAccountsToParticipate')}
                   </p>
                 </div>
               </div>
-              
-              {/* Required Information Section - Show at bottom for regular edit */}
-              {!isProfileCompletion && (
-                <div className="space-y-6 border-t border-gray-200 dark:border-gray-800 pt-6">
-                  <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white">
-                    <User className="h-5 w-5 mr-2 text-primary-500" />
-                    {t('profile.requiredInformation')}
-                  </h3>
 
-                  <div className="bg-info-500/10 border border-info-600/30 p-4 rounded-lg">
-                    <p className="text-info-700 dark:text-info-300 text-sm">
-                      <strong>Important :</strong> {t('profile.importantInfoRequiredForTournaments')}
+              {/* Required Information Section */}
+              <div className="space-y-6 border-t border-gray-200 dark:border-gray-800 pt-6">
+                <h3 className="text-lg font-heading font-semibold flex items-center text-gray-900 dark:text-white">
+                  <User className="h-5 w-5 mr-2 text-primary-500" />
+                  {t('profile.requiredInformation')}
+                </h3>
+
+                <div className="bg-info-500/10 border border-info-600/30 p-4 rounded-lg">
+                  <p className="text-info-700 dark:text-info-300 text-sm">
+                    <strong>Important:</strong> {t('profile.importantInfoRequiredForTournaments')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('profile.countryOfResidenceRequired')} <span className="text-error-500">*</span>
+                    </label>
+                    <div className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white">
+                      {country ? (
+                        <span className="flex items-center">
+                          {countries.find(c => c.code === country)?.flag} {countries.find(c => c.code === country)?.name || country}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">{t('profile.notDefined')}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('profile.countryDetectedAutomatically')}
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {t('profile.countryOfResidenceRequired')} <span className="text-error-500">*</span>
-                      </label>
-                      <div className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white">
-                        {country ? (
-                          <span className="flex items-center">
-                            {countries.find(c => c.code === country)?.flag} {countries.find(c => c.code === country)?.name || country}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">{t('profile.notDefined')}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        🔒 {t('profile.countryDetectedAutomatically')}
-                      </p>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {t('profile.phoneNumberOptional')} <span className="text-gray-500 dark:text-gray-400">{t('profile.optional')}</span>
-                      </label>
-                      <input
-                        type="tel"
-                        id="phoneNumber"
-                        value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value)}
-                        className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder="+33 6 12 34 56 78"
-                        disabled={isSubmitting || isLoading}
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {t('profile.internationalFormatRecommended')}
-                      </p>
-                    </div>
+                  <div>
+                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('profile.phoneNumberOptional')} <span className="text-gray-500 dark:text-gray-400">{t('profile.optional')}</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id="phoneNumber"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
+                      className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="+33 6 12 34 56 78"
+                      disabled={isSubmitting || isLoading}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('profile.internationalFormatRecommended')}
+                    </p>
                   </div>
                 </div>
-              )}
+              </div>
               
               {/* Save Button */}
               <div className="flex justify-end space-x-3">
-                {!isProfileCompletion && (
-                  <Link
-                    to="/profile"
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white rounded-lg transition-colors"
-                  >
-                    {t('profile.cancel')}
-                  </Link>
-                )}
+                <Link
+                  to="/profile"
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white rounded-lg transition-colors"
+                >
+                  {t('profile.cancel')}
+                </Link>
                 <button
                   type="submit"
-                  disabled={isLoading || (isProfileCompletion && !country)}
+                  disabled={isLoading}
                   className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center"
                 >
                   {isLoading ? (
@@ -1153,7 +1058,7 @@ const ProfileEditPage: React.FC = () => {
                   ) : (
                     <>
                       <Save className="h-4 w-4 mr-2" />
-                      {isProfileCompletion ? t('profile.finishSetup') : t('profile.save')}
+                      {t('profile.save')}
                     </>
                   )}
                 </button>

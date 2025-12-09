@@ -2,26 +2,18 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
-import { AlertTriangle, Shield, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 
 interface ProtectedRouteProps {
   requiredRole?: 'admin' | 'gamer';
   children?: React.ReactNode;
 }
 
-interface LocationState {
-  from?: {
-    pathname: string;
-  };
-}
-
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, children }) => {
   const { t } = useTranslation();
   const { user, isLoading } = useAuth();
   const location = useLocation();
-  
-  // If auth is still loading, show a loading indicator
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -30,20 +22,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, children 
       </div>
     );
   }
-  
-  // If user is not authenticated, redirect to login
+
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  // Check if user needs to complete their profile using the explicit flag
-  const needsProfileCompletion = user.is_profile_completed === false;
-  const isOnProfileEditPage = location.pathname === '/profile/edit';
-
-  // Redirect to profile completion if needed (but not if already on the edit page)
-  if (needsProfileCompletion && !isOnProfileEditPage) {
-    console.log('[ProtectedRoute] User needs profile completion, redirecting to /profile/edit');
-    return <Navigate to="/profile/edit?complete=true" replace />;
   }
 
   // If a specific role is required, check if user has that role
