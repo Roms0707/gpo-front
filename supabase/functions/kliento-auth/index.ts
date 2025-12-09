@@ -20,10 +20,38 @@ interface KlientoLoginResponse {
   message?: string;
 }
 
-interface KlientoAccountInfo {
+interface KlientoApiResponse {
+  code: number;
+  error: number;
+  data?: KlientoUserData[];
+}
+
+interface KlientoUserData {
   user_id: string;
   msisdn?: string;
-  status?: string;
+  email?: string;
+  firstname?: string;
+  lastname?: string;
+  nickname?: string;
+  country?: string;
+  subscribed?: boolean;
+  total_credit?: number;
+  offer?: KlientoOffer[];
+}
+
+interface KlientoOffer {
+  account_offer_id: number;
+  bizoffer_id: string;
+  status: string;
+  expire_date?: string;
+}
+
+interface KlientoAccountInfo {
+  user_id: string;
+  email?: string;
+  country?: string;
+  subscribed?: boolean;
+  total_credit?: number;
 }
 
 Deno.serve(async (req: Request) => {
@@ -105,14 +133,14 @@ Deno.serve(async (req: Request) => {
       }),
     });
 
-    const loginData = await loginResponse.json();
+    const loginData: KlientoApiResponse = await loginResponse.json();
 
-    if (!loginResponse.ok || loginData.error) {
+    if (!loginResponse.ok || loginData.code !== 200 || loginData.error !== 0) {
       console.error("[kliento-auth] Login failed:", loginData);
       return new Response(
         JSON.stringify({
           success: false,
-          error: loginData.error || loginData.message || "Authentication failed",
+          error: `Authentication failed (code: ${loginData.code}, error: ${loginData.error})`,
           message: "Invalid credentials or user not found",
         } as KlientoLoginResponse),
         {
@@ -122,7 +150,22 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userId = loginData.user_id || loginData.id;
+    if (!loginData.data || loginData.data.length === 0) {
+      console.error("[kliento-auth] No user data in response:", loginData);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "No user data returned from authentication service",
+        } as KlientoLoginResponse),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const userData = loginData.data[0];
+    const userId = userData.user_id;
 
     if (!userId) {
       console.error("[kliento-auth] No user_id in response:", loginData);
@@ -138,27 +181,13 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    let accountInfo: KlientoAccountInfo | null = null;
-    try {
-      const accountInfoUrl = `${klientoBaseUrl}/accountinfo/all`;
-      const accountResponse = await fetch(accountInfoUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(klientoConfig.api_key ? { "Authorization": `Bearer ${klientoConfig.api_key}` } : {}),
-        },
-        body: JSON.stringify({
-          user_id: userId,
-          product_id,
-        }),
-      });
-
-      if (accountResponse.ok) {
-        accountInfo = await accountResponse.json();
-      }
-    } catch (accountError) {
-      console.warn("[kliento-auth] Failed to fetch account info (non-critical):", accountError);
-    }
+    const accountInfo: KlientoAccountInfo = {
+      user_id: userId,
+      email: userData.email,
+      country: userData.country,
+      subscribed: userData.subscribed,
+      total_credit: userData.total_credit,
+    };
 
     console.log(`[kliento-auth] Login successful for user: ${userId}`);
 

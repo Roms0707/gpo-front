@@ -70,7 +70,7 @@ CREATE INDEX IF NOT EXISTS idx_users_phone_number ON users(phone_number) WHERE p
 
 -- Insert Kliento API configuration if not exists
 INSERT INTO platform_api_integrations (api_name, api_url, api_type, is_active)
-SELECT 'kliento', 'https://api.kliento.com', 'auth', true
+SELECT 'kliento', 'https://userv1.dv-content.io', 'auth', true
 WHERE NOT EXISTS (
   SELECT 1 FROM platform_api_integrations WHERE api_name = 'kliento'
 );
