@@ -120,23 +120,31 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-auth] Attempting login for MSISDN: ${msisdn.substring(0, 4)}***`);
 
+    const requestBody = {
+      login: msisdn,
+      password_dve: password,
+      service_id: product_id,
+    };
+
+    console.log(`[kliento-auth] Request URL: ${loginUrl}`);
+    console.log(`[kliento-auth] Request body: login=${msisdn.substring(0, 4)}***, service_id=${product_id}`);
+
     const loginResponse = await fetch(loginUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         ...(klientoConfig.api_key ? { "Authorization": `Bearer ${klientoConfig.api_key}` } : {}),
       },
-      body: JSON.stringify({
-        msisdn,
-        password,
-        product_id,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const loginData: KlientoApiResponse = await loginResponse.json();
 
+    console.log(`[kliento-auth] Response status: ${loginResponse.status}`);
+    console.log(`[kliento-auth] Response data: code=${loginData.code}, error=${loginData.error}, hasData=${!!loginData.data}`);
+
     if (!loginResponse.ok || loginData.code !== 200 || loginData.error !== 0) {
-      console.error("[kliento-auth] Login failed:", loginData);
+      console.error("[kliento-auth] Login failed:", JSON.stringify(loginData));
       return new Response(
         JSON.stringify({
           success: false,
