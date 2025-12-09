@@ -137,17 +137,35 @@ Deno.serve(async (req: Request) => {
       body: formData.toString(),
     });
 
-    const loginData: KlientoApiResponse = await loginResponse.json();
-
+    const responseText = await loginResponse.text();
     console.log(`[kliento-auth] Response status: ${loginResponse.status}`);
-    console.log(`[kliento-auth] Response data: code=${loginData.code}, error=${loginData.error}, hasData=${!!loginData.data}`);
+    console.log(`[kliento-auth] Raw response: ${responseText}`);
 
-    if (!loginResponse.ok || loginData.code !== 200 || loginData.error !== 0) {
-      console.error("[kliento-auth] Login failed:", JSON.stringify(loginData));
+    let loginData: Record<string, unknown>;
+    try {
+      loginData = JSON.parse(responseText);
+    } catch {
+      console.error("[kliento-auth] Failed to parse response as JSON");
       return new Response(
         JSON.stringify({
           success: false,
-          error: `Authentication failed (code: ${loginData.code}, error: ${loginData.error})`,
+          error: "Invalid response from authentication service",
+        } as KlientoLoginResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log(`[kliento-auth] Parsed response: ${JSON.stringify(loginData)}`);
+
+    if (!loginResponse.ok) {
+      console.error("[kliento-auth] Login failed with status:", loginResponse.status);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Authentication failed (HTTP ${loginResponse.status})`,
           message: "Invalid credentials or user not found",
         } as KlientoLoginResponse),
         {
@@ -157,8 +175,38 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!loginData.data || loginData.data.length === 0) {
-      console.error("[kliento-auth] No user data in response:", loginData);
+    const code = loginData.code as number | undefined;
+    const errorCode = loginData.error as number | undefined;
+
+    if (code !== undefined && code !== 200) {
+      console.error("[kliento-auth] Login failed with code:", code);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Authentication failed (code: ${code}, error: ${errorCode})`,
+          message: "Invalid credentials or user not found",
+        } as KlientoLoginResponse),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    let userData: Record<string, unknown> | undefined;
+
+    if (loginData.data) {
+      if (Array.isArray(loginData.data) && loginData.data.length > 0) {
+        userData = loginData.data[0] as Record<string, unknown>;
+      } else if (typeof loginData.data === "object" && !Array.isArray(loginData.data)) {
+        userData = loginData.data as Record<string, unknown>;
+      }
+    } else {
+      userData = loginData;
+    }
+
+    if (!userData) {
+      console.error("[kliento-auth] No user data found in response");
       return new Response(
         JSON.stringify({
           success: false,
@@ -171,8 +219,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userData = loginData.data[0];
-    const userId = userData.user_id;
+    console.log(`[kliento-auth] Extracted user data: ${JSON.stringify(userData)}`);
+
+    const userId = (userData.user_id || userData.userId || userData.id) as string | undefined;
 
     if (!userId) {
       console.error("[kliento-auth] No user_id in response:", loginData);
@@ -190,10 +239,10 @@ Deno.serve(async (req: Request) => {
 
     const accountInfo: KlientoAccountInfo = {
       user_id: userId,
-      email: userData.email,
-      country: userData.country,
-      subscribed: userData.subscribed,
-      total_credit: userData.total_credit,
+      email: userData.email as string | undefined,
+      country: userData.country as string | undefined,
+      subscribed: userData.subscribed as boolean | undefined,
+      total_credit: userData.total_credit as number | undefined,
     };
 
     console.log(`[kliento-auth] Login successful for user: ${userId}`);
