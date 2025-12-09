@@ -46,8 +46,8 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
     <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mr-4">
-            <Shield className="h-6 w-6 text-blue-500" />
+          <div className="w-12 h-12 bg-accent-600/20 rounded-lg flex items-center justify-center mr-4">
+            <Shield className="h-6 w-6 text-accent-500" />
           </div>
           <div>
             <div className="flex items-center">
@@ -65,16 +65,16 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
         <div className="flex space-x-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-primary-500 hover:text-primary-400 transition-colors text-sm"
+            className="text-accent-600 hover:text-accent-500 transition-colors text-sm"
           >
             {showDetails ? t('gaming.hide') : t('gaming.details')}
           </button>
-          
+
           {onLoadMatchHistory && (
             <button
               onClick={onLoadMatchHistory}
               disabled={isLoadingMatches}
-              className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
+              className="bg-accent-600 hover:bg-accent-700 disabled:bg-accent-600/50 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
             >
               {isLoadingMatches ? (
                 <>
@@ -99,7 +99,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
               </span>
             </div>
             <div className="text-right">
-              <div className="font-bold text-lg text-primary-400">{soloQueueStats.leaguePoints} LP</div>
+              <div className="font-bold text-lg text-accent-500">{soloQueueStats.leaguePoints} LP</div>
             </div>
           </div>
           
@@ -149,7 +149,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
               </span>
             </div>
             <div className="text-right">
-              <div className="font-bold text-primary-400">{soloQueueStats.leaguePoints} LP</div>
+              <div className="font-bold text-accent-500">{soloQueueStats.leaguePoints} LP</div>
             </div>
           </div>
         </div>

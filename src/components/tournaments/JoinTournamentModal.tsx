@@ -166,7 +166,7 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center">
-            <Gamepad2 className="text-primary-500 h-5 w-5 mr-2" />
+            <Gamepad2 className="text-accent-600 dark:text-accent-500 h-5 w-5 mr-2" />
             <h2 className="font-heading font-semibold text-xl text-gray-900 dark:text-white">
               {t('joinTournament.title')}
             </h2>
@@ -200,12 +200,12 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
                 <h4 className="font-medium text-gray-900 dark:text-white">{t('joinTournament.privateServerCode')}</h4>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="flex-1 bg-gray-200 dark:bg-dark-300 rounded-lg p-3 font-mono text-center text-lg font-bold text-primary-600 dark:text-primary-400">
+                <div className="flex-1 bg-gray-200 dark:bg-dark-300 rounded-lg p-3 font-mono text-center text-lg font-bold text-accent-600 dark:text-accent-400">
                   {privateServerCode}
                 </div>
-                <button 
+                <button
                   onClick={handleCopyCode}
-                  className="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-lg transition-colors"
+                  className="bg-accent-600 hover:bg-accent-700 text-white p-3 rounded-lg transition-colors"
                   title={t('joinTournament.copyCode')}
                 >
                   {copiedCode ? (
@@ -222,14 +222,14 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
           ) : tournament.discord_url ? (
             <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg">
               <div className="flex items-center mb-3">
-                <MessageSquare className="h-5 w-5 text-indigo-500 mr-2" />
+                <MessageSquare className="h-5 w-5 text-accent-600 dark:text-accent-500 mr-2" />
                 <h4 className="font-medium text-gray-900 dark:text-white">{t('joinTournament.joinTournamentTitle')}</h4>
               </div>
-              <a 
+              <a
                 href={tournament.discord_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg text-center font-medium transition-colors"
+                className="block w-full bg-accent-600 hover:bg-accent-700 text-white py-3 px-4 rounded-lg text-center font-medium transition-colors"
               >
                 <div className="flex items-center justify-center">
                   <MessageSquare className="h-5 w-5 mr-2" />

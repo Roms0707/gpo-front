@@ -3,7 +3,7 @@ import { Info } from 'lucide-react';
 
 interface InfoMessageProps {
   message: string;
-  type?: 'info' | 'success' | 'warning';
+  type?: 'info' | 'success' | 'warning' | 'accent';
   className?: string;
   showIcon?: boolean;
 }
@@ -17,13 +17,15 @@ const InfoMessage: React.FC<InfoMessageProps> = ({
   const typeStyles = {
     info: 'bg-info-500/20 border-info-600 text-info-300',
     success: 'bg-success-500/20 border-success-600 text-success-300',
-    warning: 'bg-warning-500/20 border-warning-600 text-warning-300'
+    warning: 'bg-warning-500/20 border-warning-600 text-warning-300',
+    accent: 'bg-accent-500/20 border-accent-600 text-accent-300'
   };
 
   const iconColors = {
     info: 'text-info-400',
     success: 'text-success-400',
-    warning: 'text-warning-400'
+    warning: 'text-warning-400',
+    accent: 'text-accent-400'
   };
 
   return (

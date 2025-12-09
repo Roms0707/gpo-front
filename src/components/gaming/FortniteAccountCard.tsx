@@ -67,8 +67,8 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-10 h-10 bg-purple-600/20 rounded-lg flex items-center justify-center">
-          <User className="w-5 h-5 text-purple-500" />
+        <div className="w-10 h-10 bg-accent-600/20 rounded-lg flex items-center justify-center">
+          <User className="w-5 h-5 text-accent-500" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           {t('gaming.fortniteAccount')}

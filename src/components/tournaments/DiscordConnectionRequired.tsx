@@ -40,7 +40,7 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
         <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6 shadow-xl">
           <div className="flex items-start gap-4">
             <div className="flex-shrink-0">
-              <AlertCircle className="w-6 h-6 text-yellow-500" />
+              <AlertCircle className="w-6 h-6 text-accent-500" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -53,7 +53,7 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
                 <button
                   onClick={handleConnect}
                   disabled={isConnecting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {isConnecting ? (
                     <>
@@ -82,20 +82,20 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
   }
 
   return (
-    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+    <div className="bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg p-4">
       <div className="flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
+        <AlertCircle className="w-5 h-5 text-accent-600 dark:text-accent-500 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
-          <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+          <h4 className="font-semibold text-accent-900 dark:text-accent-100 mb-1">
             {t('discord.required.title')}
           </h4>
-          <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+          <p className="text-sm text-accent-800 dark:text-accent-200 mb-3">
             {t('discord.required.description')}
           </p>
           <button
             onClick={handleConnect}
             disabled={isConnecting}
-            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center gap-2"
+            className="px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium flex items-center gap-2"
           >
             {isConnecting ? (
               <>

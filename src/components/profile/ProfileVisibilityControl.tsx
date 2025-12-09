@@ -20,7 +20,7 @@ const ProfileVisibilityControl: React.FC<ProfileVisibilityControlProps> = ({
       <div className="bg-gray-100 dark:bg-dark-200 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Shield className="h-5 w-5 text-primary-500 mr-3" />
+            <Shield className="h-5 w-5 text-accent-600 dark:text-accent-500 mr-3" />
             <div>
               <h3 className="font-heading font-semibold text-lg text-gray-900 dark:text-white">
                 {t('profile.visibility')}
@@ -38,9 +38,9 @@ const ProfileVisibilityControl: React.FC<ProfileVisibilityControlProps> = ({
             <button
               onClick={onToggle}
               disabled={isUpdatingVisibility}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                 isProfilePublic
-                  ? 'bg-primary-600'
+                  ? 'bg-accent-600'
                   : 'bg-gray-300 dark:bg-gray-600'
               }`}
               aria-label={isProfilePublic ? t('profile.makePrivate') : t('profile.makePublic')}
@@ -54,16 +54,16 @@ const ProfileVisibilityControl: React.FC<ProfileVisibilityControlProps> = ({
 
             {isUpdatingVisibility && (
               <div className="ml-3">
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary-500"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-accent-500"></div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-4 p-3 bg-info-50 dark:bg-info-900/20 border border-info-200 dark:border-info-800 rounded-lg">
+        <div className="mt-4 p-3 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
           <div className="flex items-start">
-            <Shield className="h-4 w-4 text-info-500 mr-2 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-info-700 dark:text-info-300">
+            <Shield className="h-4 w-4 text-accent-600 dark:text-accent-500 mr-2 flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-accent-800 dark:text-accent-200">
               <p className="font-medium mb-1">{t('profile.aboutProfileVisibility')}</p>
               <ul className="text-xs space-y-1">
                 <li>• <strong>{t('profile.publicProfile')} :</strong> {t('profile.publicVisibilityDescription')}</li>

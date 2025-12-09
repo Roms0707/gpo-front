@@ -51,14 +51,14 @@ const RulesTab: React.FC<RulesTabProps> = ({
   return (
     <div className="bg-white dark:bg-dark-100 rounded-xl p-4 sm:p-5 md:p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" id="rules-panel" aria-labelledby="rules-tab">
       <h2 className="font-heading font-bold text-xl sm:text-2xl mb-4 sm:mb-6 flex items-center text-gray-900 dark:text-white">
-        <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500 mr-2" aria-hidden="true" />
+        <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-accent-600 dark:text-accent-500 mr-2" aria-hidden="true" />
         <span className="hidden sm:inline">{t('rulesTab.title', { title: tournament?.title })}</span>
         <span className="sm:hidden">{t('rulesTab.titleShort')}</span>
       </h2>
-      
+
       {isLoading ? (
         <div className="flex justify-center items-center py-8">
-          <Loader className="h-8 w-8 animate-spin text-primary-500" aria-hidden="true" />
+          <Loader className="h-8 w-8 animate-spin text-accent-600 dark:text-accent-500" aria-hidden="true" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">{t('rulesTab.loading')}</span>
         </div>
       ) : error ? (
@@ -94,7 +94,7 @@ const RulesTab: React.FC<RulesTabProps> = ({
           
           <div className="space-y-4 sm:space-y-6">
             <div>
-              <h4 className="font-medium text-primary-400 mb-2 text-sm sm:text-base">{t('rulesTab.eligibility.title')}</h4>
+              <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2 text-sm sm:text-base">{t('rulesTab.eligibility.title')}</h4>
               <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm text-gray-700 dark:text-gray-300">
                 <li>{t('rulesTab.eligibility.minAge')}</li>
                 <li>{t('rulesTab.eligibility.eligibleCountry')}</li>
@@ -102,9 +102,9 @@ const RulesTab: React.FC<RulesTabProps> = ({
                 <li>{t('rulesTab.eligibility.staffRestriction')}</li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-medium text-primary-400 mb-2">{t('rulesTab.formatSchedule.title')}</h4>
+              <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2">{t('rulesTab.formatSchedule.title')}</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                 <li>{t('rulesTab.formatSchedule.punctuality')}</li>
                 <li>{t('rulesTab.formatSchedule.lateDisqualification')}</li>
@@ -112,9 +112,9 @@ const RulesTab: React.FC<RulesTabProps> = ({
                 <li>{t('rulesTab.formatSchedule.scheduleNotification')}</li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-medium text-primary-400 mb-2">{t('rulesTab.behavior.title')}</h4>
+              <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2">{t('rulesTab.behavior.title')}</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                 <li>{t('rulesTab.behavior.fairPlay')}</li>
                 <li>{t('rulesTab.behavior.cheating')}</li>
@@ -122,18 +122,18 @@ const RulesTab: React.FC<RulesTabProps> = ({
                 <li>{t('rulesTab.behavior.adminDecisions')}</li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-medium text-primary-400 mb-2">{t('rulesTab.equipment.title')}</h4>
+              <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2">{t('rulesTab.equipment.title')}</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                 <li>{t('rulesTab.equipment.responsibility')}</li>
                 <li>{t('rulesTab.equipment.technicalIssues')}</li>
                 <li>{t('rulesTab.equipment.serverIssues')}</li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-medium text-primary-400 mb-2">{t('rulesTab.broadcasting.title')}</h4>
+              <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2">{t('rulesTab.broadcasting.title')}</h4>
               <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                 <li>{t('rulesTab.broadcasting.officialBroadcast')}</li>
                 <li>{t('rulesTab.broadcasting.personalBroadcast')}</li>
@@ -142,8 +142,8 @@ const RulesTab: React.FC<RulesTabProps> = ({
             </div>
           </div>
           
-          <div className="mt-6 p-4 bg-info-500/20 border border-info-600/30 rounded-lg">
-            <p className="text-info-700 dark:text-info-300 text-sm">
+          <div className="mt-6 p-4 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
+            <p className="text-accent-800 dark:text-accent-200 text-sm">
               <strong>{t('rulesTab.noteTitle')}</strong> {t('rulesTab.noteText')}
             </p>
           </div>

@@ -422,11 +422,11 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                         {t('tournamentPage.sidebar.live')}
                       </a>
                     ) : (
-                      <a 
-                        href={tournament.twitch_url} 
-                        target="_blank" 
+                      <a
+                        href={tournament.twitch_url}
+                        target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary-500 hover:text-primary-400 transition-colors"
+                        className="text-accent-600 hover:text-accent-500 transition-colors"
                       >
                         {t('tournamentPage.sidebar.viewChannel')}
                       </a>
@@ -439,10 +439,10 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
 
           {/* Registration Status Info */}
           {backupSlots > 0 && !registrationStatus.registered && (
-            <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="mb-4 p-3 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
               <div className="flex items-start space-x-2">
-                <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <div className="text-xs text-blue-600 dark:text-blue-400">
+                <Info className="h-4 w-4 text-accent-600 dark:text-accent-500 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-accent-800 dark:text-accent-200">
                   <p className="font-medium">{t('tournamentPage.sidebar.availablePlaces')}</p>
                   <p className="mt-1">{t('tournamentPage.sidebar.waitlistInfo', { count: backupSlots })}</p>
                 </div>
@@ -477,7 +477,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                     )}
                   </div>
                   {registrationStatus.status === 'backup' && (
-                    <div className="mt-3 p-2 bg-blue-500/10 border border-blue-500/30 rounded text-xs text-blue-600 dark:text-blue-400">
+                    <div className="mt-3 p-2 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded text-xs text-accent-800 dark:text-accent-200">
                       <Info className="h-3 w-3 inline mr-1" />
                       {t('tournamentPage.sidebar.onWaitlist')}
                     </div>
@@ -491,7 +491,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-gray-500 dark:text-gray-400">{t('tournamentPage.sidebar.yourTeam')}</span>
                         {isTeamCaptain && (
-                          <span className="text-xs bg-primary-600 text-white px-2 py-1 rounded">
+                          <span className="text-xs bg-accent-600 text-white px-2 py-1 rounded">
                             {t('tournamentPage.sidebar.captain')}
                           </span>
                         )}
@@ -511,17 +511,17 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                       {teamChatChannelId && (
                         <button
                           onClick={() => setShowTeamChatModal(true)}
-                          className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center"
+                          className="w-full mt-2 bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center justify-center"
                         >
                           <MessageSquare className="h-4 w-4 mr-2" />
                           {t('tournamentPage.sidebar.teamChat')}
                         </button>
                       )}
-                      
+
                       {isTeamCaptain && (
                         <button
                           onClick={onTeamInvite}
-                          className="w-full mt-3 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                          className="w-full mt-3 bg-accent-600 hover:bg-accent-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
                         >
                           {t('tournamentPage.sidebar.invitePlayers')}
                         </button>

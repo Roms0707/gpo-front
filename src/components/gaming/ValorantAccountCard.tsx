@@ -108,8 +108,8 @@ const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLo
     <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <div className="w-12 h-12 bg-red-600/20 rounded-lg flex items-center justify-center mr-4">
-            <Shield className="h-6 w-6 text-red-500" />
+          <div className="w-12 h-12 bg-accent-600/20 rounded-lg flex items-center justify-center mr-4">
+            <Shield className="h-6 w-6 text-accent-500" />
           </div>
           <div>
             <div className="flex items-center">
@@ -127,16 +127,16 @@ const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLo
         <div className="flex space-x-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-primary-500 hover:text-primary-400 transition-colors text-sm"
+            className="text-accent-600 hover:text-accent-500 transition-colors text-sm"
           >
             {showDetails ? t('gaming.hide') : t('gaming.details')}
           </button>
-          
+
           {onLoadMatchHistory && rankedData?.puuid && region && (
             <button
               onClick={() => onLoadMatchHistory(rankedData.puuid, region)}
               disabled={isLoadingMatches}
-              className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
+              className="bg-accent-600 hover:bg-accent-700 disabled:bg-accent-600/50 text-white px-3 py-1 rounded text-sm transition-colors flex items-center"
             >
               {isLoadingMatches ? (
                 <>
