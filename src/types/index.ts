@@ -34,6 +34,8 @@ export interface Tournament {
   prizes?: TournamentPrize[];
 }
 
+export type AuthProvider = 'email' | 'discord' | 'kliento';
+
 export interface User {
   id: string;
   username: string;
@@ -58,6 +60,22 @@ export interface User {
   xp?: number;
   current_avatar_id?: string;
   msisdn?: string;
+  phone_number?: string;
+  kliento_user_id?: string;
+  auth_provider?: AuthProvider;
+}
+
+export interface KlientoLoginResponse {
+  success: boolean;
+  user_id?: string;
+  error?: string;
+  message?: string;
+}
+
+export interface KlientoAccountInfo {
+  user_id: string;
+  msisdn?: string;
+  status?: string;
 }
 
 export interface AuthContextType {

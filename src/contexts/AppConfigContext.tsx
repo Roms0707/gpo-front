@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette, LegalVariables } from '../types/projectConfig';
+import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette, LegalVariables, AuthMethod } from '../types/projectConfig';
 import { projectConfigService } from '../services/projectConfigService';
 import { tailwindColorService } from '../services/tailwindColorService';
 import { supabase } from '../lib/supabase';
@@ -25,6 +25,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     accentColor: null,
     productId: null,
     campaignId: null,
+    authMethod: 'email' as AuthMethod,
     tailwindPalette: null,
     legalVariables: {
       support_email: null,
@@ -47,6 +48,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       primaryColor: config.primary_color,
       secondaryColor: config.secondary_color,
       accentColor: config.accent_color || 'not set',
+      authMethod: config.auth_method || 'email',
     });
     console.log('[AppConfigContext] ═══════════════════════════════════════════');
 
@@ -80,6 +82,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       accentColor: config.accent_color || null,
       productId: config.product_id,
       campaignId: config.campaign_id,
+      authMethod: (config.auth_method || 'email') as AuthMethod,
       tailwindPalette: palette,
       legalVariables,
       isLoading: false,

@@ -3,6 +3,7 @@ import { User } from '../types';
 import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from '../services/authService';
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
+import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession } from '../services/klientoAuthService';
 
 interface AuthState {
   user: User | null;
@@ -10,6 +11,7 @@ interface AuthState {
   error: string | null;
   showGamingStatsModal: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
+  loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
@@ -48,6 +50,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
+  loginKliento: async (phone: string, password: string, productId: string) => {
+    set({ isLoading: true, error: null });
+
+    const result = await loginWithKliento(phone, password, productId);
+
+    if (result.user) {
+      setKlientoSession(result.user);
+    }
+
+    set({
+      user: result.user,
+      error: result.error,
+      isLoading: false
+    });
+  },
+
   signup: async (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => {
     set({ isLoading: true, error: null });
 
@@ -72,8 +90,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     set({ isLoading: true });
 
-    // Clear stored data
     clearStoredCredentials();
+    clearKlientoSession();
 
     await logoutUser();
 
@@ -83,19 +101,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   checkSession: async () => {
     set({ isLoading: true, error: null });
 
-    // First, try to load saved user data for immediate display
     const savedUser = getSavedUserData();
     if (savedUser) {
       console.log('[AuthStore] Found saved user data, setting user immediately:', savedUser.username, '(ID:', savedUser.id + ')');
       set({ user: savedUser, isLoading: false });
     }
 
+    const klientoUser = getKlientoSession();
+    if (klientoUser) {
+      console.log('[AuthStore] Found Kliento session, setting user:', klientoUser.username, '(ID:', klientoUser.id + ')');
+      set({ user: klientoUser, isLoading: false, error: null });
+      return;
+    }
+
     const result = await checkUserSession();
 
-    // Always update the user state with fresh data from session check
     if (result.user) {
-      console.log('[AuthStore] ✓ Session check complete - User authenticated:', result.user.username, '(ID:', result.user.id + ')');
-      console.log('[AuthStore] → User configuration will be loaded for:', result.user.country || 'auto-detect');
+      console.log('[AuthStore] Session check complete - User authenticated:', result.user.username, '(ID:', result.user.id + ')');
+      console.log('[AuthStore] User configuration will be loaded for:', result.user.country || 'auto-detect');
     } else {
       console.log('[AuthStore] Session check complete - No authenticated user');
     }

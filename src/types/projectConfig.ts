@@ -32,6 +32,8 @@ export interface LegalVariables {
   registration_number: string | null;
 }
 
+export type AuthMethod = 'email' | 'discord' | 'kliento';
+
 export interface ProjectConfiguration {
   id: string;
   config_id: string;
@@ -57,6 +59,7 @@ export interface ProjectConfiguration {
   company_address?: string | null;
   phone_number?: string | null;
   registration_number?: string | null;
+  auth_method?: AuthMethod;
 }
 
 export interface AppConfigContextState {
@@ -71,6 +74,7 @@ export interface AppConfigContextState {
   accentColor: string | null;
   productId: string | null;
   campaignId: string | null;
+  authMethod: AuthMethod;
   tailwindPalette: TailwindColorPalette | null;
   legalVariables: LegalVariables;
   isLoading: boolean;
