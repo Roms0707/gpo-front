@@ -2,8 +2,8 @@ import { TailwindColorPalette, ColorShade } from '../types/projectConfig';
 import { colorShadeGenerator } from './colorShadeGenerator';
 
 export const tailwindColorService = {
-  buildTailwindPalette(primaryColor: string, secondaryColor: string): TailwindColorPalette {
-    console.log('[TailwindColorService] Building palette from:', { primaryColor, secondaryColor });
+  buildTailwindPalette(primaryColor: string, secondaryColor: string, accentColor?: string | null): TailwindColorPalette {
+    console.log('[TailwindColorService] Building palette from:', { primaryColor, secondaryColor, accentColor });
 
     if (!colorShadeGenerator.validateHexColor(primaryColor)) {
       console.warn('[TailwindColorService] Invalid primary color, using fallback');
@@ -15,10 +15,18 @@ export const tailwindColorService = {
       secondaryColor = '#000000';
     }
 
+    let effectiveAccentColor = primaryColor;
+    if (accentColor && colorShadeGenerator.validateHexColor(accentColor)) {
+      effectiveAccentColor = accentColor;
+      console.log('[TailwindColorService] Using custom accent color:', accentColor);
+    } else {
+      console.log('[TailwindColorService] No valid accent color provided, falling back to primary color');
+    }
+
     const palette: TailwindColorPalette = {
       primary: colorShadeGenerator.generateColorShades(primaryColor),
       secondary: colorShadeGenerator.generateColorShades(secondaryColor),
-      accent: colorShadeGenerator.generateColorShades(primaryColor),
+      accent: colorShadeGenerator.generateColorShades(effectiveAccentColor),
       success: colorShadeGenerator.generateColorShades('#22c55e'),
       warning: colorShadeGenerator.generateColorShades('#f59e0b'),
       error: colorShadeGenerator.generateColorShades('#ef4444'),

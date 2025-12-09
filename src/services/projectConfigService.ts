@@ -144,6 +144,7 @@ class ProjectConfigService {
       logo_alt_text: 'Orange Arena E-Sport',
       primary_color: '#FF6B00',
       secondary_color: '#000000',
+      accent_color: null,
       product_id: null,
       campaign_id: null,
       extra_metadata: {},

@@ -22,6 +22,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     logoAltText: 'Orange Arena E-Sport',
     primaryColor: '#FF6B00',
     secondaryColor: '#000000',
+    accentColor: null,
     productId: null,
     campaignId: null,
     tailwindPalette: null,
@@ -45,12 +46,14 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       brandName: config.brand_name,
       primaryColor: config.primary_color,
       secondaryColor: config.secondary_color,
+      accentColor: config.accent_color || 'not set',
     });
     console.log('[AppConfigContext] ═══════════════════════════════════════════');
 
     const palette = tailwindColorService.buildTailwindPalette(
       config.primary_color,
-      config.secondary_color
+      config.secondary_color,
+      config.accent_color
     );
 
     tailwindColorService.applyTailwindColors(palette);
@@ -74,6 +77,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       logoAltText: config.logo_alt_text,
       primaryColor: config.primary_color,
       secondaryColor: config.secondary_color,
+      accentColor: config.accent_color || null,
       productId: config.product_id,
       campaignId: config.campaign_id,
       tailwindPalette: palette,

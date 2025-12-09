@@ -43,6 +43,7 @@ export interface ProjectConfiguration {
   logo_alt_text: string;
   primary_color: string;
   secondary_color: string;
+  accent_color?: string | null;
   product_id: string | null;
   campaign_id: string | null;
   domain?: string;
@@ -67,6 +68,7 @@ export interface AppConfigContextState {
   logoAltText: string;
   primaryColor: string;
   secondaryColor: string;
+  accentColor: string | null;
   productId: string | null;
   campaignId: string | null;
   tailwindPalette: TailwindColorPalette | null;
