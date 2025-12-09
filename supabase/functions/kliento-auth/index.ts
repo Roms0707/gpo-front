@@ -238,7 +238,8 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-auth] Extracted user data: ${JSON.stringify(userData)}`);
 
-    const userId = (userData.user_id || userData.userId || userData.id) as string | undefined;
+    const rawUserId = userData.user_id || userData.userId || userData.id;
+    const userId = rawUserId !== undefined && rawUserId !== null ? String(rawUserId) : undefined;
 
     if (!userId) {
       console.error("[kliento-auth] No user_id in response:", loginData);

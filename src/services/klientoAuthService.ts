@@ -69,7 +69,8 @@ export const loginWithKliento = async (
       };
     }
 
-    const localUser = await findOrCreateKlientoUser(data.user_id, phone, data.account_info);
+    const klientoUserId = String(data.user_id);
+    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.account_info);
 
     if (!localUser) {
       return {
