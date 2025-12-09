@@ -2218,7 +2218,7 @@
     "klientoSubtitle": "Enter your username and password to access your account",
     "username": "Username",
     "usernamePlaceholder": "Username",
-    "usernameHint": "Enter your Kliento account username",
+    "usernameHint": "Enter your {{brandName}} account username",
     "klientoExternalSignup": "New user?",
     "klientoExternalSignupHint": "Account creation is handled externally. Please contact support if you need to create a new account.",
     "errors": {

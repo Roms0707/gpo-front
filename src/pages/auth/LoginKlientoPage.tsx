@@ -12,7 +12,7 @@ import { useAuthStore } from '../../stores/authStore';
 const LoginKlientoPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { productId } = useAppConfig();
+  const { productId, brandName } = useAppConfig();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -88,7 +88,7 @@ const LoginKlientoPage: React.FC = () => {
             />
           </div>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {t('loginPage.usernameHint')}
+            {t('loginPage.usernameHint', { brandName })}
           </p>
         </div>
 
