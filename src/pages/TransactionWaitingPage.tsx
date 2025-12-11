@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, AlertCircle, CheckCircle, RefreshCw, Clock } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useAppConfig } from '../contexts/AppConfigContext';
-import CompleteProfileModal from '../components/profile/CompleteProfileModal';
 
 const POLL_INTERVAL = 1500;
 const MAX_POLL_DURATION = 120000;
@@ -15,13 +14,12 @@ const TransactionWaitingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { loginTransactionUser, user } = useAuthStore();
+  const { loginTransactionUser } = useAuthStore();
   const { brandName, accentColor } = useAppConfig();
 
   const [status, setStatus] = useState<VerificationStatus>('verifying');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -62,11 +60,7 @@ const TransactionWaitingPage: React.FC = () => {
 
       if (result.user) {
         setStatus('success');
-        if (!result.user.is_profile_completed) {
-          setShowCompleteProfile(true);
-        } else {
-          setTimeout(() => navigate('/'), 1500);
-        }
+        setTimeout(() => navigate('/'), 1500);
       } else if (result.error) {
         setStatus('error');
         setErrorMessage(result.error);
@@ -198,10 +192,7 @@ const TransactionWaitingPage: React.FC = () => {
               {t('transactionWaiting.success')}
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              {showCompleteProfile
-                ? t('transactionWaiting.completeProfilePrompt')
-                : t('transactionWaiting.redirecting')
-              }
+              {t('transactionWaiting.redirecting')}
             </p>
           </div>
         );
@@ -285,16 +276,6 @@ const TransactionWaitingPage: React.FC = () => {
           {t('transactionWaiting.secureConnection')}
         </p>
       </div>
-
-      {showCompleteProfile && user && (
-        <CompleteProfileModal
-          isOpen={showCompleteProfile}
-          currentUsername={user.username}
-          currentAvatarUrl={user.avatar_url}
-          currentBio={user.bio}
-          userId={user.id}
-        />
-      )}
     </div>
   );
 };

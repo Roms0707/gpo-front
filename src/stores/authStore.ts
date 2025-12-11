@@ -4,12 +4,63 @@ import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from 
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
 import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser } from '../services/klientoAuthService';
+import { supabase } from '../lib/supabase';
 
 interface TransactionVerificationResult {
   user: User | null;
   error: string | null;
   isPending: boolean;
 }
+
+const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
+  return {
+    id: dbUser.id as string,
+    username: dbUser.username as string,
+    email: dbUser.email as string,
+    type: (dbUser.type as string) || 'gamer',
+    dateOfBirth: dbUser.date_of_birth as string | undefined,
+    hasParentalConsent: dbUser.has_parental_consent as boolean | undefined,
+    country: dbUser.country as string | undefined,
+    bio: dbUser.bio as string | null | undefined,
+    avatar_url: dbUser.avatar_url as string | null | undefined,
+    is_profile_public: dbUser.is_profile_public as boolean | undefined,
+    is_profile_completed: dbUser.is_profile_completed as boolean | undefined,
+    riot_game_name: dbUser.riot_game_name as string | null | undefined,
+    riot_tagline: dbUser.riot_tagline as string | null | undefined,
+    fortnite_epic_id: dbUser.fortnite_epic_id as string | null | undefined,
+    is_fortnite_validated: dbUser.is_fortnite_validated as boolean | undefined,
+    fortnite_validation_data: dbUser.fortnite_validation_data as Record<string, unknown> | null | undefined,
+    discord_handle: dbUser.discord_handle as string | null | undefined,
+    twitter_handle: dbUser.twitter_handle as string | null | undefined,
+    level: dbUser.level as number | undefined,
+    xp: dbUser.xp as number | undefined,
+    current_avatar_id: dbUser.current_avatar_id as string | null | undefined,
+    msisdn: dbUser.msisdn as string | undefined,
+    phone_number: dbUser.phone_number as string | undefined,
+    kliento_user_id: dbUser.kliento_user_id as string | undefined,
+    auth_provider: dbUser.auth_provider as string | undefined,
+  };
+};
+
+const fetchFreshKlientoUserData = async (klientoUserId: string): Promise<User | null> => {
+  try {
+    const { data: dbUser, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('kliento_user_id', klientoUserId)
+      .maybeSingle();
+
+    if (error || !dbUser) {
+      console.error('[AuthStore] Error fetching fresh Kliento user data:', error);
+      return null;
+    }
+
+    return mapDatabaseUserToUser(dbUser);
+  } catch (err) {
+    console.error('[AuthStore] Exception fetching fresh Kliento user data:', err);
+    return null;
+  }
+};
 
 interface AuthState {
   user: User | null;
@@ -142,9 +193,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     const klientoUser = getKlientoSession();
-    if (klientoUser) {
-      console.log('[AuthStore] Found Kliento session, setting user:', klientoUser.username, '(ID:', klientoUser.id + ')');
-      set({ user: klientoUser, isLoading: false, error: null });
+    if (klientoUser && klientoUser.kliento_user_id) {
+      console.log('[AuthStore] Found Kliento session, fetching fresh data for user:', klientoUser.username, '(ID:', klientoUser.id + ')');
+
+      const freshUser = await fetchFreshKlientoUserData(klientoUser.kliento_user_id);
+
+      if (freshUser) {
+        console.log('[AuthStore] Fresh Kliento user data retrieved:', freshUser.username, 'is_profile_completed:', freshUser.is_profile_completed);
+        setKlientoSession(freshUser);
+        set({ user: freshUser, isLoading: false, error: null });
+      } else {
+        console.log('[AuthStore] Could not fetch fresh data, using cached Kliento session');
+        set({ user: klientoUser, isLoading: false, error: null });
+      }
       return;
     }
 
