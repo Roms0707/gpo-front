@@ -2586,5 +2586,10 @@
     "editLaterNote": "Vous pourrez toujours modifier votre profil plus tard dans les parametres.",
     "profileCompletedSuccess": "Profil complete avec succes !",
     "errorCompletingProfile": "Erreur lors de la completion du profil. Veuillez reessayer."
+  },
+  "subscription": {
+    "expiredTitle": "Votre abonnement a expire",
+    "expiredMessage": "Vous n'avez plus acces a ce contenu car votre abonnement n'est plus actif. Reabonnez-vous pour acceder aux tournois, aux videos d'entrainement et aux jeux d'entrainement.",
+    "resubscribe": "Se reabonner"
   }
 }

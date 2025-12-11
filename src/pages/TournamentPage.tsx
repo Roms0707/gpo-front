@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubscriptionGuard } from '../hooks/useSubscriptionGuard';
 import { Target, Video, MessageSquare, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cancelTournamentRegistration } from '../services/api';
@@ -40,9 +41,10 @@ import { useSwipeGesture } from '../hooks/useSwipeGesture';
 const TournamentPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { checkAccess, isKliento } = useSubscriptionGuard();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const [activeTab, setActiveTab] = useState('home');
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   const [showTeamInvitePopup, setShowTeamInvitePopup] = useState(false);
@@ -317,24 +319,28 @@ const TournamentPage: React.FC = () => {
   
   const handleRegister = async () => {
     if (!user) {
-      // Redirect to login with current page as return URL
       const currentUrl = encodeURIComponent(location.pathname + location.search);
       navigate(`/login?redirect=${currentUrl}`);
       return;
     }
-    
-    // If user is already registered and trying to join a team
+
+    if (isKliento) {
+      const hasAccess = await checkAccess();
+      if (!hasAccess) {
+        return;
+      }
+    }
+
     if (registrationStatus.registered && teamIdFromUrl) {
       setShowRegistrationModal(true);
       return;
     }
-    
-    // For normal registration
+
     if (!canRegister()) {
       toast.error(t('tournamentPage.errors.cannotRegister'));
       return;
     }
-    
+
     setShowRegistrationModal(true);
   };
   

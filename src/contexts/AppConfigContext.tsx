@@ -26,6 +26,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     productId: null,
     campaignId: null,
     authMethod: 'email' as AuthMethod,
+    subscriptionRedirectUrl: null,
     tailwindPalette: null,
     legalVariables: {
       support_email: null,
@@ -83,6 +84,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       productId: config.product_id,
       campaignId: config.campaign_id,
       authMethod: (config.auth_method || 'email') as AuthMethod,
+      subscriptionRedirectUrl: config.subscription_redirect_url || null,
       tailwindPalette: palette,
       legalVariables,
       isLoading: false,

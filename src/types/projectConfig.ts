@@ -60,6 +60,7 @@ export interface ProjectConfiguration {
   phone_number?: string | null;
   registration_number?: string | null;
   auth_method?: AuthMethod;
+  subscription_redirect_url?: string | null;
 }
 
 export interface AppConfigContextState {
@@ -75,6 +76,7 @@ export interface AppConfigContextState {
   productId: string | null;
   campaignId: string | null;
   authMethod: AuthMethod;
+  subscriptionRedirectUrl: string | null;
   tailwindPalette: TailwindColorPalette | null;
   legalVariables: LegalVariables;
   isLoading: boolean;

@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, Target, Award, BookOpen, FileText, Users, Gift, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscriptionGuard } from '../../hooks/useSubscriptionGuard';
 import { APP_CONFIG } from '../../constants';
 
 interface TournamentTabsProps {
@@ -13,6 +14,8 @@ interface TournamentTabsProps {
   tournamentGameId?: string;
 }
 
+const SUBSCRIPTION_PROTECTED_TABS = ['training', 'training-games'];
+
 const TournamentTabs: React.FC<TournamentTabsProps> = ({
   activeTab,
   setActiveTab,
@@ -23,6 +26,7 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
 }) => {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { checkAccess, isKliento } = useSubscriptionGuard();
 
   // Check if current tournament game should show training games
   const shouldShowTrainingGames = tournamentGameId && (
@@ -53,6 +57,16 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
     tabs.push({ id: 'lfp', label: t('tournamentTabs.lookingForPlayers'), icon: Users });
   }
 
+  const handleTabClick = async (tabId: string) => {
+    if (isKliento && SUBSCRIPTION_PROTECTED_TABS.includes(tabId)) {
+      const hasAccess = await checkAccess();
+      if (!hasAccess) {
+        return;
+      }
+    }
+    setActiveTab(tabId);
+  };
+
   return (
     <div className="bg-white dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800 sticky top-16 z-40">
       <div className="container mx-auto px-4">
@@ -77,7 +91,7 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
             {tabs.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
-                onClick={() => setActiveTab(id)}
+                onClick={() => handleTabClick(id)}
                 className={`flex items-center py-3 sm:py-4 px-2 sm:px-4 md:px-2 border-b-2 font-medium text-xs sm:text-sm transition-all duration-200 whitespace-nowrap snap-start flex-shrink-0 ${
                   activeTab === id
                     ? 'border-primary-500 text-primary-500 scale-105'
@@ -101,7 +115,7 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
           {tabs.map(({ id }) => (
             <button
               key={`dot-${id}`}
-              onClick={() => setActiveTab(id)}
+              onClick={() => handleTabClick(id)}
               className={`w-1 h-1 rounded-full transition-all duration-200 ${
                 activeTab === id
                   ? 'bg-primary-500 w-2.5'

@@ -4,10 +4,13 @@ import Header from './Header';
 import Footer from './Footer';
 import ChatButton from '../chat/ChatButton';
 import CompleteProfileModal from '../profile/CompleteProfileModal';
+import SubscriptionExpiredModal from '../ui/SubscriptionExpiredModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubscription } from '../../contexts/SubscriptionContext';
 
 const Layout: React.FC = () => {
   const { user } = useAuth();
+  const { showSubscriptionModal, setShowSubscriptionModal, subscriptionRedirectUrl } = useSubscription();
 
   const needsProfileCompletion = user && user.is_profile_completed === false;
 
@@ -32,6 +35,13 @@ const Layout: React.FC = () => {
           userId={user.id}
         />
       )}
+
+      {/* Subscription Expired Modal - Show when Kliento user's subscription is not active */}
+      <SubscriptionExpiredModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+        redirectUrl={subscriptionRedirectUrl}
+      />
     </div>
   );
 };

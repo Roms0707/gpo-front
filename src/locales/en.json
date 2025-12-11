@@ -2586,5 +2586,10 @@
     "editLaterNote": "You can always edit your profile later in the settings.",
     "profileCompletedSuccess": "Profile completed successfully!",
     "errorCompletingProfile": "Error completing profile. Please try again."
+  },
+  "subscription": {
+    "expiredTitle": "Your subscription has expired",
+    "expiredMessage": "You no longer have access to this content because your subscription is not active. Re-subscribe to access tournaments, training videos, and training games.",
+    "resubscribe": "Re-subscribe"
   }
 }
