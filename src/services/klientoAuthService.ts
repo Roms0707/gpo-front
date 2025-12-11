@@ -210,15 +210,16 @@ export const verifyTransactionUser = async (
   offerId: string
 ): Promise<KlientoAuthResult> => {
   try {
+    const formData = new URLSearchParams();
+    formData.append('billing_transaction_id', operationId);
+    formData.append('bizoffer_id', offerId);
+
     const response = await fetch('https://userv1.dv-content.io/accountinfo/getuserbytransaction', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: JSON.stringify({
-        billing_transaction_id: operationId,
-        bizoffer_id: offerId,
-      }),
+      body: formData.toString(),
     });
 
     if (!response.ok) {
