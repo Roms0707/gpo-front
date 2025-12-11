@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import AuthLayout from '../../components/auth/AuthLayout';
 import ErrorMessage from '../../components/ui/ErrorMessage';
-import { loginWithKliento, setKlientoSession } from '../../services/klientoAuthService';
 import { useAuthStore } from '../../stores/authStore';
 
 const LoginKlientoPage: React.FC = () => {
@@ -17,7 +16,7 @@ const LoginKlientoPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { checkSession } = useAuthStore();
+  const { loginKliento } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,18 +35,18 @@ const LoginKlientoPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await loginWithKliento(username, password, productId);
+      await loginKliento(username, password, productId);
 
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
+      const { user: loggedInUser, error: loginError } = useAuthStore.getState();
+
+      if (loginError) {
+        setError(loginError);
+        toast.error(loginError);
         return;
       }
 
-      if (result.user) {
-        setKlientoSession(result.user);
+      if (loggedInUser) {
         toast.success(t('loginPage.loginSuccess'));
-        await checkSession();
         navigate('/');
       }
     } catch (err) {
