@@ -14,7 +14,7 @@ const TransactionWaitingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { loginTransactionUser } = useAuthStore();
+  const { loginTransactionUser, user } = useAuthStore();
   const { brandName, accentColor } = useAppConfig();
 
   const [status, setStatus] = useState<VerificationStatus>('verifying');
@@ -28,6 +28,12 @@ const TransactionWaitingPage: React.FC = () => {
 
   const operationId = searchParams.get('operationId');
   const offerId = searchParams.get('offerId');
+
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
 
   const clearIntervals = useCallback(() => {
     if (pollIntervalRef.current) {
