@@ -204,3 +204,65 @@ export const setKlientoSession = (user: User): void => {
 export const clearKlientoSession = (): void => {
   sessionStorage.removeItem('kliento_user');
 };
+
+export const verifyTransactionUser = async (
+  operationId: string,
+  offerId: string
+): Promise<KlientoAuthResult> => {
+  try {
+    const response = await fetch('https://userv1.dv-content.io/accountinfo/getuserbytransaction', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        billing_transaction_id: operationId,
+        bizoffer_id: offerId,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          user: null,
+          error: 'pending',
+        };
+      }
+      return {
+        user: null,
+        error: `API error: ${response.status}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.user_id) {
+      return {
+        user: null,
+        error: 'pending',
+      };
+    }
+
+    const klientoUserId = String(data.user_id);
+    const phone = data.msisdn || '';
+    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data);
+
+    if (!localUser) {
+      return {
+        user: null,
+        error: 'Failed to create local user account',
+      };
+    }
+
+    return {
+      user: localUser,
+      error: null,
+    };
+  } catch (error) {
+    console.error('[klientoAuthService] Transaction verification error:', error);
+    return {
+      user: null,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+};

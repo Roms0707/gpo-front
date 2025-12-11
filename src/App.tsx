@@ -34,6 +34,7 @@ const GameLeaderboardPage = React.lazy(() => import('./pages/GameLeaderboardPage
 const TwitchEmbedPage = React.lazy(() => import('./pages/TwitchEmbedPage'));
 const CommunitiesPage = React.lazy(() => import('./pages/CommunitiesPage'));
 const VideoPlayerPage = React.lazy(() => import('./pages/VideoPlayerPage'));
+const TransactionWaitingPage = React.lazy(() => import('./pages/TransactionWaitingPage'));
 
 // Loading fallback component
 const PageLoadingFallback = () => {
@@ -58,6 +59,13 @@ const AppContent = () => {
       </a>
 
       <Routes>
+        {/* Transaction callback page - standalone without layout */}
+        <Route path="/callback" element={
+          <Suspense fallback={<PageLoadingFallback />}>
+            <TransactionWaitingPage />
+          </Suspense>
+        } />
+
         <Route path="/" element={
           <Suspense fallback={<PageLoadingFallback />}>
             <Layout />

@@ -2235,6 +2235,24 @@
       "unexpectedDiscordSignupError": "Erreur inattendue lors de l'inscription Discord"
     }
   },
+  "transactionWaiting": {
+    "defaultBrand": "Plateforme de jeux",
+    "verifying": "Vérification de votre transaction",
+    "verifyingDescription": "Veuillez patienter pendant que nous confirmons votre paiement et configurons votre compte.",
+    "timeRemaining": "{{seconds}}s restantes",
+    "success": "Vérification réussie !",
+    "completeProfilePrompt": "Veuillez compléter votre profil pour continuer.",
+    "redirecting": "Redirection vers votre compte...",
+    "timeout": "Vérification expirée",
+    "timeoutDescription": "Nous n'avons pas pu vérifier votre transaction à temps. Veuillez réessayer ou contacter le support si le problème persiste.",
+    "retry": "Réessayer",
+    "error": "Échec de la vérification",
+    "errorDescription": "Une erreur s'est produite lors de la vérification de votre transaction.",
+    "missingParams": "Lien invalide",
+    "missingParamsDescription": "Le lien de vérification semble être incomplet ou invalide.",
+    "goToLogin": "Aller à la connexion",
+    "secureConnection": "Connexion sécurisée"
+  },
   "tournamentPage": {
     "registrationStatus": {
       "closed": "Fermées",

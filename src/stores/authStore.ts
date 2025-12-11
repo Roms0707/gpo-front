@@ -3,7 +3,13 @@ import { User } from '../types';
 import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from '../services/authService';
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
-import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession } from '../services/klientoAuthService';
+import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser } from '../services/klientoAuthService';
+
+interface TransactionVerificationResult {
+  user: User | null;
+  error: string | null;
+  isPending: boolean;
+}
 
 interface AuthState {
   user: User | null;
@@ -12,6 +18,7 @@ interface AuthState {
   showGamingStatsModal: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
+  loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
@@ -64,6 +71,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       error: result.error,
       isLoading: false
     });
+  },
+
+  loginTransactionUser: async (operationId: string, offerId: string): Promise<TransactionVerificationResult> => {
+    const result = await verifyTransactionUser(operationId, offerId);
+
+    if (result.error === 'pending') {
+      return {
+        user: null,
+        error: null,
+        isPending: true,
+      };
+    }
+
+    if (result.user) {
+      setKlientoSession(result.user);
+      set({
+        user: result.user,
+        error: null,
+        isLoading: false,
+      });
+    }
+
+    return {
+      user: result.user,
+      error: result.error,
+      isPending: false,
+    };
   },
 
   signup: async (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => {

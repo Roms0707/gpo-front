@@ -2235,6 +2235,24 @@
       "unexpectedDiscordSignupError": "Unexpected error during Discord sign up"
     }
   },
+  "transactionWaiting": {
+    "defaultBrand": "Gaming Platform",
+    "verifying": "Verifying your transaction",
+    "verifyingDescription": "Please wait while we confirm your payment and set up your account.",
+    "timeRemaining": "{{seconds}}s remaining",
+    "success": "Verification successful!",
+    "completeProfilePrompt": "Please complete your profile to continue.",
+    "redirecting": "Redirecting to your account...",
+    "timeout": "Verification timed out",
+    "timeoutDescription": "We couldn't verify your transaction in time. Please try again or contact support if the problem persists.",
+    "retry": "Try again",
+    "error": "Verification failed",
+    "errorDescription": "An error occurred while verifying your transaction.",
+    "missingParams": "Invalid link",
+    "missingParamsDescription": "The verification link appears to be incomplete or invalid.",
+    "goToLogin": "Go to login",
+    "secureConnection": "Secure connection"
+  },
   "tournamentPage": {
     "registrationStatus": {
       "closed": "Closed",
