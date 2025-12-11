@@ -237,16 +237,16 @@ export const verifyTransactionUser = async (
 
     const data = await response.json();
 
-    if (!data.user_id) {
+    if (data.code !== 200 || data.error !== 0 || !data.data?.user_id) {
       return {
         user: null,
         error: 'pending',
       };
     }
 
-    const klientoUserId = String(data.user_id);
-    const phone = data.msisdn || '';
-    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data);
+    const klientoUserId = String(data.data.user_id);
+    const phone = data.data.msisdn || '';
+    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.data);
 
     if (!localUser) {
       return {
