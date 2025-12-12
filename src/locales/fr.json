@@ -2591,5 +2591,68 @@
     "expiredTitle": "Votre abonnement a expire",
     "expiredMessage": "Vous n'avez plus acces a ce contenu car votre abonnement n'est plus actif. Reabonnez-vous pour acceder aux tournois, aux videos d'entrainement et aux jeux d'entrainement.",
     "resubscribe": "Se reabonner"
+  },
+  "contactPage": {
+    "title": "Contactez-nous",
+    "subtitle": "Notre equipe est a votre disposition pour repondre a toutes vos questions",
+    "email": {
+      "title": "Email",
+      "description": "Envoyez-nous un email directement",
+      "ariaLabel": "Envoyer un email au support"
+    },
+    "discord": {
+      "title": "Discord",
+      "description": "Rejoignez notre serveur Discord pour un support en direct",
+      "ariaLabel": "Rejoindre le serveur Discord"
+    },
+    "help": {
+      "title": "Besoin d'aide ?",
+      "description": "Consultez notre FAQ et centre d'aide pour trouver rapidement des reponses a vos questions",
+      "viewFaq": "Voir la FAQ",
+      "helpCenter": "Centre d'aide"
+    },
+    "form": {
+      "title": "Formulaire de contact",
+      "name": "Nom",
+      "email": "Email",
+      "subject": "Sujet",
+      "category": "Categorie",
+      "message": "Message",
+      "submit": "Envoyer le message",
+      "submitting": "Envoi en cours...",
+      "ariaSubmit": "Soumettre le formulaire de contact"
+    },
+    "categories": {
+      "placeholder": "Selectionnez une categorie",
+      "account": "Probleme de compte",
+      "tournament": "Question sur les tournois",
+      "technical": "Probleme technique",
+      "payment": "Paiement et recompenses",
+      "partnership": "Partenariats",
+      "other": "Autre"
+    },
+    "success": {
+      "title": "Message envoye avec succes !",
+      "description": "Merci de nous avoir contactes. Notre equipe vous repondra dans les meilleurs delais.",
+      "sendAnother": "Envoyer un autre message",
+      "backToHome": "Retour a l'accueil"
+    },
+    "faqPreview": {
+      "title": "Questions frequemment posees",
+      "subtitle": "Consultez notre FAQ pour trouver rapidement des reponses a vos questions",
+      "viewAll": "Voir toutes les questions",
+      "q1": {
+        "title": "Comment puis-je m'inscrire a un tournoi ?",
+        "description": "Procedure d'inscription et conditions de participation"
+      },
+      "q2": {
+        "title": "Comment sont verses les gains des tournois ?",
+        "description": "Informations sur le versement des recompenses"
+      },
+      "q3": {
+        "title": "Quelles sont les conditions de participation pour les mineurs ?",
+        "description": "Regles specifiques pour les joueurs de moins de 18 ans"
+      }
+    }
   }
 }

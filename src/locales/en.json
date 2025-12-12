@@ -2591,5 +2591,68 @@
     "expiredTitle": "Your subscription has expired",
     "expiredMessage": "You no longer have access to this content because your subscription is not active. Re-subscribe to access tournaments, training videos, and training games.",
     "resubscribe": "Re-subscribe"
+  },
+  "contactPage": {
+    "title": "Contact Us",
+    "subtitle": "Our team is here to answer all your questions",
+    "email": {
+      "title": "Email",
+      "description": "Send us an email directly",
+      "ariaLabel": "Send email to support"
+    },
+    "discord": {
+      "title": "Discord",
+      "description": "Join our Discord server for live support",
+      "ariaLabel": "Join Discord server"
+    },
+    "help": {
+      "title": "Need help?",
+      "description": "Check our FAQ and help center to quickly find answers to your questions",
+      "viewFaq": "View FAQ",
+      "helpCenter": "Help Center"
+    },
+    "form": {
+      "title": "Contact Form",
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject",
+      "category": "Category",
+      "message": "Message",
+      "submit": "Send message",
+      "submitting": "Sending...",
+      "ariaSubmit": "Submit contact form"
+    },
+    "categories": {
+      "placeholder": "Select a category",
+      "account": "Account issue",
+      "tournament": "Tournament question",
+      "technical": "Technical issue",
+      "payment": "Payment and rewards",
+      "partnership": "Partnerships",
+      "other": "Other"
+    },
+    "success": {
+      "title": "Message sent successfully!",
+      "description": "Thank you for contacting us. Our team will respond as soon as possible.",
+      "sendAnother": "Send another message",
+      "backToHome": "Back to home"
+    },
+    "faqPreview": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Check our FAQ to quickly find answers to your questions",
+      "viewAll": "View all questions",
+      "q1": {
+        "title": "How can I register for a tournament?",
+        "description": "Registration procedure and participation requirements"
+      },
+      "q2": {
+        "title": "How are tournament winnings paid out?",
+        "description": "Information about reward payments"
+      },
+      "q3": {
+        "title": "What are the participation requirements for minors?",
+        "description": "Specific rules for players under 18"
+      }
+    }
   }
 }
