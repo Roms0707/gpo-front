@@ -2654,5 +2654,103 @@
         "description": "Regles specifiques pour les joueurs de moins de 18 ans"
       }
     }
+  },
+  "termsPage": {
+    "title": "Conditions Generales d'Utilisation",
+    "intro": "Bienvenue sur {{brandName}}. Les presentes Conditions Generales d'Utilisation regissent votre acces et utilisation de notre plateforme. En utilisant nos services, vous acceptez d'etre lie par ces conditions.",
+    "section1": {
+      "title": "1. Definitions",
+      "platform": "\"Plateforme\" designe le site web {{brandName}} et toutes ses sous-sections.",
+      "user": "\"Utilisateur\" designe toute personne qui accede a la Plateforme, qu'elle soit inscrite ou non.",
+      "participant": "\"Participant\" designe tout Utilisateur inscrit qui participe ou souhaite participer a un tournoi.",
+      "account": "\"Compte\" designe l'espace personnel cree par l'Utilisateur inscrit sur la Plateforme.",
+      "tournament": "\"Tournoi\" designe toute competition organisee via la Plateforme.",
+      "content": "\"Contenu\" designe l'ensemble des elements presents sur la Plateforme (textes, images, logos, codes, etc.)."
+    },
+    "section2": {
+      "title": "2. Inscription et Compte",
+      "sub1": {
+        "title": "2.1 Conditions d'inscription",
+        "content": "L'inscription a la Plateforme est ouverte a toute personne physique. Les personnes mineures doivent obtenir l'autorisation prealable de leurs parents ou representants legaux. Un accord parental signe est requis pour les utilisateurs de moins de 18 ans."
+      },
+      "sub2": {
+        "title": "2.2 Processus d'inscription",
+        "content": "Lors de son inscription, l'Utilisateur doit fournir des informations exactes, completes et a jour. Il s'engage a mettre a jour regulierement ces informations si necessaire."
+      },
+      "sub3": {
+        "title": "2.3 Securite du compte",
+        "content": "L'Utilisateur est seul responsable de la preservation de la confidentialite de son identifiant et de son mot de passe, ainsi que de toutes les activites qui se deroulent sur son Compte. L'Utilisateur doit immediatement informer {{brandName}} de toute utilisation non autorisee de son Compte."
+      }
+    },
+    "section3": {
+      "title": "3. Participation aux Tournois",
+      "sub1": {
+        "title": "3.1 Conditions de participation",
+        "content": "La participation aux Tournois est soumise aux conditions specifiques de chaque Tournoi, qui peuvent inclure des restrictions d'age, de pays de residence, et d'autres criteres. Ces conditions sont precisees sur la page du Tournoi concerne."
+      },
+      "sub2": {
+        "title": "3.2 Comportement des participants",
+        "content": "Les Participants s'engagent a adopter un comportement respectueux et fair-play. Toute forme de triche, de comportement antisportif, de discours haineux ou de harcelement est strictement interdite et peut entrainer une exclusion immediate."
+      },
+      "sub3": {
+        "title": "3.3 Responsabilite technique",
+        "content": "Les Participants sont responsables de leur propre materiel et connexion internet. {{brandName}} ne pourra etre tenue responsable des problemes techniques individuels rencontres par les Participants."
+      },
+      "sub4": {
+        "title": "3.4 Droit a l'image",
+        "content": "En participant a un Tournoi, le Participant autorise {{brandName}} a utiliser son nom, son pseudonyme et son image pour la promotion des Tournois et de la Plateforme, sans remuneration supplementaire."
+      }
+    },
+    "section4": {
+      "title": "4. Recompenses et Gains",
+      "sub1": {
+        "title": "4.1 Attribution des recompenses",
+        "content": "Les recompenses sont attribuees conformement aux regles specifiques de chaque Tournoi. {{brandName}} se reserve le droit de verifier l'identite et l'eligibilite des gagnants avant de decerner les prix."
+      },
+      "sub2": {
+        "title": "4.2 Modalites de versement",
+        "content": "Les modalites de versement des recompenses sont precisees dans les regles de chaque Tournoi. Les delais de versement peuvent varier selon la nature du prix et les contraintes administratives."
+      },
+      "sub3": {
+        "title": "4.3 Responsabilite fiscale",
+        "content": "Il appartient aux gagnants de declarer leurs gains conformement a la legislation fiscale en vigueur dans leur pays de residence. {{brandName}} n'assume aucune responsabilite quant aux obligations fiscales des Participants."
+      }
+    },
+    "section5": {
+      "title": "5. Propriete intellectuelle",
+      "sub1": {
+        "title": "5.1 Contenu de la Plateforme",
+        "content": "L'ensemble du Contenu present sur la Plateforme (textes, images, logos, codes, etc.) est protege par des droits de propriete intellectuelle et appartient a {{companyName}} ou a ses partenaires. Toute reproduction non autorisee est interdite."
+      },
+      "sub2": {
+        "title": "5.2 Licence limitee",
+        "content": "{{companyName}} accorde a l'Utilisateur une licence limitee, non exclusive et non transferable pour acceder et utiliser la Plateforme a des fins personnelles et non commerciales."
+      }
+    },
+    "section6": {
+      "title": "6. Protection des donnees personnelles",
+      "content": "La collecte et le traitement des donnees personnelles des Utilisateurs sont regis par notre Politique de Confidentialite, accessible",
+      "linkText": "ici"
+    },
+    "section7": {
+      "title": "7. Limitation de responsabilite",
+      "content": "{{brandName}} s'efforce d'assurer au mieux l'acces et le fonctionnement de la Plateforme, mais ne peut garantir que son fonctionnement sera ininterrompu et sans erreur. {{brandName}} ne saurait etre tenue responsable des dommages directs ou indirects resultant de l'utilisation de la Plateforme."
+    },
+    "section8": {
+      "title": "8. Modification des services et des conditions",
+      "content": "{{brandName}} se reserve le droit de modifier, suspendre ou interrompre tout ou partie des services proposes sur la Plateforme, ainsi que de modifier les presentes Conditions Generales d'Utilisation a tout moment. Les Utilisateurs seront informes de toute modification substantielle."
+    },
+    "section9": {
+      "title": "9. Resiliation",
+      "content": "{{brandName}} se reserve le droit de suspendre ou de resilier l'acces d'un Utilisateur a la Plateforme en cas de violation des presentes Conditions Generales d'Utilisation, sans preavis ni indemnite."
+    },
+    "section10": {
+      "title": "10. Droit applicable et juridiction competente",
+      "content": "Les presentes Conditions Generales d'Utilisation sont regies par le droit francais. Tout litige relatif a leur interpretation ou a leur execution relevera, a defaut de resolution amiable, de la competence exclusive des tribunaux francais."
+    },
+    "section11": {
+      "title": "11. Contact",
+      "content": "Pour toute question relative aux presentes Conditions Generales d'Utilisation, vous pouvez contacter {{brandName}} a l'adresse email suivante : {{legalEmail}}."
+    }
   }
 }

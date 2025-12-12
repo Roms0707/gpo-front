@@ -2654,5 +2654,103 @@
         "description": "Specific rules for players under 18"
       }
     }
+  },
+  "termsPage": {
+    "title": "Terms of Use",
+    "intro": "Welcome to {{brandName}}. These Terms of Use govern your access and use of our platform. By using our services, you agree to be bound by these terms.",
+    "section1": {
+      "title": "1. Definitions",
+      "platform": "\"Platform\" refers to the {{brandName}} website and all its sub-sections.",
+      "user": "\"User\" refers to any person who accesses the Platform, whether registered or not.",
+      "participant": "\"Participant\" refers to any registered User who participates or wishes to participate in a tournament.",
+      "account": "\"Account\" refers to the personal space created by the registered User on the Platform.",
+      "tournament": "\"Tournament\" refers to any competition organized through the Platform.",
+      "content": "\"Content\" refers to all elements present on the Platform (texts, images, logos, codes, etc.)."
+    },
+    "section2": {
+      "title": "2. Registration and Account",
+      "sub1": {
+        "title": "2.1 Registration conditions",
+        "content": "Registration on the Platform is open to any natural person. Minors must obtain prior authorization from their parents or legal representatives. A signed parental consent is required for users under 18 years of age."
+      },
+      "sub2": {
+        "title": "2.2 Registration process",
+        "content": "During registration, the User must provide accurate, complete and up-to-date information. They commit to regularly updating this information if necessary."
+      },
+      "sub3": {
+        "title": "2.3 Account security",
+        "content": "The User is solely responsible for maintaining the confidentiality of their username and password, as well as all activities that occur on their Account. The User must immediately inform {{brandName}} of any unauthorized use of their Account."
+      }
+    },
+    "section3": {
+      "title": "3. Tournament Participation",
+      "sub1": {
+        "title": "3.1 Participation conditions",
+        "content": "Participation in Tournaments is subject to the specific conditions of each Tournament, which may include age restrictions, country of residence, and other criteria. These conditions are specified on the relevant Tournament page."
+      },
+      "sub2": {
+        "title": "3.2 Participant behavior",
+        "content": "Participants commit to adopting respectful and fair-play behavior. Any form of cheating, unsportsmanlike conduct, hate speech or harassment is strictly prohibited and may result in immediate exclusion."
+      },
+      "sub3": {
+        "title": "3.3 Technical responsibility",
+        "content": "Participants are responsible for their own equipment and internet connection. {{brandName}} cannot be held responsible for individual technical problems encountered by Participants."
+      },
+      "sub4": {
+        "title": "3.4 Image rights",
+        "content": "By participating in a Tournament, the Participant authorizes {{brandName}} to use their name, username and image for the promotion of Tournaments and the Platform, without additional compensation."
+      }
+    },
+    "section4": {
+      "title": "4. Rewards and Winnings",
+      "sub1": {
+        "title": "4.1 Award of rewards",
+        "content": "Rewards are awarded in accordance with the specific rules of each Tournament. {{brandName}} reserves the right to verify the identity and eligibility of winners before awarding prizes."
+      },
+      "sub2": {
+        "title": "4.2 Payment terms",
+        "content": "The payment terms for rewards are specified in the rules of each Tournament. Payment delays may vary depending on the nature of the prize and administrative constraints."
+      },
+      "sub3": {
+        "title": "4.3 Tax responsibility",
+        "content": "It is the responsibility of winners to declare their winnings in accordance with the tax legislation in force in their country of residence. {{brandName}} assumes no responsibility for the tax obligations of Participants."
+      }
+    },
+    "section5": {
+      "title": "5. Intellectual Property",
+      "sub1": {
+        "title": "5.1 Platform content",
+        "content": "All Content present on the Platform (texts, images, logos, codes, etc.) is protected by intellectual property rights and belongs to {{companyName}} or its partners. Any unauthorized reproduction is prohibited."
+      },
+      "sub2": {
+        "title": "5.2 Limited license",
+        "content": "{{companyName}} grants the User a limited, non-exclusive and non-transferable license to access and use the Platform for personal and non-commercial purposes."
+      }
+    },
+    "section6": {
+      "title": "6. Personal Data Protection",
+      "content": "The collection and processing of Users' personal data is governed by our Privacy Policy, accessible",
+      "linkText": "here"
+    },
+    "section7": {
+      "title": "7. Limitation of Liability",
+      "content": "{{brandName}} strives to ensure the best possible access and operation of the Platform, but cannot guarantee that its operation will be uninterrupted and error-free. {{brandName}} cannot be held responsible for direct or indirect damages resulting from the use of the Platform."
+    },
+    "section8": {
+      "title": "8. Modification of Services and Terms",
+      "content": "{{brandName}} reserves the right to modify, suspend or discontinue all or part of the services offered on the Platform, as well as to modify these Terms of Use at any time. Users will be informed of any substantial modification."
+    },
+    "section9": {
+      "title": "9. Termination",
+      "content": "{{brandName}} reserves the right to suspend or terminate a User's access to the Platform in case of violation of these Terms of Use, without notice or compensation."
+    },
+    "section10": {
+      "title": "10. Applicable Law and Jurisdiction",
+      "content": "These Terms of Use are governed by French law. Any dispute relating to their interpretation or execution shall, failing amicable resolution, fall under the exclusive jurisdiction of the French courts."
+    },
+    "section11": {
+      "title": "11. Contact",
+      "content": "For any questions regarding these Terms of Use, you can contact {{brandName}} at the following email address: {{legalEmail}}."
+    }
   }
 }
