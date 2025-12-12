@@ -57,30 +57,19 @@ export const checkKlientoSubscription = async (
   productId: string
 ): Promise<{ isSubscribed: boolean; isSuspended: boolean; error: string | null }> => {
   try {
-    // TEMPORARILY DISABLED: Cache lookup - uncomment to re-enable
-    // const cached = getCachedSubscriptionStatus(klientoUserId);
-    // if (cached) {
-    //   console.log('[subscriptionService] CACHE HIT:', cached);
-    //   return {
-    //     isSubscribed: cached.isSubscribed,
-    //     isSuspended: cached.isSuspended,
-    //     error: null,
-    //   };
-    // }
+    const cached = getCachedSubscriptionStatus(klientoUserId);
+    if (cached) {
+      return {
+        isSubscribed: cached.isSubscribed,
+        isSuspended: cached.isSuspended,
+        error: null,
+      };
+    }
 
     const formData = new URLSearchParams();
     formData.append('user_id', klientoUserId);
     formData.append('product_id', productId);
     formData.append('service_id', productId);
-
-    console.log('[subscriptionService] === API CALL START ===');
-    console.log('[subscriptionService] URL: https://userv1.dv-content.io/accountinfo/all');
-    console.log('[subscriptionService] Request payload:', {
-      user_id: klientoUserId,
-      product_id: productId,
-      service_id: productId,
-    });
-    console.log('[subscriptionService] Raw body:', formData.toString());
 
     const response = await fetch('https://userv1.dv-content.io/accountinfo/all', {
       method: 'POST',
@@ -90,11 +79,7 @@ export const checkKlientoSubscription = async (
       body: formData.toString(),
     });
 
-    console.log('[subscriptionService] Response status:', response.status);
-    console.log('[subscriptionService] Response ok:', response.ok);
-
     if (!response.ok) {
-      console.error('[subscriptionService] API error:', response.status);
       return {
         isSubscribed: true,
         isSuspended: false,
@@ -104,11 +89,7 @@ export const checkKlientoSubscription = async (
 
     const data: KlientoAccountInfoResponse = await response.json();
 
-    console.log('[subscriptionService] Raw API response:', JSON.stringify(data, null, 2));
-    console.log('[subscriptionService] === API CALL END ===');
-
     if (data.code !== 200 || data.error !== 0 || !data.data || data.data.length === 0) {
-      console.warn('[subscriptionService] Invalid response format or no data');
       return {
         isSubscribed: true,
         isSuspended: false,
@@ -120,19 +101,11 @@ export const checkKlientoSubscription = async (
     const isSubscribed = accountInfo.subscribed === true;
     const isSuspended = accountInfo.suspended === true;
 
-    // TEMPORARILY DISABLED: Cache storage - uncomment to re-enable
-    // subscriptionCache.set(klientoUserId, {
-    //   userId: klientoUserId,
-    //   isSubscribed,
-    //   isSuspended,
-    //   lastCheckedAt: Date.now(),
-    // });
-
-    console.log('[subscriptionService] Subscription status:', {
+    subscriptionCache.set(klientoUserId, {
       userId: klientoUserId,
       isSubscribed,
       isSuspended,
-      isActive: isSubscribed && !isSuspended,
+      lastCheckedAt: Date.now(),
     });
 
     return {
