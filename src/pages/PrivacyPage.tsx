@@ -1,202 +1,166 @@
 import React from 'react';
 import { Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import LegalContentLayout from '../components/layout/LegalContentLayout';
 import { useLegalVariables } from '../hooks/useLegalVariables';
 import { useAppConfig } from '../contexts/AppConfigContext';
 
 const PrivacyPage: React.FC = () => {
+  const { t } = useTranslation();
   const legalVars = useLegalVariables();
   const { brandName } = useAppConfig();
+  const companyName = legalVars.getCompanyName();
+  const companyAddress = legalVars.getCompanyAddress();
+  const phoneNumber = legalVars.getPhoneNumber();
+  const privacyEmail = legalVars.getPrivacyEmail();
 
   return (
     <LegalContentLayout
-      title="Politique de Confidentialité"
+      title={t('privacyPage.title')}
       icon={<Shield className="h-6 w-6 text-primary-500 mr-3" />}
     >
-      <h2>1. Collecte des données personnelles</h2>
-      <h3>1.1 Données que vous nous fournissez</h3>
-      <p>
-        Nous collectons les informations que vous nous fournissez directement lorsque vous :
-      </p>
+      <h2>{t('privacyPage.section1.title')}</h2>
+      <h3>{t('privacyPage.section1.sub1.title')}</h3>
+      <p>{t('privacyPage.section1.sub1.intro')}</p>
       <ul>
-        <li>Créez un compte (nom d'utilisateur, adresse email, date de naissance, pays)</li>
-        <li>Complétez votre profil (avatar, biographie, liens sociaux)</li>
-        <li>Participez à des tournois (identifiants de jeu, informations d'équipe)</li>
-        <li>Nous contactez via notre formulaire ou par email</li>
-        <li>Pour les mineurs : document d'accord parental</li>
-      </ul>
-      
-      <h3>1.2 Données collectées automatiquement</h3>
-      <p>
-        Lorsque vous utilisez notre plateforme, nous collectons automatiquement certaines informations techniques :
-      </p>
-      <ul>
-        <li>Adresse IP et données de localisation approximative</li>
-        <li>Type d'appareil, navigateur et système d'exploitation</li>
-        <li>Pages consultées et activités sur la plateforme</li>
-        <li>Cookies et technologies similaires (voir notre Politique de Cookies)</li>
+        <li>{t('privacyPage.section1.sub1.items.account')}</li>
+        <li>{t('privacyPage.section1.sub1.items.profile')}</li>
+        <li>{t('privacyPage.section1.sub1.items.tournaments')}</li>
+        <li>{t('privacyPage.section1.sub1.items.contact')}</li>
+        <li>{t('privacyPage.section1.sub1.items.minors')}</li>
       </ul>
 
-      <h2>2. Utilisation des données</h2>
-      <p>
-        Nous utilisons vos données personnelles pour les finalités suivantes :
-      </p>
-      
-      <h3>2.1 Fourniture de nos services</h3>
+      <h3>{t('privacyPage.section1.sub2.title')}</h3>
+      <p>{t('privacyPage.section1.sub2.intro')}</p>
       <ul>
-        <li>Gérer votre compte et votre profil</li>
-        <li>Permettre votre participation aux tournois</li>
-        <li>Vérifier votre éligibilité (âge, pays, etc.)</li>
-        <li>Vous mettre en relation avec d'autres joueurs et équipes</li>
-        <li>Distribuer les récompenses aux gagnants</li>
-      </ul>
-      
-      <h3>2.2 Communication</h3>
-      <ul>
-        <li>Vous envoyer des notifications concernant vos tournois et matchs</li>
-        <li>Répondre à vos demandes et questions</li>
-        <li>Vous informer des changements de nos services</li>
-        <li>Avec votre consentement, vous envoyer des newsletters et communications marketing</li>
-      </ul>
-      
-      <h3>2.3 Amélioration et sécurité</h3>
-      <ul>
-        <li>Améliorer notre plateforme et nos services</li>
-        <li>Analyser l'utilisation de nos services</li>
-        <li>Détecter et prévenir les activités frauduleuses ou abusives</li>
-        <li>Résoudre les problèmes techniques</li>
+        <li>{t('privacyPage.section1.sub2.items.ip')}</li>
+        <li>{t('privacyPage.section1.sub2.items.device')}</li>
+        <li>{t('privacyPage.section1.sub2.items.pages')}</li>
+        <li>{t('privacyPage.section1.sub2.items.cookies')}</li>
       </ul>
 
-      <h2>3. Base légale du traitement</h2>
-      <p>
-        Nous traitons vos données personnelles sur les bases légales suivantes :
-      </p>
+      <h2>{t('privacyPage.section2.title')}</h2>
+      <p>{t('privacyPage.section2.intro')}</p>
+
+      <h3>{t('privacyPage.section2.sub1.title')}</h3>
       <ul>
-        <li><strong>Exécution du contrat :</strong> Le traitement est nécessaire à l'exécution de notre contrat avec vous (nos Conditions Générales d'Utilisation).</li>
-        <li><strong>Consentement :</strong> Vous nous avez donné votre consentement pour certains traitements spécifiques (par exemple, pour les communications marketing).</li>
-        <li><strong>Intérêts légitimes :</strong> Le traitement est nécessaire aux fins de nos intérêts légitimes (améliorer nos services, assurer la sécurité) sans porter atteinte à vos droits fondamentaux.</li>
-        <li><strong>Obligations légales :</strong> Le traitement est nécessaire pour respecter une obligation légale à laquelle nous sommes soumis.</li>
+        <li>{t('privacyPage.section2.sub1.items.account')}</li>
+        <li>{t('privacyPage.section2.sub1.items.participation')}</li>
+        <li>{t('privacyPage.section2.sub1.items.eligibility')}</li>
+        <li>{t('privacyPage.section2.sub1.items.connect')}</li>
+        <li>{t('privacyPage.section2.sub1.items.rewards')}</li>
       </ul>
 
-      <h2>4. Partage des données</h2>
-      <h3>4.1 Avec votre consentement</h3>
-      <p>
-        Certaines de vos informations (nom d'utilisateur, performances dans les tournois) peuvent être rendues publiques dans le cadre de votre participation à nos tournois.
-      </p>
-      
-      <h3>4.2 Prestataires de services</h3>
-      <p>
-        Nous partageons des données avec des prestataires de services tiers qui nous aident à fournir et améliorer nos services :
-      </p>
+      <h3>{t('privacyPage.section2.sub2.title')}</h3>
       <ul>
-        <li>Hébergement et infrastructure cloud</li>
-        <li>Services de paiement pour la distribution des récompenses</li>
-        <li>Outils d'analyse et de lutte contre la fraude</li>
-        <li>Services de support client</li>
-      </ul>
-      <p>
-        Ces prestataires sont contractuellement tenus de protéger vos données et de ne les utiliser que pour les finalités spécifiées.
-      </p>
-
-      <h3>4.3 Exigences légales</h3>
-      <p>
-        Nous pouvons divulguer vos informations si nous sommes légalement tenus de le faire ou si nous croyons de bonne foi que cela est nécessaire pour :
-      </p>
-      <ul>
-        <li>Respecter une obligation légale, réglementaire ou judiciaire</li>
-        <li>Protéger les droits, la propriété ou la sécurité de {brandName}, de nos utilisateurs ou du public</li>
+        <li>{t('privacyPage.section2.sub2.items.notifications')}</li>
+        <li>{t('privacyPage.section2.sub2.items.respond')}</li>
+        <li>{t('privacyPage.section2.sub2.items.inform')}</li>
+        <li>{t('privacyPage.section2.sub2.items.marketing')}</li>
       </ul>
 
-      <h2>5. Transferts internationaux</h2>
-      <p>
-        Nous pouvons transférer vos données personnelles vers des pays situés en dehors de l'Union Européenne ou de votre pays de résidence. Dans ce cas, nous nous assurons que ces transferts sont encadrés par des garanties appropriées conformément aux réglementations applicables en matière de protection des données.
-      </p>
-
-      <h2>6. Conservation des données</h2>
-      <p>
-        Nous conservons vos données personnelles aussi longtemps que nécessaire pour fournir nos services et atteindre les finalités décrites dans cette politique. Les périodes de conservation spécifiques dépendent du type de données et de leur finalité :
-      </p>
+      <h3>{t('privacyPage.section2.sub3.title')}</h3>
       <ul>
-        <li>Données de compte : Aussi longtemps que votre compte est actif</li>
-        <li>Données de participation aux tournois : 3 ans après la fin du tournoi</li>
-        <li>Documents d'accord parental : Jusqu'à la majorité du joueur + 1 an</li>
-        <li>Communications avec le support : 2 ans après la résolution de la demande</li>
+        <li>{t('privacyPage.section2.sub3.items.improve')}</li>
+        <li>{t('privacyPage.section2.sub3.items.analyze')}</li>
+        <li>{t('privacyPage.section2.sub3.items.detect')}</li>
+        <li>{t('privacyPage.section2.sub3.items.resolve')}</li>
       </ul>
-      <p>
-        Au-delà de ces périodes, vos données sont soit supprimées, soit anonymisées.
-      </p>
 
-      <h2>7. Sécurité des données</h2>
-      <p>
-        Nous mettons en œuvre des mesures de sécurité techniques et organisationnelles appropriées pour protéger vos données personnelles contre l'accès non autorisé, la perte, l'altération ou la destruction accidentelle. Ces mesures comprennent, sans s'y limiter :
-      </p>
+      <h2>{t('privacyPage.section3.title')}</h2>
+      <p>{t('privacyPage.section3.intro')}</p>
       <ul>
-        <li>Chiffrement des données sensibles</li>
-        <li>Contrôles d'accès stricts</li>
-        <li>Audits de sécurité réguliers</li>
-        <li>Formation de notre personnel</li>
+        <li><strong>{t('privacyPage.section3.items.contract')}</strong></li>
+        <li><strong>{t('privacyPage.section3.items.consent')}</strong></li>
+        <li><strong>{t('privacyPage.section3.items.legitimate')}</strong></li>
+        <li><strong>{t('privacyPage.section3.items.legal')}</strong></li>
       </ul>
-      <p>
-        Cependant, aucun système de sécurité n'est infaillible, et nous ne pouvons garantir la sécurité absolue de vos données.
-      </p>
 
-      <h2>8. Vos droits</h2>
-      <p>
-        Conformément aux lois applicables sur la protection des données, vous disposez des droits suivants :
-      </p>
+      <h2>{t('privacyPage.section4.title')}</h2>
+      <h3>{t('privacyPage.section4.sub1.title')}</h3>
+      <p>{t('privacyPage.section4.sub1.content')}</p>
+
+      <h3>{t('privacyPage.section4.sub2.title')}</h3>
+      <p>{t('privacyPage.section4.sub2.intro')}</p>
       <ul>
-        <li><strong>Droit d'accès :</strong> Vous pouvez demander une copie des données personnelles que nous détenons à votre sujet.</li>
-        <li><strong>Droit de rectification :</strong> Vous pouvez demander la correction de vos données si elles sont inexactes ou incomplètes.</li>
-        <li><strong>Droit à l'effacement :</strong> Vous pouvez demander la suppression de vos données dans certaines circonstances.</li>
-        <li><strong>Droit à la limitation du traitement :</strong> Vous pouvez demander la restriction du traitement de vos données.</li>
-        <li><strong>Droit à la portabilité :</strong> Vous pouvez demander le transfert de vos données dans un format structuré.</li>
-        <li><strong>Droit d'opposition :</strong> Vous pouvez vous opposer au traitement de vos données, notamment à des fins de marketing direct.</li>
-        <li><strong>Droit de retirer votre consentement :</strong> Lorsque le traitement est basé sur votre consentement.</li>
+        <li>{t('privacyPage.section4.sub2.items.hosting')}</li>
+        <li>{t('privacyPage.section4.sub2.items.payment')}</li>
+        <li>{t('privacyPage.section4.sub2.items.analytics')}</li>
+        <li>{t('privacyPage.section4.sub2.items.support')}</li>
       </ul>
-      <p>
-        Pour exercer ces droits, veuillez nous contacter à privacy@esportzone.com. Nous répondrons à votre demande dans un délai d'un mois, sauf circonstances exceptionnelles.
-      </p>
+      <p>{t('privacyPage.section4.sub2.outro')}</p>
 
-      <h2>9. Politique relative aux mineurs</h2>
-      <p>
-        Notre plateforme est accessible aux mineurs de plus de 13 ans avec les restrictions suivantes :
-      </p>
+      <h3>{t('privacyPage.section4.sub3.title')}</h3>
+      <p>{t('privacyPage.section4.sub3.intro')}</p>
       <ul>
-        <li>Les mineurs de moins de 18 ans doivent obtenir l'autorisation de leurs parents ou tuteurs légaux</li>
-        <li>Un document d'accord parental signé est requis lors de l'inscription</li>
-        <li>Certains tournois peuvent avoir des restrictions d'âge supplémentaires</li>
+        <li>{t('privacyPage.section4.sub3.items.legal')}</li>
+        <li>{t('privacyPage.section4.sub3.items.protect', { brandName })}</li>
       </ul>
-      <p>
-        Nous prenons des mesures particulières pour protéger la vie privée des mineurs et nous ne collectons pas délibérément plus de données que nécessaire pour fournir nos services.
-      </p>
 
-      <h2>10. Cookies et technologies similaires</h2>
-      <p>
-        Nous utilisons des cookies et technologies similaires pour améliorer votre expérience, analyser l'utilisation de notre plateforme et personnaliser le contenu. Pour plus d'informations sur notre utilisation des cookies, veuillez consulter notre Politique de Cookies.
-      </p>
+      <h2>{t('privacyPage.section5.title')}</h2>
+      <p>{t('privacyPage.section5.content')}</p>
 
-      <h2>11. Modifications de cette politique</h2>
-      <p>
-        Nous pouvons modifier cette Politique de Confidentialité de temps à autre. Les modifications entreront en vigueur dès la publication de la version mise à jour. Nous vous informerons de toute modification substantielle par email ou par notification sur notre plateforme.
-      </p>
+      <h2>{t('privacyPage.section6.title')}</h2>
+      <p>{t('privacyPage.section6.intro')}</p>
+      <ul>
+        <li>{t('privacyPage.section6.items.account')}</li>
+        <li>{t('privacyPage.section6.items.tournament')}</li>
+        <li>{t('privacyPage.section6.items.parental')}</li>
+        <li>{t('privacyPage.section6.items.support')}</li>
+      </ul>
+      <p>{t('privacyPage.section6.outro')}</p>
 
-      <h2>12. Contact</h2>
+      <h2>{t('privacyPage.section7.title')}</h2>
+      <p>{t('privacyPage.section7.intro')}</p>
+      <ul>
+        <li>{t('privacyPage.section7.items.encryption')}</li>
+        <li>{t('privacyPage.section7.items.access')}</li>
+        <li>{t('privacyPage.section7.items.audits')}</li>
+        <li>{t('privacyPage.section7.items.training')}</li>
+      </ul>
+      <p>{t('privacyPage.section7.outro')}</p>
+
+      <h2>{t('privacyPage.section8.title')}</h2>
+      <p>{t('privacyPage.section8.intro')}</p>
+      <ul>
+        <li><strong>{t('privacyPage.section8.items.access')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.rectification')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.erasure')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.restriction')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.portability')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.objection')}</strong></li>
+        <li><strong>{t('privacyPage.section8.items.withdraw')}</strong></li>
+      </ul>
+      <p>{t('privacyPage.section8.contact')}</p>
+
+      <h2>{t('privacyPage.section9.title')}</h2>
+      <p>{t('privacyPage.section9.intro')}</p>
+      <ul>
+        <li>{t('privacyPage.section9.items.authorization')}</li>
+        <li>{t('privacyPage.section9.items.document')}</li>
+        <li>{t('privacyPage.section9.items.restrictions')}</li>
+      </ul>
+      <p>{t('privacyPage.section9.outro')}</p>
+
+      <h2>{t('privacyPage.section10.title')}</h2>
+      <p>{t('privacyPage.section10.content')}</p>
+
+      <h2>{t('privacyPage.section11.title')}</h2>
+      <p>{t('privacyPage.section11.content')}</p>
+
+      <h2>{t('privacyPage.section12.title')}</h2>
+      <p>{t('privacyPage.section12.intro')}</p>
       <p>
-        Si vous avez des questions concernant cette Politique de Confidentialité ou la manière dont nous traitons vos données, veuillez nous contacter à :
-      </p>
-      <p>
-        <strong>Société :</strong> {legalVars.getCompanyName()}<br />
-        <strong>Adresse :</strong> {legalVars.getCompanyAddress()}<br />
-        {legalVars.getPhoneNumber() && (
+        <strong>{t('privacyPage.section12.company')}:</strong> {companyName}<br />
+        <strong>{t('privacyPage.section12.address')}:</strong> {companyAddress}<br />
+        {phoneNumber && (
           <>
-            <strong>Téléphone :</strong> {legalVars.getPhoneNumber()}<br />
+            <strong>{t('privacyPage.section12.phone')}:</strong> {phoneNumber}<br />
           </>
         )}
-        <strong>Email :</strong> {legalVars.getPrivacyEmail()}
+        <strong>{t('privacyPage.section12.email')}:</strong> {privacyEmail}
       </p>
-      <p>
-        Si vous n'êtes pas satisfait de notre réponse, vous avez le droit de déposer une plainte auprès de l'autorité de protection des données de votre pays de résidence.
-      </p>
+      <p>{t('privacyPage.section12.complaint')}</p>
     </LegalContentLayout>
   );
 }

@@ -2752,5 +2752,167 @@
       "title": "11. Contact",
       "content": "For any questions regarding these Terms of Use, you can contact {{brandName}} at the following email address: {{legalEmail}}."
     }
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "section1": {
+      "title": "1. Collection of Personal Data",
+      "sub1": {
+        "title": "1.1 Data you provide to us",
+        "intro": "We collect information that you provide directly to us when you:",
+        "items": {
+          "account": "Create an account (username, email address, date of birth, country)",
+          "profile": "Complete your profile (avatar, biography, social links)",
+          "tournaments": "Participate in tournaments (game IDs, team information)",
+          "contact": "Contact us via our form or by email",
+          "minors": "For minors: parental consent document"
+        }
+      },
+      "sub2": {
+        "title": "1.2 Data collected automatically",
+        "intro": "When you use our platform, we automatically collect certain technical information:",
+        "items": {
+          "ip": "IP address and approximate location data",
+          "device": "Device type, browser and operating system",
+          "pages": "Pages viewed and activities on the platform",
+          "cookies": "Cookies and similar technologies (see our Cookie Policy)"
+        }
+      }
+    },
+    "section2": {
+      "title": "2. Use of Data",
+      "intro": "We use your personal data for the following purposes:",
+      "sub1": {
+        "title": "2.1 Providing our services",
+        "items": {
+          "account": "Manage your account and profile",
+          "participation": "Enable your participation in tournaments",
+          "eligibility": "Verify your eligibility (age, country, etc.)",
+          "connect": "Connect you with other players and teams",
+          "rewards": "Distribute rewards to winners"
+        }
+      },
+      "sub2": {
+        "title": "2.2 Communication",
+        "items": {
+          "notifications": "Send you notifications about your tournaments and matches",
+          "respond": "Respond to your requests and questions",
+          "inform": "Inform you of changes to our services",
+          "marketing": "With your consent, send you newsletters and marketing communications"
+        }
+      },
+      "sub3": {
+        "title": "2.3 Improvement and security",
+        "items": {
+          "improve": "Improve our platform and services",
+          "analyze": "Analyze the use of our services",
+          "detect": "Detect and prevent fraudulent or abusive activities",
+          "resolve": "Resolve technical issues"
+        }
+      }
+    },
+    "section3": {
+      "title": "3. Legal Basis for Processing",
+      "intro": "We process your personal data on the following legal bases:",
+      "items": {
+        "contract": "Contract execution: Processing is necessary for the execution of our contract with you (our Terms of Use).",
+        "consent": "Consent: You have given us your consent for certain specific processing (for example, for marketing communications).",
+        "legitimate": "Legitimate interests: Processing is necessary for our legitimate interests (improving our services, ensuring security) without prejudice to your fundamental rights.",
+        "legal": "Legal obligations: Processing is necessary to comply with a legal obligation to which we are subject."
+      }
+    },
+    "section4": {
+      "title": "4. Data Sharing",
+      "sub1": {
+        "title": "4.1 With your consent",
+        "content": "Some of your information (username, tournament performance) may be made public as part of your participation in our tournaments."
+      },
+      "sub2": {
+        "title": "4.2 Service providers",
+        "intro": "We share data with third-party service providers who help us provide and improve our services:",
+        "items": {
+          "hosting": "Hosting and cloud infrastructure",
+          "payment": "Payment services for reward distribution",
+          "analytics": "Analytics and fraud prevention tools",
+          "support": "Customer support services"
+        },
+        "outro": "These providers are contractually required to protect your data and use it only for the specified purposes."
+      },
+      "sub3": {
+        "title": "4.3 Legal requirements",
+        "intro": "We may disclose your information if we are legally required to do so or if we believe in good faith that it is necessary to:",
+        "items": {
+          "legal": "Comply with a legal, regulatory or judicial obligation",
+          "protect": "Protect the rights, property or safety of {{brandName}}, our users or the public"
+        }
+      }
+    },
+    "section5": {
+      "title": "5. International Transfers",
+      "content": "We may transfer your personal data to countries outside the European Union or your country of residence. In this case, we ensure that these transfers are governed by appropriate safeguards in accordance with applicable data protection regulations."
+    },
+    "section6": {
+      "title": "6. Data Retention",
+      "intro": "We retain your personal data for as long as necessary to provide our services and achieve the purposes described in this policy. Specific retention periods depend on the type of data and its purpose:",
+      "items": {
+        "account": "Account data: As long as your account is active",
+        "tournament": "Tournament participation data: 3 years after the end of the tournament",
+        "parental": "Parental consent documents: Until the player reaches majority + 1 year",
+        "support": "Support communications: 2 years after resolution of the request"
+      },
+      "outro": "Beyond these periods, your data is either deleted or anonymized."
+    },
+    "section7": {
+      "title": "7. Data Security",
+      "intro": "We implement appropriate technical and organizational security measures to protect your personal data against unauthorized access, loss, alteration or accidental destruction. These measures include, but are not limited to:",
+      "items": {
+        "encryption": "Encryption of sensitive data",
+        "access": "Strict access controls",
+        "audits": "Regular security audits",
+        "training": "Staff training"
+      },
+      "outro": "However, no security system is infallible, and we cannot guarantee the absolute security of your data."
+    },
+    "section8": {
+      "title": "8. Your Rights",
+      "intro": "In accordance with applicable data protection laws, you have the following rights:",
+      "items": {
+        "access": "Right of access: You can request a copy of the personal data we hold about you.",
+        "rectification": "Right of rectification: You can request correction of your data if it is inaccurate or incomplete.",
+        "erasure": "Right to erasure: You can request deletion of your data in certain circumstances.",
+        "restriction": "Right to restriction of processing: You can request restriction of processing of your data.",
+        "portability": "Right to portability: You can request transfer of your data in a structured format.",
+        "objection": "Right to object: You can object to the processing of your data, particularly for direct marketing purposes.",
+        "withdraw": "Right to withdraw consent: When processing is based on your consent."
+      },
+      "contact": "To exercise these rights, please contact us at privacy@esportzone.com. We will respond to your request within one month, except in exceptional circumstances."
+    },
+    "section9": {
+      "title": "9. Policy Regarding Minors",
+      "intro": "Our platform is accessible to minors over 13 years of age with the following restrictions:",
+      "items": {
+        "authorization": "Minors under 18 must obtain authorization from their parents or legal guardians",
+        "document": "A signed parental consent document is required upon registration",
+        "restrictions": "Some tournaments may have additional age restrictions"
+      },
+      "outro": "We take special measures to protect the privacy of minors and do not deliberately collect more data than necessary to provide our services."
+    },
+    "section10": {
+      "title": "10. Cookies and Similar Technologies",
+      "content": "We use cookies and similar technologies to improve your experience, analyze the use of our platform and personalize content. For more information about our use of cookies, please see our Cookie Policy."
+    },
+    "section11": {
+      "title": "11. Changes to this Policy",
+      "content": "We may modify this Privacy Policy from time to time. Changes will take effect upon publication of the updated version. We will inform you of any substantial changes by email or by notification on our platform."
+    },
+    "section12": {
+      "title": "12. Contact",
+      "intro": "If you have any questions about this Privacy Policy or how we process your data, please contact us at:",
+      "company": "Company",
+      "address": "Address",
+      "phone": "Phone",
+      "email": "Email",
+      "complaint": "If you are not satisfied with our response, you have the right to file a complaint with the data protection authority in your country of residence."
+    }
   }
 }

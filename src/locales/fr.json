@@ -2752,5 +2752,167 @@
       "title": "11. Contact",
       "content": "Pour toute question relative aux presentes Conditions Generales d'Utilisation, vous pouvez contacter {{brandName}} a l'adresse email suivante : {{legalEmail}}."
     }
+  },
+  "privacyPage": {
+    "title": "Politique de Confidentialite",
+    "section1": {
+      "title": "1. Collecte des donnees personnelles",
+      "sub1": {
+        "title": "1.1 Donnees que vous nous fournissez",
+        "intro": "Nous collectons les informations que vous nous fournissez directement lorsque vous :",
+        "items": {
+          "account": "Creez un compte (nom d'utilisateur, adresse email, date de naissance, pays)",
+          "profile": "Completez votre profil (avatar, biographie, liens sociaux)",
+          "tournaments": "Participez a des tournois (identifiants de jeu, informations d'equipe)",
+          "contact": "Nous contactez via notre formulaire ou par email",
+          "minors": "Pour les mineurs : document d'accord parental"
+        }
+      },
+      "sub2": {
+        "title": "1.2 Donnees collectees automatiquement",
+        "intro": "Lorsque vous utilisez notre plateforme, nous collectons automatiquement certaines informations techniques :",
+        "items": {
+          "ip": "Adresse IP et donnees de localisation approximative",
+          "device": "Type d'appareil, navigateur et systeme d'exploitation",
+          "pages": "Pages consultees et activites sur la plateforme",
+          "cookies": "Cookies et technologies similaires (voir notre Politique de Cookies)"
+        }
+      }
+    },
+    "section2": {
+      "title": "2. Utilisation des donnees",
+      "intro": "Nous utilisons vos donnees personnelles pour les finalites suivantes :",
+      "sub1": {
+        "title": "2.1 Fourniture de nos services",
+        "items": {
+          "account": "Gerer votre compte et votre profil",
+          "participation": "Permettre votre participation aux tournois",
+          "eligibility": "Verifier votre eligibilite (age, pays, etc.)",
+          "connect": "Vous mettre en relation avec d'autres joueurs et equipes",
+          "rewards": "Distribuer les recompenses aux gagnants"
+        }
+      },
+      "sub2": {
+        "title": "2.2 Communication",
+        "items": {
+          "notifications": "Vous envoyer des notifications concernant vos tournois et matchs",
+          "respond": "Repondre a vos demandes et questions",
+          "inform": "Vous informer des changements de nos services",
+          "marketing": "Avec votre consentement, vous envoyer des newsletters et communications marketing"
+        }
+      },
+      "sub3": {
+        "title": "2.3 Amelioration et securite",
+        "items": {
+          "improve": "Ameliorer notre plateforme et nos services",
+          "analyze": "Analyser l'utilisation de nos services",
+          "detect": "Detecter et prevenir les activites frauduleuses ou abusives",
+          "resolve": "Resoudre les problemes techniques"
+        }
+      }
+    },
+    "section3": {
+      "title": "3. Base legale du traitement",
+      "intro": "Nous traitons vos donnees personnelles sur les bases legales suivantes :",
+      "items": {
+        "contract": "Execution du contrat : Le traitement est necessaire a l'execution de notre contrat avec vous (nos Conditions Generales d'Utilisation).",
+        "consent": "Consentement : Vous nous avez donne votre consentement pour certains traitements specifiques (par exemple, pour les communications marketing).",
+        "legitimate": "Interets legitimes : Le traitement est necessaire aux fins de nos interets legitimes (ameliorer nos services, assurer la securite) sans porter atteinte a vos droits fondamentaux.",
+        "legal": "Obligations legales : Le traitement est necessaire pour respecter une obligation legale a laquelle nous sommes soumis."
+      }
+    },
+    "section4": {
+      "title": "4. Partage des donnees",
+      "sub1": {
+        "title": "4.1 Avec votre consentement",
+        "content": "Certaines de vos informations (nom d'utilisateur, performances dans les tournois) peuvent etre rendues publiques dans le cadre de votre participation a nos tournois."
+      },
+      "sub2": {
+        "title": "4.2 Prestataires de services",
+        "intro": "Nous partageons des donnees avec des prestataires de services tiers qui nous aident a fournir et ameliorer nos services :",
+        "items": {
+          "hosting": "Hebergement et infrastructure cloud",
+          "payment": "Services de paiement pour la distribution des recompenses",
+          "analytics": "Outils d'analyse et de lutte contre la fraude",
+          "support": "Services de support client"
+        },
+        "outro": "Ces prestataires sont contractuellement tenus de proteger vos donnees et de ne les utiliser que pour les finalites specifiees."
+      },
+      "sub3": {
+        "title": "4.3 Exigences legales",
+        "intro": "Nous pouvons divulguer vos informations si nous sommes legalement tenus de le faire ou si nous croyons de bonne foi que cela est necessaire pour :",
+        "items": {
+          "legal": "Respecter une obligation legale, reglementaire ou judiciaire",
+          "protect": "Proteger les droits, la propriete ou la securite de {{brandName}}, de nos utilisateurs ou du public"
+        }
+      }
+    },
+    "section5": {
+      "title": "5. Transferts internationaux",
+      "content": "Nous pouvons transferer vos donnees personnelles vers des pays situes en dehors de l'Union Europeenne ou de votre pays de residence. Dans ce cas, nous nous assurons que ces transferts sont encadres par des garanties appropriees conformement aux reglementations applicables en matiere de protection des donnees."
+    },
+    "section6": {
+      "title": "6. Conservation des donnees",
+      "intro": "Nous conservons vos donnees personnelles aussi longtemps que necessaire pour fournir nos services et atteindre les finalites decrites dans cette politique. Les periodes de conservation specifiques dependent du type de donnees et de leur finalite :",
+      "items": {
+        "account": "Donnees de compte : Aussi longtemps que votre compte est actif",
+        "tournament": "Donnees de participation aux tournois : 3 ans apres la fin du tournoi",
+        "parental": "Documents d'accord parental : Jusqu'a la majorite du joueur + 1 an",
+        "support": "Communications avec le support : 2 ans apres la resolution de la demande"
+      },
+      "outro": "Au-dela de ces periodes, vos donnees sont soit supprimees, soit anonymisees."
+    },
+    "section7": {
+      "title": "7. Securite des donnees",
+      "intro": "Nous mettons en oeuvre des mesures de securite techniques et organisationnelles appropriees pour proteger vos donnees personnelles contre l'acces non autorise, la perte, l'alteration ou la destruction accidentelle. Ces mesures comprennent, sans s'y limiter :",
+      "items": {
+        "encryption": "Chiffrement des donnees sensibles",
+        "access": "Controles d'acces stricts",
+        "audits": "Audits de securite reguliers",
+        "training": "Formation de notre personnel"
+      },
+      "outro": "Cependant, aucun systeme de securite n'est infaillible, et nous ne pouvons garantir la securite absolue de vos donnees."
+    },
+    "section8": {
+      "title": "8. Vos droits",
+      "intro": "Conformement aux lois applicables sur la protection des donnees, vous disposez des droits suivants :",
+      "items": {
+        "access": "Droit d'acces : Vous pouvez demander une copie des donnees personnelles que nous detenons a votre sujet.",
+        "rectification": "Droit de rectification : Vous pouvez demander la correction de vos donnees si elles sont inexactes ou incompletes.",
+        "erasure": "Droit a l'effacement : Vous pouvez demander la suppression de vos donnees dans certaines circonstances.",
+        "restriction": "Droit a la limitation du traitement : Vous pouvez demander la restriction du traitement de vos donnees.",
+        "portability": "Droit a la portabilite : Vous pouvez demander le transfert de vos donnees dans un format structure.",
+        "objection": "Droit d'opposition : Vous pouvez vous opposer au traitement de vos donnees, notamment a des fins de marketing direct.",
+        "withdraw": "Droit de retirer votre consentement : Lorsque le traitement est base sur votre consentement."
+      },
+      "contact": "Pour exercer ces droits, veuillez nous contacter a privacy@esportzone.com. Nous repondrons a votre demande dans un delai d'un mois, sauf circonstances exceptionnelles."
+    },
+    "section9": {
+      "title": "9. Politique relative aux mineurs",
+      "intro": "Notre plateforme est accessible aux mineurs de plus de 13 ans avec les restrictions suivantes :",
+      "items": {
+        "authorization": "Les mineurs de moins de 18 ans doivent obtenir l'autorisation de leurs parents ou tuteurs legaux",
+        "document": "Un document d'accord parental signe est requis lors de l'inscription",
+        "restrictions": "Certains tournois peuvent avoir des restrictions d'age supplementaires"
+      },
+      "outro": "Nous prenons des mesures particulieres pour proteger la vie privee des mineurs et nous ne collectons pas deliberement plus de donnees que necessaire pour fournir nos services."
+    },
+    "section10": {
+      "title": "10. Cookies et technologies similaires",
+      "content": "Nous utilisons des cookies et technologies similaires pour ameliorer votre experience, analyser l'utilisation de notre plateforme et personnaliser le contenu. Pour plus d'informations sur notre utilisation des cookies, veuillez consulter notre Politique de Cookies."
+    },
+    "section11": {
+      "title": "11. Modifications de cette politique",
+      "content": "Nous pouvons modifier cette Politique de Confidentialite de temps a autre. Les modifications entreront en vigueur des la publication de la version mise a jour. Nous vous informerons de toute modification substantielle par email ou par notification sur notre plateforme."
+    },
+    "section12": {
+      "title": "12. Contact",
+      "intro": "Si vous avez des questions concernant cette Politique de Confidentialite ou la maniere dont nous traitons vos donnees, veuillez nous contacter a :",
+      "company": "Societe",
+      "address": "Adresse",
+      "phone": "Telephone",
+      "email": "Email",
+      "complaint": "Si vous n'etes pas satisfait de notre reponse, vous avez le droit de deposer une plainte aupres de l'autorite de protection des donnees de votre pays de residence."
+    }
   }
 }
