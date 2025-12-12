@@ -69,6 +69,7 @@ export const checkKlientoSubscription = async (
     const formData = new URLSearchParams();
     formData.append('user_id', klientoUserId);
     formData.append('product_id', productId);
+    formData.append('service_id', productId);
 
     const response = await fetch('https://userv1.dv-content.io/accountinfo/all', {
       method: 'POST',
