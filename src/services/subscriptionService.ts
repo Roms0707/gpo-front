@@ -7,16 +7,11 @@ interface SubscriptionCacheEntry {
   lastCheckedAt: number;
 }
 
-interface KlientoAccountInfoResponse {
-  code: number;
-  error: number;
-  data: Array<{
-    user_id: string;
-    msisdn?: string;
-    subscribed: boolean;
-    suspended: boolean;
-    status?: string;
-  }>;
+interface SubscriptionCheckResponse {
+  success: boolean;
+  isSubscribed?: boolean;
+  isSuspended?: boolean;
+  error?: string;
 }
 
 export interface SubscriptionStatus {
@@ -66,40 +61,42 @@ export const checkKlientoSubscription = async (
       };
     }
 
-    const formData = new URLSearchParams();
-    formData.append('user_id', klientoUserId);
-    formData.append('product_id', productId);
-    formData.append('service_id', productId);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    const response = await fetch('https://userv1.dv-content.io/accountinfo/all', {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        isSubscribed: true,
+        isSuspended: false,
+        error: 'Application configuration error',
+      };
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/kliento-subscription-check`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        user_id: klientoUserId,
+        product_id: productId,
+        service_id: productId,
+      }),
     });
 
-    if (!response.ok) {
+    const data: SubscriptionCheckResponse = await response.json();
+
+    if (!data.success) {
       return {
-        isSubscribed: true,
-        isSuspended: false,
-        error: `API error: ${response.status}`,
+        isSubscribed: data.isSubscribed ?? true,
+        isSuspended: data.isSuspended ?? false,
+        error: data.error || 'Subscription check failed',
       };
     }
 
-    const data: KlientoAccountInfoResponse = await response.json();
-
-    if (data.code !== 200 || data.error !== 0 || !data.data || data.data.length === 0) {
-      return {
-        isSubscribed: true,
-        isSuspended: false,
-        error: 'Invalid response from subscription service',
-      };
-    }
-
-    const accountInfo = data.data[0];
-    const isSubscribed = accountInfo.subscribed === true;
-    const isSuspended = accountInfo.suspended === true;
+    const isSubscribed = data.isSubscribed === true;
+    const isSuspended = data.isSuspended === true;
 
     subscriptionCache.set(klientoUserId, {
       userId: klientoUserId,

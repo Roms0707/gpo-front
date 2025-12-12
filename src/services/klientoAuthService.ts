@@ -14,6 +14,15 @@ interface KlientoEdgeFunctionResponse {
   message?: string;
 }
 
+interface TransactionVerifyResponse {
+  success: boolean;
+  user_id?: string;
+  msisdn?: string;
+  account_info?: KlientoAccountInfo;
+  error?: string;
+  status?: string;
+}
+
 export const formatPhoneNumber = (phone: string, countryCode: string): string => {
   let cleaned = phone.replace(/\D/g, '');
 
@@ -210,43 +219,40 @@ export const verifyTransactionUser = async (
   offerId: string
 ): Promise<KlientoAuthResult> => {
   try {
-    const formData = new URLSearchParams();
-    formData.append('billing_transaction_id', operationId);
-    formData.append('bizoffer_id', offerId);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    const response = await fetch('https://userv1.dv-content.io/accountinfo/getuserbytransaction', {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        user: null,
+        error: 'Application configuration error',
+      };
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/kliento-verify-transaction`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData.toString(),
+      body: JSON.stringify({
+        billing_transaction_id: operationId,
+        bizoffer_id: offerId,
+      }),
     });
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        return {
-          user: null,
-          error: 'pending',
-        };
-      }
+    const data: TransactionVerifyResponse = await response.json();
+
+    if (!data.success) {
       return {
         user: null,
-        error: `API error: ${response.status}`,
+        error: data.error || 'pending',
       };
     }
 
-    const data = await response.json();
-
-    if (data.code !== 200 || data.error !== 0 || !data.data?.user_id) {
-      return {
-        user: null,
-        error: 'pending',
-      };
-    }
-
-    const klientoUserId = String(data.data.user_id);
-    const phone = data.data.msisdn || '';
-    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.data);
+    const klientoUserId = data.user_id!;
+    const phone = data.msisdn || '';
+    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.account_info);
 
     if (!localUser) {
       return {
