@@ -2914,5 +2914,80 @@
       "email": "Email",
       "complaint": "If you are not satisfied with our response, you have the right to file a complaint with the data protection authority in your country of residence."
     }
+  },
+  "legalPage": {
+    "title": "Legal Notice",
+    "section1": {
+      "title": "1. Legal Information",
+      "sub1": {
+        "title": "1.1 Site Publisher",
+        "companyName": "Company name",
+        "address": "Address",
+        "phone": "Phone",
+        "registrationNumber": "Registration number",
+        "email": "Email"
+      },
+      "sub3": {
+        "title": "1.3 Site Host",
+        "hostedBy": "The {{brandName}} site is hosted by:",
+        "address": "Address"
+      },
+      "supabase": {
+        "website": "Website",
+        "email": "Email"
+      }
+    },
+    "section2": {
+      "title": "2. Site Presentation",
+      "content": "The {{brandName}} site aims to provide a platform for managing and organizing video game (esports) tournaments, allowing users to register, participate in competitions and follow results."
+    },
+    "section3": {
+      "title": "3. Intellectual Property",
+      "sub1": {
+        "title": "3.1 Ownership of Rights",
+        "content": "All content on the {{brandName}} site (architecture, texts, logos, images, graphic elements, sounds, software, etc.) is the exclusive property of {{companyName}} or is subject to authorization for use."
+      },
+      "sub2": {
+        "title": "3.2 Usage Rights",
+        "content": "Any reproduction, representation, modification, publication, total or partial adaptation of any element of the site, by any means whatsoever, without the express written authorization of {{companyName}}, is prohibited and would constitute infringement punishable under Articles L.335-2 and following of the Intellectual Property Code."
+      },
+      "sub3": {
+        "title": "3.3 Trademarks",
+        "content": "The trademarks, logos and distinctive signs reproduced on the site are protected by trademark law. Any unauthorized reproduction constitutes infringement."
+      }
+    },
+    "section4": {
+      "title": "4. Hyperlinks",
+      "sub1": {
+        "title": "4.1 Links to {{brandName}}",
+        "content": "Creating hyperlinks to the {{brandName}} site is authorized, provided that these links are simple and open the site in a new browser window. They must not suggest that {{companyName}} approves the content of the linked site or is associated with it in any way."
+      },
+      "sub2": {
+        "title": "4.2 Links from {{brandName}}",
+        "content": "The {{brandName}} site may contain hyperlinks to other websites. {{companyName}} has no control over these sites and disclaims any responsibility for their content or the practices of their operators."
+      }
+    },
+    "section5": {
+      "title": "5. Personal Data Protection",
+      "content": "Information concerning the collection and processing of personal data is detailed in our",
+      "privacyLink": "Privacy Policy"
+    },
+    "section6": {
+      "title": "6. Applicable Law and Jurisdiction",
+      "content": "These legal notices are subject to French law. In the event of a dispute, French courts shall have sole jurisdiction."
+    },
+    "section7": {
+      "title": "7. Consumer Mediation",
+      "intro": "In accordance with the provisions of the Consumer Code concerning the amicable settlement of disputes, {{companyName}} adheres to the e-commerce Mediator Service of FEVAD (Federation of e-commerce and distance selling).",
+      "details": "After prior written approach by consumers to {{companyName}}, the Mediator Service may be contacted for any consumer dispute that has not been resolved. To find out the procedures for contacting the Mediator: www.mediateurfevad.fr"
+    },
+    "section8": {
+      "title": "8. Modifications to Legal Notices",
+      "content": "{{companyName}} reserves the right to modify these legal notices at any time. Users are invited to consult them regularly."
+    },
+    "section9": {
+      "title": "9. Contact",
+      "content": "For any questions regarding these legal notices, you can contact us at the following email address: {{legalEmail}}."
+    }
   }
 }

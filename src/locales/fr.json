@@ -2914,5 +2914,80 @@
       "email": "Email",
       "complaint": "Si vous n'etes pas satisfait de notre reponse, vous avez le droit de deposer une plainte aupres de l'autorite de protection des donnees de votre pays de residence."
     }
+  },
+  "legalPage": {
+    "title": "Mentions Legales",
+    "section1": {
+      "title": "1. Informations legales",
+      "sub1": {
+        "title": "1.1 Editeur du site",
+        "companyName": "Raison sociale",
+        "address": "Adresse",
+        "phone": "Telephone",
+        "registrationNumber": "Numero d'immatriculation",
+        "email": "Email"
+      },
+      "sub3": {
+        "title": "1.3 Hebergeur du site",
+        "hostedBy": "Le site {{brandName}} est heberge par :",
+        "address": "Adresse"
+      },
+      "supabase": {
+        "website": "Site web",
+        "email": "Email"
+      }
+    },
+    "section2": {
+      "title": "2. Presentation du site",
+      "content": "Le site {{brandName}} a pour objet de fournir une plateforme de gestion et d'organisation de tournois de jeux video (esport) permettant aux utilisateurs de s'inscrire, participer a des competitions et suivre les resultats."
+    },
+    "section3": {
+      "title": "3. Propriete intellectuelle",
+      "sub1": {
+        "title": "3.1 Titularite des droits",
+        "content": "L'ensemble du contenu du site {{brandName}} (architecture, textes, logos, images, elements graphiques, sonores, logiciels, etc.) est la propriete exclusive de {{companyName}} ou fait l'objet d'une autorisation d'utilisation."
+      },
+      "sub2": {
+        "title": "3.2 Droits d'utilisation",
+        "content": "Toute reproduction, representation, modification, publication, adaptation totale ou partielle des elements du site, par quelque procede que ce soit, sans l'autorisation expresse ecrite de {{companyName}}, est interdite et constituerait une contrefacon sanctionnee par les articles L.335-2 et suivants du Code de la Propriete Intellectuelle."
+      },
+      "sub3": {
+        "title": "3.3 Marques",
+        "content": "Les marques, logos et signes distinctifs reproduits sur le site sont proteges par le droit des marques. Toute reproduction non autorisee est constitutive de contrefacon."
+      }
+    },
+    "section4": {
+      "title": "4. Liens hypertextes",
+      "sub1": {
+        "title": "4.1 Liens vers {{brandName}}",
+        "content": "La creation de liens hypertextes vers le site {{brandName}} est autorisee, a condition que ces liens soient simples et qu'ils ouvrent le site dans une nouvelle fenetre du navigateur. Ils ne doivent pas suggerer que {{companyName}} approuve le contenu du site lie ou y soit associe de quelque maniere que ce soit."
+      },
+      "sub2": {
+        "title": "4.2 Liens depuis {{brandName}}",
+        "content": "Le site {{brandName}} peut contenir des liens hypertextes vers d'autres sites web. {{companyName}} n'exerce aucun controle sur ces sites et decline toute responsabilite quant a leur contenu ou aux pratiques de leurs exploitants."
+      }
+    },
+    "section5": {
+      "title": "5. Protection des donnees personnelles",
+      "content": "Les informations concernant la collecte et le traitement des donnees personnelles sont detaillees dans notre",
+      "privacyLink": "Politique de Confidentialite"
+    },
+    "section6": {
+      "title": "6. Droit applicable et juridiction competente",
+      "content": "Les presentes mentions legales sont soumises au droit francais. En cas de litige, les tribunaux francais seront seuls competents."
+    },
+    "section7": {
+      "title": "7. Mediation de la consommation",
+      "intro": "Conformement aux dispositions du Code de la consommation concernant le reglement amiable des litiges, {{companyName}} adhere au Service du Mediateur du e-commerce de la FEVAD (Federation du e-commerce et de la vente a distance).",
+      "details": "Apres demarche prealable ecrite des consommateurs vis-a-vis de {{companyName}}, le Service du Mediateur peut etre saisi pour tout litige de consommation dont le reglement n'aurait pas abouti. Pour connaitre les modalites de saisine du Mediateur : www.mediateurfevad.fr"
+    },
+    "section8": {
+      "title": "8. Modifications des mentions legales",
+      "content": "{{companyName}} se reserve le droit de modifier les presentes mentions legales a tout moment. Les utilisateurs sont invites a les consulter regulierement."
+    },
+    "section9": {
+      "title": "9. Contact",
+      "content": "Pour toute question relative aux presentes mentions legales, vous pouvez nous contacter a l'adresse email suivante : {{legalEmail}}."
+    }
   }
 }
