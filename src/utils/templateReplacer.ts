@@ -13,6 +13,7 @@ export const replaceTemplateVariables = (
     '{{company_address}}': legalVariables.company_address || APP_CONFIG.CONTACT.COMPANY_ADDRESS,
     '{{phone_number}}': legalVariables.phone_number || '',
     '{{registration_number}}': legalVariables.registration_number || '',
+    '{{discord_url}}': legalVariables.discord_url || APP_CONFIG.CONTACT.DISCORD_INVITE,
   };
 
   let result = text;

@@ -36,6 +36,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       company_address: null,
       phone_number: null,
       registration_number: null,
+      discord_url: null,
     },
     isLoading: true,
   });
@@ -69,6 +70,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       company_address: config.company_address || null,
       phone_number: config.phone_number || null,
       registration_number: config.registration_number || null,
+      discord_url: config.discord_url || null,
     };
 
     setState({

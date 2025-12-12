@@ -110,8 +110,8 @@ const ContactPage: React.FC = () => {
                   <p className="text-gray-600 dark:text-gray-400 mb-3">
                     Rejoignez notre serveur Discord pour un support en direct
                   </p>
-                  <a href="https://discord.gg/orangearena" className="text-primary-500 hover:text-primary-400 flex items-center">
-                    discord.gg/orangearena
+                  <a href={legalVars.getDiscordUrl()} className="text-primary-500 hover:text-primary-400 flex items-center">
+                    {legalVars.getDiscordUrl().replace('https://', '')}
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </div>

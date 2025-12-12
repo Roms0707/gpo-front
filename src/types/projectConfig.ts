@@ -30,6 +30,7 @@ export interface LegalVariables {
   company_address: string | null;
   phone_number: string | null;
   registration_number: string | null;
+  discord_url: string | null;
 }
 
 export type AuthMethod = 'email' | 'discord' | 'kliento';
@@ -59,6 +60,7 @@ export interface ProjectConfiguration {
   company_address?: string | null;
   phone_number?: string | null;
   registration_number?: string | null;
+  discord_url?: string | null;
   auth_method?: AuthMethod;
   subscription_redirect_url?: string | null;
 }

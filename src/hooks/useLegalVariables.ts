@@ -10,6 +10,7 @@ interface UseLegalVariablesReturn extends LegalVariables {
   getCompanyAddress: () => string;
   getPhoneNumber: () => string;
   getRegistrationNumber: () => string;
+  getDiscordUrl: () => string;
 }
 
 export const useLegalVariables = (): UseLegalVariablesReturn => {
@@ -24,5 +25,6 @@ export const useLegalVariables = (): UseLegalVariablesReturn => {
     getCompanyAddress: () => legalVariables.company_address || APP_CONFIG.CONTACT.COMPANY_ADDRESS,
     getPhoneNumber: () => legalVariables.phone_number || '',
     getRegistrationNumber: () => legalVariables.registration_number || '',
+    getDiscordUrl: () => legalVariables.discord_url || APP_CONFIG.CONTACT.DISCORD_INVITE,
   };
 };
