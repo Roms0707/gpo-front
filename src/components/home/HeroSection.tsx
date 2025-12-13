@@ -72,18 +72,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-8 text-white leading-tight">
-            <TypewriterText
-              phrases={heroPhases}
-              typingSpeed={70}
-              deletingSpeed={35}
-              pauseDuration={2500}
-              className="hero-typewriter-text"
-              cursorClassName="text-primary-500"
-            />
-          </h1>
+          <div className="min-h-[4rem] sm:min-h-[4.5rem] md:min-h-[5.5rem] lg:min-h-[7rem] xl:min-h-[8rem] flex items-center justify-center mb-8">
+            <h1 className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white leading-tight">
+              <TypewriterText
+                phrases={heroPhases}
+                typingSpeed={70}
+                deletingSpeed={35}
+                pauseDuration={2500}
+                className="hero-typewriter-text"
+                cursorClassName="text-primary-500"
+              />
+            </h1>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 md:mt-12 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
             <PixelStatCard
               value={activeTournamentsCount}
               label={t('home.activeTournaments', { count: activeTournamentsCount })}
