@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Trophy, Gamepad2, Radio } from 'lucide-react';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { TypewriterText } from '../ui/TypewriterText';
+import { PixelStatCard } from '../ui/PixelStatCard';
 
 interface HeroSectionProps {
   activeTournamentsCount: number;
@@ -83,67 +84,35 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           </h1>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 md:mt-12 max-w-3xl mx-auto">
-            <div
+            <PixelStatCard
+              value={activeTournamentsCount}
+              label={t('home.activeTournaments', { count: activeTournamentsCount })}
+              color="#00E5FF"
+              hoverIcon={<Trophy className="w-5 h-5" />}
+              isMobile={isMobile}
               onClick={onScrollToTournaments}
-              className={`hero-stat-card bg-black/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-primary-500/50 transition-all duration-300 ${
-                isMobile ? 'cursor-pointer active:scale-95' : 'hover:transform hover:-translate-y-1'
-              }`}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-primary-400 mb-2">
-                {activeTournamentsCount}
-              </div>
-              <div className="text-sm sm:text-base text-gray-300">
-                {t('home.activeTournaments', { count: activeTournamentsCount })}
-              </div>
-              {isMobile && (
-                <div className="mt-3 text-xs text-gray-500 flex items-center justify-center">
-                  <ChevronDown className="h-3 w-3 animate-bounce" />
-                </div>
-              )}
-            </div>
+            />
 
-            <div
+            <PixelStatCard
+              value={gamesCount}
+              label={t('home.gamesAvailable')}
+              color="#39FF14"
+              hoverIcon={<Gamepad2 className="w-5 h-5" />}
+              isMobile={isMobile}
               onClick={onScrollToTournaments}
-              className={`hero-stat-card bg-black/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-primary-500/50 transition-all duration-300 ${
-                isMobile ? 'cursor-pointer active:scale-95' : 'hover:transform hover:-translate-y-1'
-              }`}
-              style={{ animationDelay: '0.1s' }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-white mb-2">
-                {gamesCount}
-              </div>
-              <div className="text-sm sm:text-base text-gray-300">
-                {t('home.gamesAvailable')}
-              </div>
-              {isMobile && (
-                <div className="mt-3 text-xs text-gray-500 flex items-center justify-center">
-                  <ChevronDown className="h-3 w-3 animate-bounce" />
-                </div>
-              )}
-            </div>
+              animationDelay="0.1s"
+            />
 
-            <div
+            <PixelStatCard
+              value={liveTournamentsCount}
+              label={t('home.liveTournaments', { count: liveTournamentsCount })}
+              color="#EF4444"
+              hoverIcon={<Radio className="w-5 h-5" />}
+              showPulse={liveTournamentsCount > 0}
+              isMobile={isMobile}
               onClick={onScrollToTournaments}
-              className={`hero-stat-card bg-black/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-red-500/50 transition-all duration-300 ${
-                isMobile ? 'cursor-pointer active:scale-95' : 'hover:transform hover:-translate-y-1'
-              }`}
-              style={{ animationDelay: '0.2s' }}
-            >
-              <div className="text-3xl sm:text-4xl font-bold text-red-500 mb-2 flex items-center justify-center">
-                {liveTournamentsCount}
-                {liveTournamentsCount > 0 && (
-                  <span className="w-2.5 h-2.5 bg-red-500 rounded-full ml-2 animate-pulse" />
-                )}
-              </div>
-              <div className="text-sm sm:text-base text-gray-300">
-                {t('home.liveTournaments', { count: liveTournamentsCount })}
-              </div>
-              {isMobile && (
-                <div className="mt-3 text-xs text-gray-500 flex items-center justify-center">
-                  <ChevronDown className="h-3 w-3 animate-bounce" />
-                </div>
-              )}
-            </div>
+              animationDelay="0.2s"
+            />
           </div>
         </div>
       </div>
