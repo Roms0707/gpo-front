@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { User, KlientoLoginResponse, KlientoAccountInfo } from '../types';
+import { normalizePhoneToE164 } from '../utils/phoneValidation';
 
 interface KlientoAuthResult {
   user: User | null;
@@ -23,21 +24,13 @@ interface TransactionVerifyResponse {
   status?: string;
 }
 
-export const formatPhoneNumber = (phone: string, countryCode: string): string => {
-  let cleaned = phone.replace(/\D/g, '');
-
-  if (cleaned.startsWith('0')) {
-    cleaned = cleaned.substring(1);
-  }
-
-  const cleanedCountryCode = countryCode.replace(/\D/g, '');
-
-  return `${cleanedCountryCode}${cleaned}`;
+export const formatPhoneNumber = (phone: string): string => {
+  return normalizePhoneToE164(phone);
 };
 
 export const validatePhoneNumber = (phone: string): boolean => {
   const cleaned = phone.replace(/\D/g, '');
-  return cleaned.length >= 8 && cleaned.length <= 15;
+  return cleaned.length >= 9 && cleaned.length <= 15;
 };
 
 export const loginWithKliento = async (
@@ -56,6 +49,8 @@ export const loginWithKliento = async (
       };
     }
 
+    const normalizedPhone = normalizePhoneToE164(phone);
+
     const response = await fetch(`${supabaseUrl}/functions/v1/kliento-auth`, {
       method: 'POST',
       headers: {
@@ -63,7 +58,7 @@ export const loginWithKliento = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        msisdn: phone,
+        msisdn: normalizedPhone,
         password,
         product_id: productId,
       }),
@@ -79,7 +74,7 @@ export const loginWithKliento = async (
     }
 
     const klientoUserId = String(data.user_id);
-    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.account_info);
+    const localUser = await findOrCreateKlientoUser(klientoUserId, normalizedPhone, data.account_info);
 
     if (!localUser) {
       return {
