@@ -166,11 +166,17 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
         const isPressed = index === pressedIndex;
         const itemRipples = ripples[index] || [];
 
+        const getTransform = () => {
+          if (isPressed) return 'scale(0.95)';
+          if (isHovered && !isActive) return 'scale(1.05)';
+          return 'scale(1)';
+        };
+
         const commonProps = {
           ref: (el: HTMLAnchorElement | HTMLButtonElement | null) => {
             itemRefs.current[index] = el;
           },
-          className: `relative z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition-all duration-150 overflow-hidden ${
+          className: `relative z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 overflow-hidden ${
             showHighlight
               ? 'text-white'
               : isDark
@@ -178,7 +184,8 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
               : 'text-gray-600 hover:text-gray-900'
           }`,
           style: {
-            transform: isPressed ? 'scale(0.97)' : 'scale(1)',
+            transform: getTransform(),
+            textShadow: isHovered && !isActive ? '0 0 8px rgba(255,255,255,0.3)' : 'none',
           },
           onMouseEnter: () => handleMouseEnter(index),
           onMouseLeave: () => {
