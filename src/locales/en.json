@@ -208,7 +208,10 @@
     "login": "Log In",
     "logout": "Log Out",
     "messages": "Messages",
-    "matchNotifications": "Match Notifications"
+    "matchNotifications": "Match Notifications",
+    "profile": "Profile",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
   },
   "footer": {
     "joinCompetition": "Join the competition today!",
