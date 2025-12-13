@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { gsap } from 'gsap';
 import { useTheme } from '../../contexts/ThemeContext';
 
 export interface PillNavItem {
@@ -16,13 +15,19 @@ interface PillNavProps {
   className?: string;
 }
 
+interface PillStyle {
+  transform: string;
+  width: string;
+}
+
 const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
   const { theme } = useTheme();
   const location = useLocation();
   const navRef = useRef<HTMLDivElement>(null);
-  const pillRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [pillStyle, setPillStyle] = useState<PillStyle>({ transform: 'translateX(0)', width: '0px' });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const getActiveIndex = () => {
     return items.findIndex((item) => {
@@ -35,12 +40,11 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
 
   const activeIndex = getActiveIndex();
 
-  const updatePillPosition = (index: number, animate = true) => {
+  const updatePillPosition = (index: number) => {
     const targetElement = itemRefs.current[index];
-    const pillElement = pillRef.current;
     const navElement = navRef.current;
 
-    if (!targetElement || !pillElement || !navElement) return;
+    if (!targetElement || !navElement) return;
 
     const navRect = navElement.getBoundingClientRect();
     const targetRect = targetElement.getBoundingClientRect();
@@ -48,31 +52,25 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
     const left = targetRect.left - navRect.left;
     const width = targetRect.width;
 
-    if (animate) {
-      gsap.to(pillElement, {
-        x: left,
-        width: width,
-        duration: 0.35,
-        ease: 'power2.out',
-      });
-    } else {
-      gsap.set(pillElement, {
-        x: left,
-        width: width,
-      });
-    }
+    setPillStyle({
+      transform: `translateX(${left}px)`,
+      width: `${width}px`,
+    });
   };
 
   useLayoutEffect(() => {
     const targetIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
     if (targetIndex >= 0) {
-      updatePillPosition(targetIndex, true);
+      updatePillPosition(targetIndex);
+      if (!isInitialized) {
+        setTimeout(() => setIsInitialized(true), 50);
+      }
     }
   }, [hoveredIndex, activeIndex, items]);
 
   useEffect(() => {
     if (activeIndex >= 0) {
-      updatePillPosition(activeIndex, false);
+      updatePillPosition(activeIndex);
     }
   }, []);
 
@@ -80,7 +78,7 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
     const handleResize = () => {
       const targetIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
       if (targetIndex >= 0) {
-        updatePillPosition(targetIndex, false);
+        updatePillPosition(targetIndex);
       }
     };
 
@@ -108,13 +106,13 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
       } backdrop-blur-sm ${className}`}
     >
       <div
-        ref={pillRef}
-        className={`absolute top-1 bottom-1 rounded-full transition-colors duration-200 ${
-          isDark
-            ? 'bg-primary-600/90'
-            : 'bg-primary-500/90'
-        }`}
-        style={{ zIndex: 0 }}
+        className={`absolute top-1 bottom-1 rounded-full ${
+          isDark ? 'bg-primary-600/90' : 'bg-primary-500/90'
+        } ${isInitialized ? 'transition-all duration-300 ease-out' : ''}`}
+        style={{
+          ...pillStyle,
+          zIndex: 0,
+        }}
       />
 
       {items.map((item, index) => {
