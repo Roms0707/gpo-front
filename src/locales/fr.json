@@ -230,6 +230,10 @@
   "home": {
     "heroTitle": "Rejoignez l'élite des tournois e-sport",
     "heroSubtitle": "Inscrivez-vous aux meilleurs tournois e-sport, affrontez les joueurs du monde entier et gagnez des récompenses exceptionnelles.",
+    "heroWelcome": "Bienvenue sur votre plateforme de tournois E-sport",
+    "heroWelcomeBrand": "Bienvenue sur",
+    "heroTagline": "Affrontez. Gagnez. Dominez.",
+    "scrollToTournaments": "Voir les tournois",
     "activeTournaments": "Tournoi actif",
     "activeTournaments_plural": "Tournois actifs",
     "gamesAvailable": "Jeux disponibles",

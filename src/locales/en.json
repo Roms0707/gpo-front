@@ -230,6 +230,10 @@
   "home": {
     "heroTitle": "Join the elite of e-sports tournaments",
     "heroSubtitle": "Sign up for the best e-sports tournaments, compete against players from around the world, and win exceptional rewards.",
+    "heroWelcome": "Welcome to your E-sport Tournament Platform",
+    "heroWelcomeBrand": "Welcome to",
+    "heroTagline": "Compete. Win. Dominate.",
+    "scrollToTournaments": "Scroll to tournaments",
     "activeTournaments": "Active tournament",
     "activeTournaments_plural": "Active tournaments",
     "gamesAvailable": "Available games",

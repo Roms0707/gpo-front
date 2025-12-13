@@ -671,3 +671,109 @@ a:focus, button:focus, [tabindex="0"]:focus {
 .phone-input-custom .react-international-phone-input:focus {
   @apply ring-2 ring-primary-500;
 }
+
+/* Hero Section Video Background Styles */
+.hero-radial-glow {
+  background: radial-gradient(ellipse at center top, var(--color-primary, #FF6B00)08 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Typewriter Cursor Animation */
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  animation: blink 1s step-end infinite;
+  font-weight: 100;
+  margin-left: 2px;
+}
+
+.hero-typewriter-text {
+  display: inline;
+  background: linear-gradient(90deg, var(--color-primary, #FF6B00) 0%, #ffffff 50%, var(--color-primary, #FF6B00) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 100% center;
+  }
+}
+
+/* Hero Subtitle Fade-in */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-subtitle {
+  animation: fadeInUp 0.8s ease-out 0.5s both;
+}
+
+/* Hero Stat Cards Animation */
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.hero-stat-card {
+  animation: fadeInScale 0.6s ease-out both;
+}
+
+.hero-stat-card:nth-child(1) {
+  animation-delay: 0.8s;
+}
+
+.hero-stat-card:nth-child(2) {
+  animation-delay: 0.95s;
+}
+
+.hero-stat-card:nth-child(3) {
+  animation-delay: 1.1s;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor {
+    animation: none;
+    opacity: 1;
+  }
+
+  .hero-typewriter-text {
+    animation: none;
+    background-position: 0% center;
+  }
+
+  .hero-subtitle,
+  .hero-stat-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

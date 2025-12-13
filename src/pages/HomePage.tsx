@@ -5,6 +5,7 @@ import { fetchTournaments, fetchGames, extractTwitchChannelName } from '../servi
 import { Tournament } from '../types';
 import TournamentList from '../components/tournaments/TournamentList';
 import GameCarousel from '../components/games/GameCarousel';
+import { HeroSection } from '../components/home/HeroSection';
 import { Filter, X, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { calculateTournamentStatus } from '../utils/tournamentUtils';
@@ -409,108 +410,23 @@ const HomePage: React.FC = () => {
       
       {/* Main Content */}
       <div className={`flex-1 transition-all duration-300 w-full overflow-x-hidden ${!isMobile && isSidebarExpanded ? 'ml-80' : !isMobile ? 'ml-20' : 'ml-0'}`}>
-        {/* Hero section with e-sports background */}
-        <section className="relative hero-esports-bg pt-24 sm:pt-28 md:pt-32 pb-10 sm:pb-12 md:pb-16 overflow-hidden">
-          <div className="container mx-auto px-4 max-w-full">
-            <div className="max-w-3xl mx-auto text-center mb-8 sm:mb-10 md:mb-12">
-              <h1 className="font-heading font-bold text-2xl sm:text-4xl md:text-5xl lg:text-6xl mb-4 sm:mb-6 text-white leading-tight px-2">
-                <span dangerouslySetInnerHTML={{
-                  __html: t('home.heroTitle').replace(
-                    /tournois e-sport|e-sports tournaments/g,
-                    '<span class="gradient-text">$&</span>'
-                  )
-                }} />
-              </h1>
-              <p className="text-gray-300 text-sm sm:text-lg md:text-xl mb-6 sm:mb-8 px-4">
-                {t('home.heroSubtitle')}
-              </p>
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mt-8 sm:mt-10 md:mt-12 max-w-full">
-                <div
-                  onClick={scrollToTournaments}
-                  className={`bg-dark-100/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800/50 ${
-                    isMobile ? 'cursor-pointer active:scale-95 transition-transform' : ''
-                  }`}
-                >
-                  <div className="text-2xl sm:text-3xl font-bold text-primary-400 mb-1 sm:mb-2">
-                    {(() => {
-                      const count = filteredTournaments.filter(tournament => {
-                        const now = new Date();
-                        const endDate = new Date(tournament.endDate);
-                        return now <= endDate;
-                      }).length;
-                      return count;
-                    })()}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-300">
-                    {(() => {
-                      const count = filteredTournaments.filter(tournament => {
-                        const now = new Date();
-                        const endDate = new Date(tournament.endDate);
-                        return now <= endDate;
-                      }).length;
-                      return t('home.activeTournaments', { count });
-                    })()}
-                  </div>
-                  {isMobile && (
-                    <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
-                      <ChevronDown className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-                <div
-                  onClick={scrollToTournaments}
-                  className={`bg-dark-100/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800/50 ${
-                    isMobile ? 'cursor-pointer active:scale-95 transition-transform' : ''
-                  }`}
-                >
-                  <div className="text-2xl sm:text-3xl font-bold text-secondary-400 mb-1 sm:mb-2">{games.length}</div>
-                  <div className="text-sm sm:text-base text-gray-300">{t('home.gamesAvailable')}</div>
-                  {isMobile && (
-                    <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
-                      <ChevronDown className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-                <div
-                  onClick={scrollToTournaments}
-                  className={`bg-dark-100/50 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-gray-800/50 ${
-                    isMobile ? 'cursor-pointer active:scale-95 transition-transform' : ''
-                  }`}
-                >
-                  <div className="text-2xl sm:text-3xl font-bold text-red-500 mb-1 sm:mb-2 flex items-center justify-center">
-                    {liveTournaments.filter(tournament => {
-                      const now = new Date();
-                      const endDate = new Date(tournament.endDate);
-                      if (!user?.country || !tournament.eligible_countries) return true;
-                      const eligibleCountries = tournament.eligible_countries.split(',').map(c => c.trim());
-                      return eligibleCountries.includes(user.country) && now <= endDate;
-                    }).length}
-                    {liveTournaments.length > 0 && (
-                      <span className="w-2 h-2 bg-red-500 rounded-full ml-2 animate-pulse"></span>
-                    )}
-                  </div>
-                  <div className="text-sm sm:text-base text-gray-300">
-                    {t('home.liveTournaments', {
-                      count: liveTournaments.filter(tournament => {
-                        const now = new Date();
-                        const endDate = new Date(tournament.endDate);
-                        if (!user?.country || !tournament.eligible_countries) return true;
-                        const eligibleCountries = tournament.eligible_countries.split(',').map(c => c.trim());
-                        return eligibleCountries.includes(user.country) && now <= endDate;
-                      }).length
-                    })}
-                  </div>
-                  {isMobile && (
-                    <div className="mt-2 text-xs text-gray-500 flex items-center justify-center">
-                      <ChevronDown className="h-3 w-3" />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <HeroSection
+          activeTournamentsCount={filteredTournaments.filter(tournament => {
+            const now = new Date();
+            const endDate = new Date(tournament.endDate);
+            return now <= endDate;
+          }).length}
+          gamesCount={games.length}
+          liveTournamentsCount={liveTournaments.filter(tournament => {
+            const now = new Date();
+            const endDate = new Date(tournament.endDate);
+            if (!user?.country || !tournament.eligible_countries) return true;
+            const eligibleCountries = tournament.eligible_countries.split(',').map(c => c.trim());
+            return eligibleCountries.includes(user.country) && now <= endDate;
+          }).length}
+          isMobile={isMobile}
+          onScrollToTournaments={scrollToTournaments}
+        />
         
         {/* Mobile Game Slider - Only show on mobile */}
         {isMobile && (
