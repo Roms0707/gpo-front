@@ -6,13 +6,17 @@ import { DynamicLogo } from '../common/DynamicLogo';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { useTranslation } from 'react-i18next';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  className?: string;
+}
+
+const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   const currentYear = new Date().getFullYear();
   const { brandName } = useAppConfig();
   const { t } = useTranslation();
-  
+
   return (
-    <footer className="bg-gray-100 dark:bg-dark-300 text-gray-900 dark:text-white py-12">
+    <footer className={`bg-gray-100 dark:bg-dark-300 text-gray-900 dark:text-white py-12 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
