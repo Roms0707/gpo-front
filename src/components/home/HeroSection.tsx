@@ -42,7 +42,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   };
 
   return (
-    <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center justify-center overflow-hidden bg-black">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `url(https://images.pexels.com/photos/7915357/pexels-photo-7915357.jpeg?auto=compress&cs=tinysrgb&w=1920)`,
+        }}
+      />
+
       <video
         ref={videoRef}
         autoPlay
@@ -50,25 +57,24 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         muted
         playsInline
         onLoadedData={handleVideoLoad}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
+        className={`absolute inset-0 z-[1] w-full h-full object-cover transition-opacity duration-1000 ${
           isVideoLoaded ? 'opacity-100' : 'opacity-0'
         }`}
-        poster="https://images.pexels.com/photos/7915357/pexels-photo-7915357.jpeg?auto=compress&cs=tinysrgb&w=1920"
       >
         <source
-          src="https://videos.pexels.com/video-files/7915357/7915357-uhd_2560_1440_30fps.mp4"
+          src="https://videos.pexels.com/video-files/7915357/7915357-hd_1920_1080_30fps.mp4"
           type="video/mp4"
         />
       </video>
 
       <div
-        className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-secondary-900/80"
+        className="absolute inset-0 z-[2]"
         style={{
-          background: `linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.6) 40%, ${primaryColor}15 100%)`,
+          background: `linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 40%, ${primaryColor}20 100%)`,
         }}
       />
 
-      <div className="absolute inset-0 hero-radial-glow" />
+      <div className="absolute inset-0 z-[3] hero-radial-glow" />
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
