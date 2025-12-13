@@ -81,7 +81,7 @@ interface AuthState {
   showGamingStatsModal: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
-  sendOtp: (phone: string, projectConfigId: string) => Promise<SendOtpResult>;
+  sendOtp: (phone: string, projectConfigId: string, countryCode?: string) => Promise<SendOtpResult>;
   verifyOtp: (phone: string, otpCode: string, projectConfigId: string) => Promise<VerifyOtpResult>;
   loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
@@ -138,8 +138,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     });
   },
 
-  sendOtp: async (phone: string, projectConfigId: string): Promise<SendOtpResult> => {
-    const result = await sendKlientoOtp(phone, projectConfigId);
+  sendOtp: async (phone: string, projectConfigId: string, countryCode?: string): Promise<SendOtpResult> => {
+    const result = await sendKlientoOtp(phone, projectConfigId, countryCode);
     return {
       success: result.success,
       error: result.error,

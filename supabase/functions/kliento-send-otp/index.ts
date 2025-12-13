@@ -12,6 +12,7 @@ const corsHeaders = {
 interface SendOtpRequest {
   phone_number: string;
   project_config_id: string;
+  country_code?: string;
 }
 
 interface SendOtpResponse {
@@ -19,6 +20,12 @@ interface SendOtpResponse {
   message?: string;
   error?: string;
   expires_in_seconds?: number;
+}
+
+interface SenditoApiResponse {
+  code: number;
+  error: number;
+  message?: string;
 }
 
 function generateOtp(): string {
@@ -48,7 +55,7 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { phone_number, project_config_id }: SendOtpRequest = await req.json();
+    const { phone_number, project_config_id, country_code }: SendOtpRequest = await req.json();
 
     if (!phone_number || !project_config_id) {
       return new Response(
@@ -65,7 +72,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: projectConfig, error: configError } = await supabase
       .from("project_configurations")
-      .select("id, kliento_auth_type")
+      .select("id, kliento_auth_type, product_id")
       .eq("id", project_config_id)
       .eq("is_active", true)
       .maybeSingle();
@@ -130,6 +137,41 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const { data: klientoConfig, error: klientoError } = await supabase
+      .from("platform_api_integrations")
+      .select("extra_config")
+      .eq("api_name", "kliento")
+      .maybeSingle();
+
+    if (klientoError || !klientoConfig) {
+      console.error("[kliento-send-otp] Kliento config not found:", klientoError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Authentication service is not configured",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const operationId = klientoConfig.extra_config?.operation_id;
+    if (!operationId) {
+      console.error("[kliento-send-otp] operation_id not found in Kliento config");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Authentication service configuration incomplete",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const { error: invalidateError } = await supabase
       .from("kliento_otp_codes")
       .update({ status: "invalidated" })
@@ -172,30 +214,104 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const senderName = senditoConfig.extra_config?.sender_name || "Arena";
     const messageTemplate = senditoConfig.extra_config?.message_template || "Your verification code is: {otp}";
     const message = messageTemplate.replace("{otp}", otpCode);
 
-    const senditoUrl = `${senditoConfig.api_url}/sms/send`;
+    const offerId = projectConfig.product_id;
+    const sesameLogin = senditoConfig.api_key;
+    const sesamePassword = senditoConfig.extra_config?.api_secret_key;
 
-    console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}***`);
+    if (!offerId) {
+      console.error("[kliento-send-otp] product_id not found in project configuration");
+      await supabase
+        .from("kliento_otp_codes")
+        .update({ status: "invalidated" })
+        .eq("phone_number", phone_number)
+        .eq("otp_code_hash", otpHash);
 
-    const smsResponse = await fetch(senditoUrl, {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Project configuration incomplete",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!sesamePassword) {
+      console.error("[kliento-send-otp] api_secret_key not found in Sendito config");
+      await supabase
+        .from("kliento_otp_codes")
+        .update({ status: "invalidated" })
+        .eq("phone_number", phone_number)
+        .eq("otp_code_hash", otpHash);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "SMS service configuration incomplete",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const resolvedCountryCode = country_code || "ET";
+
+    const formData = new URLSearchParams();
+    formData.append("type", "push");
+    formData.append("message", message);
+    formData.append("destination", phone_number);
+    formData.append("country", resolvedCountryCode);
+    formData.append("offer_id", offerId);
+    formData.append("operation_id", operationId);
+    formData.append("sesame_login", sesameLogin);
+    formData.append("sesame_password", sesamePassword);
+
+    console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
+    console.log(`[kliento-send-otp] Request params: type=push, country=${resolvedCountryCode}, offer_id=${offerId}, operation_id=${operationId}`);
+
+    const smsResponse = await fetch(senditoConfig.api_url, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${senditoConfig.api_key}`,
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({
-        to: phone_number,
-        message: message,
-        sender: senderName,
-      }),
+      body: formData.toString(),
     });
 
-    const smsResult = await smsResponse.json();
+    const smsResultText = await smsResponse.text();
+    console.log(`[kliento-send-otp] Sendito response status: ${smsResponse.status}`);
+    console.log(`[kliento-send-otp] Sendito raw response: ${smsResultText}`);
 
-    if (!smsResponse.ok) {
+    let smsResult: SenditoApiResponse;
+    try {
+      smsResult = JSON.parse(smsResultText);
+    } catch {
+      console.error("[kliento-send-otp] Failed to parse Sendito response as JSON");
+      await supabase
+        .from("kliento_otp_codes")
+        .update({ status: "invalidated" })
+        .eq("phone_number", phone_number)
+        .eq("otp_code_hash", otpHash);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Invalid response from SMS service",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (smsResult.code !== 202 || smsResult.error !== 0) {
       console.error("[kliento-send-otp] SMS send failed:", smsResult);
 
       await supabase
@@ -207,7 +323,7 @@ Deno.serve(async (req: Request) => {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Failed to send SMS. Please try again.",
+          error: smsResult.message || "Failed to send SMS. Please try again.",
         } as SendOtpResponse),
         {
           status: 500,

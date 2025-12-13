@@ -291,7 +291,8 @@ interface SendOtpResult {
 
 export const sendKlientoOtp = async (
   phone: string,
-  projectConfigId: string
+  projectConfigId: string,
+  countryCode?: string
 ): Promise<SendOtpResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -315,6 +316,7 @@ export const sendKlientoOtp = async (
       body: JSON.stringify({
         phone_number: normalizedPhone,
         project_config_id: projectConfigId,
+        country_code: countryCode,
       }),
     });
 

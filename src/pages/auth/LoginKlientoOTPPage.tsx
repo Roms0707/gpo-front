@@ -7,7 +7,7 @@ import { useAppConfig } from '../../contexts/AppConfigContext';
 import AuthLayout from '../../components/auth/AuthLayout';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { useAuthStore } from '../../stores/authStore';
-import { PhoneInput as ReactPhoneInput } from 'react-international-phone';
+import { PhoneInput as ReactPhoneInput, ParsedCountry } from 'react-international-phone';
 import 'react-international-phone/style.css';
 
 type OtpStep = 'phone' | 'verify';
@@ -20,6 +20,7 @@ const LoginKlientoOTPPage: React.FC = () => {
 
   const [step, setStep] = useState<OtpStep>('phone');
   const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('ET');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,7 +50,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await sendOtp(phone, configId);
+      const result = await sendOtp(phone, configId, countryCode);
 
       if (!result.success) {
         setError(result.error || t('loginPage.otp.sendError'));
@@ -254,7 +255,12 @@ const LoginKlientoOTPPage: React.FC = () => {
           <ReactPhoneInput
             defaultCountry="et"
             value={phone}
-            onChange={(phone) => setPhone(phone)}
+            onChange={(phone: string, meta: { country: ParsedCountry }) => {
+              setPhone(phone);
+              if (meta.country?.iso2) {
+                setCountryCode(meta.country.iso2.toUpperCase());
+              }
+            }}
             disabled={isSubmitting}
             inputClassName="!w-full !py-2.5 !pl-12 !pr-4 !rounded-lg !border-gray-300 dark:!border-gray-600 dark:!bg-dark-200 !text-base focus:!ring-2 focus:!ring-primary-500/20 focus:!border-primary-500"
             countrySelectorStyleProps={{
