@@ -71,7 +71,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
       <div className="relative z-10 container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
-          <h1 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl mb-6 text-white leading-tight">
+          <h1 className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl mb-8 text-white leading-tight">
             <TypewriterText
               phrases={heroPhases}
               typingSpeed={70}
@@ -82,11 +82,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             />
           </h1>
 
-          <p className="text-gray-300 text-base sm:text-lg md:text-xl lg:text-2xl mb-10 hero-subtitle max-w-2xl mx-auto">
-            {t('home.heroSubtitle')}
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-10 md:mt-14 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 md:mt-12 max-w-3xl mx-auto">
             <div
               onClick={onScrollToTournaments}
               className={`hero-stat-card bg-black/40 backdrop-blur-md rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-primary-500/50 transition-all duration-300 ${
