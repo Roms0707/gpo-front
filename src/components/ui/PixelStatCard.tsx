@@ -33,61 +33,48 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
       style={{ animationDelay }}
     >
       <div
-        className={`
-          relative overflow-hidden
-          bg-black/60 backdrop-blur-md
-          p-5 sm:p-6
-          transition-all duration-200
-          ${isMobile ? 'active:scale-95' : ''}
-        `}
+        className="rpg-card-container relative overflow-hidden bg-black/80 backdrop-blur-md p-5 sm:p-6"
         style={{
-          boxShadow: isHovered
-            ? `0 0 20px ${color}40, inset 0 0 30px ${color}10`
-            : `0 0 10px ${color}20`,
-          border: `3px solid ${color}`,
+          boxShadow: `
+            0 0 20px ${color}40,
+            inset 0 0 30px ${color}10,
+            inset 0 2px 0 ${color}30
+          `,
           imageRendering: 'pixelated',
         }}
       >
         <div
-          className="pixel-border-corner pixel-border-tl"
-          style={{ backgroundColor: color }}
-        />
-        <div
-          className="pixel-border-corner pixel-border-tr"
-          style={{ backgroundColor: color }}
-        />
-        <div
-          className="pixel-border-corner pixel-border-bl"
-          style={{ backgroundColor: color }}
-        />
-        <div
-          className="pixel-border-corner pixel-border-br"
-          style={{ backgroundColor: color }}
+          className="rpg-notched-border absolute inset-0 pointer-events-none"
+          style={{
+            '--rpg-border-color': color,
+          } as React.CSSProperties}
         />
 
         <div
-          className={`
-            absolute inset-0 pointer-events-none
-            transition-opacity duration-300
-            ${isHovered ? 'opacity-100' : 'opacity-0'}
-          `}
+          className="absolute inset-0 pointer-events-none opacity-100"
           style={{
             background: `repeating-linear-gradient(
               0deg,
               transparent,
               transparent 2px,
-              rgba(0, 0, 0, 0.1) 2px,
-              rgba(0, 0, 0, 0.1) 4px
+              rgba(0, 0, 0, 0.15) 2px,
+              rgba(0, 0, 0, 0.15) 4px
             )`,
           }}
         />
 
         <div
           className={`
-            absolute top-3 right-3
-            transition-all duration-300
-            ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}
+            rpg-scan-line absolute inset-0 pointer-events-none
+            ${isHovered ? 'rpg-scan-active' : ''}
           `}
+          style={{
+            '--scan-color': color,
+          } as React.CSSProperties}
+        />
+
+        <div
+          className="absolute top-3 right-3 opacity-70"
           style={{ color }}
         >
           {hoverIcon}
@@ -95,17 +82,10 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
 
         <div className="relative z-10">
           <div
-            className={`
-              text-3xl sm:text-4xl font-bold mb-2
-              flex items-center justify-center
-              transition-all duration-200
-              ${isHovered ? 'pixel-text-glitch' : ''}
-            `}
+            className="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center font-pixel"
             style={{
               color,
-              fontFamily: isHovered ? '"Press Start 2P", cursive' : 'inherit',
-              fontSize: isHovered ? '1.5rem' : undefined,
-              textShadow: isHovered ? `0 0 10px ${color}, 0 0 20px ${color}50` : undefined,
+              textShadow: `0 0 10px ${color}, 0 0 20px ${color}50`,
             }}
           >
             {value}
@@ -117,15 +97,11 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
             )}
           </div>
           <div
-            className={`
-              text-sm sm:text-base text-gray-300
-              transition-all duration-200
-              ${isHovered ? 'text-white' : ''}
-            `}
+            className="text-white font-pixel text-center"
             style={{
-              fontFamily: isHovered ? '"Press Start 2P", cursive' : 'inherit',
-              fontSize: isHovered ? '0.5rem' : undefined,
-              lineHeight: isHovered ? '1.4' : undefined,
+              fontSize: '0.5rem',
+              lineHeight: '1.4',
+              textShadow: `0 0 5px ${color}50`,
             }}
           >
             {label}
@@ -139,16 +115,12 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
         )}
 
         <div
-          className={`
-            absolute inset-0 pointer-events-none
-            transition-opacity duration-500
-            ${isHovered ? 'pixel-flicker' : 'opacity-0'}
-          `}
+          className="absolute inset-0 pointer-events-none pixel-flicker"
           style={{
             background: `linear-gradient(
               180deg,
               transparent 0%,
-              ${color}05 50%,
+              ${color}08 50%,
               transparent 100%
             )`,
           }}

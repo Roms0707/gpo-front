@@ -879,3 +879,146 @@ a:focus, button:focus, [tabindex="0"]:focus {
 .font-pixel {
   font-family: 'Press Start 2P', cursive;
 }
+
+/* RPG-Style Notched Border */
+.rpg-notched-border {
+  --notch-size: 6px;
+  --border-width: 3px;
+  background: transparent;
+}
+
+.rpg-notched-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--rpg-border-color, #fff);
+  clip-path: polygon(
+    /* Top edge with notches */
+    0 var(--notch-size),
+    var(--notch-size) var(--notch-size),
+    var(--notch-size) 0,
+    calc(100% - var(--notch-size)) 0,
+    calc(100% - var(--notch-size)) var(--notch-size),
+    100% var(--notch-size),
+    /* Right edge */
+    100% calc(100% - var(--notch-size)),
+    calc(100% - var(--notch-size)) calc(100% - var(--notch-size)),
+    calc(100% - var(--notch-size)) 100%,
+    /* Bottom edge with notches */
+    var(--notch-size) 100%,
+    var(--notch-size) calc(100% - var(--notch-size)),
+    0 calc(100% - var(--notch-size))
+  );
+}
+
+.rpg-notched-border::after {
+  content: '';
+  position: absolute;
+  inset: var(--border-width);
+  background: transparent;
+  clip-path: polygon(
+    /* Inner cutout matching outer shape */
+    0 calc(var(--notch-size) - var(--border-width)),
+    calc(var(--notch-size) - var(--border-width)) calc(var(--notch-size) - var(--border-width)),
+    calc(var(--notch-size) - var(--border-width)) 0,
+    calc(100% - var(--notch-size) + var(--border-width)) 0,
+    calc(100% - var(--notch-size) + var(--border-width)) calc(var(--notch-size) - var(--border-width)),
+    100% calc(var(--notch-size) - var(--border-width)),
+    100% calc(100% - var(--notch-size) + var(--border-width)),
+    calc(100% - var(--notch-size) + var(--border-width)) calc(100% - var(--notch-size) + var(--border-width)),
+    calc(100% - var(--notch-size) + var(--border-width)) 100%,
+    calc(var(--notch-size) - var(--border-width)) 100%,
+    calc(var(--notch-size) - var(--border-width)) calc(100% - var(--notch-size) + var(--border-width)),
+    0 calc(100% - var(--notch-size) + var(--border-width))
+  );
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.rpg-card-container {
+  clip-path: polygon(
+    0 6px,
+    6px 6px,
+    6px 0,
+    calc(100% - 6px) 0,
+    calc(100% - 6px) 6px,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    6px calc(100% - 6px),
+    0 calc(100% - 6px)
+  );
+}
+
+/* RPG Scanning Line Animation */
+@keyframes rpg-scan-sweep {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.rpg-scan-line::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    var(--scan-color, #fff) 50%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px var(--scan-color, #fff),
+    0 0 20px var(--scan-color, #fff),
+    0 0 40px var(--scan-color, #fff);
+  opacity: 0;
+  transform: translateY(-100%);
+}
+
+.rpg-scan-line.rpg-scan-active::before {
+  animation: rpg-scan-sweep 1.2s ease-in-out infinite;
+}
+
+.rpg-scan-line::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(
+    180deg,
+    var(--scan-color, #fff) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: translateY(-100%);
+  filter: blur(4px);
+}
+
+.rpg-scan-line.rpg-scan-active::after {
+  animation: rpg-scan-sweep 1.2s ease-in-out infinite;
+  animation-delay: 0.05s;
+  opacity: 0.3;
+}
+
+/* Reduced motion - disable scan animation */
+@media (prefers-reduced-motion: reduce) {
+  .rpg-scan-line.rpg-scan-active::before,
+  .rpg-scan-line.rpg-scan-active::after {
+    animation: none;
+  }
+}
