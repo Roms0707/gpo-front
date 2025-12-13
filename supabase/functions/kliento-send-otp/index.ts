@@ -21,6 +21,14 @@ interface SendOtpResponse {
   expires_in_seconds?: number;
 }
 
+interface SenditoApiResponse {
+  code: number;
+  error: number;
+  data?: {
+    message: string;
+  };
+}
+
 function generateOtp(): string {
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
@@ -65,7 +73,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: projectConfig, error: configError } = await supabase
       .from("project_configurations")
-      .select("id, kliento_auth_type")
+      .select("id, kliento_auth_type, kliento_otp_sms_template")
       .eq("id", project_config_id)
       .eq("is_active", true)
       .maybeSingle();
@@ -172,30 +180,56 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const senderName = senditoConfig.extra_config?.sender_name || "Arena";
-    const messageTemplate = senditoConfig.extra_config?.message_template || "Your verification code is: {otp}";
-    const message = messageTemplate.replace("{otp}", otpCode);
+    const smsTemplate = projectConfig.kliento_otp_sms_template || "Your OTP is {{OTP_CODE}}";
+    const message = smsTemplate.replace("{{OTP_CODE}}", otpCode);
 
-    const senditoUrl = `${senditoConfig.api_url}/sms/send`;
+    const senditoUrl = senditoConfig.api_url;
+    const sesameLogin = senditoConfig.api_key;
+    const sesamePassword = senditoConfig.extra_config?.api_secret_key || "";
 
-    console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}***`);
+    console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
+    console.log(`[kliento-send-otp] Sendito URL: ${senditoUrl}`);
+
+    const formData = new FormData();
+    formData.append("type", "push");
+    formData.append("sesame_login", sesameLogin);
+    formData.append("sesame_password", sesamePassword);
+    formData.append("to", phone_number);
+    formData.append("message", message);
 
     const smsResponse = await fetch(senditoUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${senditoConfig.api_key}`,
-      },
-      body: JSON.stringify({
-        to: phone_number,
-        message: message,
-        sender: senderName,
-      }),
+      body: formData,
     });
 
-    const smsResult = await smsResponse.json();
+    const smsResponseText = await smsResponse.text();
+    console.log(`[kliento-send-otp] Sendito response status: ${smsResponse.status}`);
+    console.log(`[kliento-send-otp] Sendito raw response: ${smsResponseText}`);
 
-    if (!smsResponse.ok) {
+    let smsResult: SenditoApiResponse;
+    try {
+      smsResult = JSON.parse(smsResponseText);
+    } catch {
+      console.error("[kliento-send-otp] Failed to parse Sendito response as JSON");
+      await supabase
+        .from("kliento_otp_codes")
+        .update({ status: "invalidated" })
+        .eq("phone_number", phone_number)
+        .eq("otp_code_hash", otpHash);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Failed to send SMS. Please try again.",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (smsResult.code !== 202 || smsResult.error !== 0) {
       console.error("[kliento-send-otp] SMS send failed:", smsResult);
 
       await supabase
@@ -216,7 +250,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log(`[kliento-send-otp] SMS sent successfully to ${phone_number.substring(0, 4)}***`);
+    console.log(`[kliento-send-otp] SMS sent successfully to ${phone_number.substring(0, 4)}***, message_id: ${smsResult.data?.message}`);
 
     return new Response(
       JSON.stringify({

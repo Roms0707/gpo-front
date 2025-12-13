@@ -1,24 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Phone, ArrowLeft, RefreshCw } from 'lucide-react';
+import { User, ArrowLeft, RefreshCw, Send } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import AuthLayout from '../../components/auth/AuthLayout';
 import ErrorMessage from '../../components/ui/ErrorMessage';
 import { useAuthStore } from '../../stores/authStore';
-import { PhoneInput as ReactPhoneInput } from 'react-international-phone';
-import 'react-international-phone/style.css';
 
-type OtpStep = 'phone' | 'verify';
+type OtpStep = 'username' | 'sendOtp' | 'verify';
 
 const LoginKlientoOTPPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { configId, brandName } = useAppConfig();
-  const { sendOtp, verifyOtp } = useAuthStore();
+  const { configId, brandName, subscriptionRedirectUrl } = useAppConfig();
+  const { checkSubscription, sendOtp, verifyOtp } = useAuthStore();
 
-  const [step, setStep] = useState<OtpStep>('phone');
+  const [step, setStep] = useState<OtpStep>('username');
+  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
   const [error, setError] = useState<string | null>(null);
@@ -37,10 +36,59 @@ const LoginKlientoOTPPage: React.FC = () => {
     }
   }, [countdown, step]);
 
+  const handleCheckSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!username || username.trim().length < 3) {
+      setError(t('loginPage.otp.invalidUsername'));
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      const result = await checkSubscription(username.trim(), configId);
+
+      if (!result.success) {
+        setError(result.error || t('loginPage.otp.checkError'));
+        toast.error(result.error || t('loginPage.otp.checkError'));
+        return;
+      }
+
+      if (!result.isSubscribed) {
+        const redirectUrl = result.redirectUrl || subscriptionRedirectUrl;
+        if (redirectUrl) {
+          toast.error(t('loginPage.otp.subscriptionRequired'));
+          window.location.href = redirectUrl;
+        } else {
+          setError(t('loginPage.otp.subscriptionRequired'));
+          toast.error(t('loginPage.otp.subscriptionRequired'));
+        }
+        return;
+      }
+
+      if (result.phoneNumber) {
+        setPhone(result.phoneNumber);
+        setStep('sendOtp');
+        toast.success(t('loginPage.otp.subscriptionVerified'));
+      } else {
+        setError(t('loginPage.otp.noPhoneNumber'));
+      }
+    } catch (err) {
+      console.error('Check subscription error:', err);
+      const errorMessage = err instanceof Error ? err.message : t('loginPage.otp.checkError');
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!phone || phone.length < 10) {
+    if (!phone) {
       setError(t('loginPage.otp.invalidPhone'));
       return;
     }
@@ -150,12 +198,18 @@ const LoginKlientoOTPPage: React.FC = () => {
     await handleSendOtp();
   };
 
-  const handleChangeNumber = () => {
-    setStep('phone');
-    setOtpDigits(['', '', '', '']);
-    setError(null);
-    setCountdown(0);
-    setCanResend(false);
+  const handleBack = () => {
+    if (step === 'verify') {
+      setStep('sendOtp');
+      setOtpDigits(['', '', '', '']);
+      setError(null);
+      setCountdown(0);
+      setCanResend(false);
+    } else if (step === 'sendOtp') {
+      setStep('username');
+      setPhone('');
+      setError(null);
+    }
   };
 
   const formatCountdown = (seconds: number) => {
@@ -164,11 +218,18 @@ const LoginKlientoOTPPage: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const maskPhoneNumber = (phoneNumber: string) => {
+    if (phoneNumber.length <= 4) return phoneNumber;
+    const lastFour = phoneNumber.slice(-4);
+    const masked = '*'.repeat(phoneNumber.length - 4);
+    return masked + lastFour;
+  };
+
   if (step === 'verify') {
     return (
       <AuthLayout
         title={t('loginPage.otp.verifyTitle')}
-        subtitle={t('loginPage.otp.verifySubtitle', { phone: phone.slice(-4).padStart(phone.length, '*') })}
+        subtitle={t('loginPage.otp.verifySubtitle', { phone: maskPhoneNumber(phone) })}
       >
         {error && <ErrorMessage message={error} />}
 
@@ -228,11 +289,67 @@ const LoginKlientoOTPPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={handleChangeNumber}
+            onClick={handleBack}
             className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium inline-flex items-center justify-center gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            {t('loginPage.otp.changeNumber')}
+            {t('loginPage.otp.back')}
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  if (step === 'sendOtp') {
+    return (
+      <AuthLayout
+        title={t('loginPage.otp.sendOtpTitle')}
+        subtitle={t('loginPage.otp.sendOtpSubtitle', { phone: maskPhoneNumber(phone) })}
+      >
+        {error && <ErrorMessage message={error} />}
+
+        <div className="space-y-6">
+          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700/50">
+            <p className="text-sm text-green-700 dark:text-green-300">
+              {t('loginPage.otp.subscriptionActive')}
+            </p>
+          </div>
+
+          <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+              {t('loginPage.otp.phoneNumberLabel')}
+            </p>
+            <p className="text-lg font-medium text-gray-900 dark:text-white">
+              {maskPhoneNumber(phone)}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => handleSendOtp()}
+            disabled={isSubmitting}
+            className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors flex items-center justify-center font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="animate-spin mr-2">&#8635;</span>
+                {t('loginPage.otp.sending')}
+              </>
+            ) : (
+              <>
+                <Send className="w-5 h-5 mr-2" />
+                {t('loginPage.otp.sendCode')}
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleBack}
+            className="w-full text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm font-medium inline-flex items-center justify-center gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t('loginPage.otp.changeUsername')}
           </button>
         </div>
       </AuthLayout>
@@ -246,41 +363,41 @@ const LoginKlientoOTPPage: React.FC = () => {
     >
       {error && <ErrorMessage message={error} />}
 
-      <form onSubmit={handleSendOtp} className="space-y-4">
+      <form onSubmit={handleCheckSubscription} className="space-y-4">
         <div>
-          <label htmlFor="phone" className="label">
-            {t('loginPage.otp.phoneLabel')}
+          <label htmlFor="username" className="label">
+            {t('loginPage.otp.usernameLabel')}
           </label>
-          <ReactPhoneInput
-            defaultCountry="et"
-            value={phone}
-            onChange={(phone) => setPhone(phone)}
-            disabled={isSubmitting}
-            inputClassName="!w-full !py-2.5 !pl-12 !pr-4 !rounded-lg !border-gray-300 dark:!border-gray-600 dark:!bg-dark-200 !text-base focus:!ring-2 focus:!ring-primary-500/20 focus:!border-primary-500"
-            countrySelectorStyleProps={{
-              buttonClassName: '!border-gray-300 dark:!border-gray-600 dark:!bg-dark-200 !rounded-l-lg !pl-3 !pr-2',
-            }}
-          />
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isSubmitting}
+              placeholder={t('loginPage.otp.usernamePlaceholder')}
+              className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-200 focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all disabled:opacity-50"
+              autoComplete="username"
+            />
+          </div>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            {t('loginPage.otp.phoneHint')}
+            {t('loginPage.otp.usernameHint')}
           </p>
         </div>
 
         <button
           type="submit"
-          disabled={isSubmitting || !phone || phone.length < 10}
+          disabled={isSubmitting || !username || username.trim().length < 3}
           className="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-colors flex items-center justify-center font-medium shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
         >
           {isSubmitting ? (
             <>
               <span className="animate-spin mr-2">&#8635;</span>
-              {t('loginPage.otp.sending')}
+              {t('loginPage.otp.checking')}
             </>
           ) : (
-            <>
-              <Phone className="w-5 h-5 mr-2" />
-              {t('loginPage.otp.sendCode')}
-            </>
+            t('loginPage.otp.continue')
           )}
         </button>
       </form>

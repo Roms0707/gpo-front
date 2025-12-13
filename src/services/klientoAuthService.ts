@@ -347,6 +347,24 @@ interface VerifyOtpResult {
   remainingAttempts?: number;
 }
 
+interface CheckSubscriptionResponse {
+  success: boolean;
+  isSubscribed?: boolean;
+  phoneNumber?: string;
+  userId?: string;
+  redirectUrl?: string;
+  error?: string;
+}
+
+export interface CheckSubscriptionResult {
+  success: boolean;
+  isSubscribed: boolean;
+  phoneNumber: string | null;
+  userId: string | null;
+  redirectUrl: string | null;
+  error: string | null;
+}
+
 export const verifyKlientoOtp = async (
   phone: string,
   otpCode: string,
@@ -410,6 +428,71 @@ export const verifyKlientoOtp = async (
     console.error('[klientoAuthService] Verify OTP error:', error);
     return {
       user: null,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+};
+
+export const checkKlientoSubscription = async (
+  login: string,
+  projectConfigId: string
+): Promise<CheckSubscriptionResult> => {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        isSubscribed: false,
+        phoneNumber: null,
+        userId: null,
+        redirectUrl: null,
+        error: 'Application configuration error',
+      };
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/kliento-check-subscription-by-login`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        login,
+        project_config_id: projectConfigId,
+      }),
+    });
+
+    const data: CheckSubscriptionResponse = await response.json();
+
+    if (!data.success) {
+      return {
+        success: false,
+        isSubscribed: false,
+        phoneNumber: null,
+        userId: null,
+        redirectUrl: data.redirectUrl || null,
+        error: data.error || 'Failed to check subscription',
+      };
+    }
+
+    return {
+      success: true,
+      isSubscribed: data.isSubscribed || false,
+      phoneNumber: data.phoneNumber || null,
+      userId: data.userId || null,
+      redirectUrl: data.redirectUrl || null,
+      error: data.isSubscribed ? null : (data.error || 'Subscription required'),
+    };
+  } catch (error) {
+    console.error('[klientoAuthService] Check subscription error:', error);
+    return {
+      success: false,
+      isSubscribed: false,
+      phoneNumber: null,
+      userId: null,
+      redirectUrl: null,
       error: error instanceof Error ? error.message : 'An unexpected error occurred',
     };
   }

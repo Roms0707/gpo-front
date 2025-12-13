@@ -3,7 +3,7 @@ import { User } from '../types';
 import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from '../services/authService';
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
-import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser, sendKlientoOtp, verifyKlientoOtp } from '../services/klientoAuthService';
+import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser, sendKlientoOtp, verifyKlientoOtp, checkKlientoSubscription, CheckSubscriptionResult } from '../services/klientoAuthService';
 import { supabase } from '../lib/supabase';
 
 interface TransactionVerificationResult {
@@ -81,6 +81,7 @@ interface AuthState {
   showGamingStatsModal: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
+  checkSubscription: (login: string, projectConfigId: string) => Promise<CheckSubscriptionResult>;
   sendOtp: (phone: string, projectConfigId: string) => Promise<SendOtpResult>;
   verifyOtp: (phone: string, otpCode: string, projectConfigId: string) => Promise<VerifyOtpResult>;
   loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
@@ -136,6 +137,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       error: result.error,
       isLoading: false
     });
+  },
+
+  checkSubscription: async (login: string, projectConfigId: string): Promise<CheckSubscriptionResult> => {
+    const result = await checkKlientoSubscription(login, projectConfigId);
+    return result;
   },
 
   sendOtp: async (phone: string, projectConfigId: string): Promise<SendOtpResult> => {
