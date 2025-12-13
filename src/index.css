@@ -783,242 +783,72 @@ a:focus, button:focus, [tabindex="0"]:focus {
   }
 }
 
-/* Pixel Stat Card Styles */
-.pixel-stat-card {
+/* Arcade Stat Card Styles */
+.arcade-stat-card {
   animation: fadeInScale 0.6s ease-out both;
 }
 
-.pixel-stat-card:nth-child(1) {
+.arcade-stat-card:nth-child(1) {
   animation-delay: 0.8s;
 }
 
-.pixel-stat-card:nth-child(2) {
+.arcade-stat-card:nth-child(2) {
   animation-delay: 0.95s;
 }
 
-.pixel-stat-card:nth-child(3) {
+.arcade-stat-card:nth-child(3) {
   animation-delay: 1.1s;
 }
 
-/* Pixel border corners */
-.pixel-border-corner {
-  position: absolute;
-  width: 8px;
-  height: 8px;
+/* Arcade number font */
+.arcade-number {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
-.pixel-border-tl {
-  top: -3px;
-  left: -3px;
-}
-
-.pixel-border-tr {
-  top: -3px;
-  right: -3px;
-}
-
-.pixel-border-bl {
-  bottom: -3px;
-  left: -3px;
-}
-
-.pixel-border-br {
-  bottom: -3px;
-  right: -3px;
-}
-
-/* Pixel text glitch effect */
-@keyframes pixel-glitch {
+/* Arcade neon glow pulse */
+@keyframes arcade-glow-pulse {
   0%, 100% {
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-    transform: translateX(0);
-  }
-  10% {
-    transform: translateX(-2px);
-  }
-  20% {
-    transform: translateX(2px);
-  }
-  30% {
-    text-shadow: -2px 0 currentColor, 2px 0 currentColor, 0 0 10px currentColor;
-  }
-  40% {
-    transform: translateX(-1px);
+    filter: brightness(1);
   }
   50% {
-    transform: translateX(1px);
-    text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
-  }
-  60% {
-    transform: translateX(0);
+    filter: brightness(1.2);
   }
 }
 
-.pixel-text-glitch {
-  animation: pixel-glitch 0.3s ease-in-out;
+.arcade-glow-pulse {
+  animation: arcade-glow-pulse 2s ease-in-out infinite;
 }
 
-/* Pixel flicker effect */
-@keyframes pixel-flicker {
-  0%, 100% {
-    opacity: 0.1;
-  }
-  50% {
-    opacity: 0.15;
-  }
-  25%, 75% {
-    opacity: 0.05;
-  }
-}
-
-.pixel-flicker {
-  animation: pixel-flicker 2s ease-in-out infinite;
-}
-
-/* Pixel font utility */
-.font-pixel {
-  font-family: 'Press Start 2P', cursive;
-}
-
-/* RPG-Style Notched Border */
-.rpg-notched-border {
-  --notch-size: 6px;
-  --border-width: 3px;
-  background: transparent;
-}
-
-.rpg-notched-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--rpg-border-color, #fff);
-  clip-path: polygon(
-    /* Top edge with notches */
-    0 var(--notch-size),
-    var(--notch-size) var(--notch-size),
-    var(--notch-size) 0,
-    calc(100% - var(--notch-size)) 0,
-    calc(100% - var(--notch-size)) var(--notch-size),
-    100% var(--notch-size),
-    /* Right edge */
-    100% calc(100% - var(--notch-size)),
-    calc(100% - var(--notch-size)) calc(100% - var(--notch-size)),
-    calc(100% - var(--notch-size)) 100%,
-    /* Bottom edge with notches */
-    var(--notch-size) 100%,
-    var(--notch-size) calc(100% - var(--notch-size)),
-    0 calc(100% - var(--notch-size))
-  );
-}
-
-.rpg-notched-border::after {
-  content: '';
-  position: absolute;
-  inset: var(--border-width);
-  background: transparent;
-  clip-path: polygon(
-    /* Inner cutout matching outer shape */
-    0 calc(var(--notch-size) - var(--border-width)),
-    calc(var(--notch-size) - var(--border-width)) calc(var(--notch-size) - var(--border-width)),
-    calc(var(--notch-size) - var(--border-width)) 0,
-    calc(100% - var(--notch-size) + var(--border-width)) 0,
-    calc(100% - var(--notch-size) + var(--border-width)) calc(var(--notch-size) - var(--border-width)),
-    100% calc(var(--notch-size) - var(--border-width)),
-    100% calc(100% - var(--notch-size) + var(--border-width)),
-    calc(100% - var(--notch-size) + var(--border-width)) calc(100% - var(--notch-size) + var(--border-width)),
-    calc(100% - var(--notch-size) + var(--border-width)) 100%,
-    calc(var(--notch-size) - var(--border-width)) 100%,
-    calc(var(--notch-size) - var(--border-width)) calc(100% - var(--notch-size) + var(--border-width)),
-    0 calc(100% - var(--notch-size) + var(--border-width))
-  );
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.rpg-card-container {
-  clip-path: polygon(
-    0 6px,
-    6px 6px,
-    6px 0,
-    calc(100% - 6px) 0,
-    calc(100% - 6px) 6px,
-    100% 6px,
-    100% calc(100% - 6px),
-    calc(100% - 6px) calc(100% - 6px),
-    calc(100% - 6px) 100%,
-    6px 100%,
-    6px calc(100% - 6px),
-    0 calc(100% - 6px)
-  );
-}
-
-/* RPG Scanning Line Animation */
-@keyframes rpg-scan-sweep {
+/* Arcade light bar animation */
+@keyframes arcade-light-sweep {
   0% {
-    transform: translateY(-100%);
+    transform: translateX(-100%);
     opacity: 0;
   }
-  10% {
-    opacity: 1;
-  }
-  90% {
+  50% {
     opacity: 1;
   }
   100% {
-    transform: translateY(100%);
+    transform: translateX(100%);
     opacity: 0;
   }
 }
 
-.rpg-scan-line::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--scan-color, #fff) 50%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px var(--scan-color, #fff),
-    0 0 20px var(--scan-color, #fff),
-    0 0 40px var(--scan-color, #fff);
-  opacity: 0;
-  transform: translateY(-100%);
+.arcade-light-sweep {
+  animation: arcade-light-sweep 3s ease-in-out infinite;
 }
 
-.rpg-scan-line.rpg-scan-active::before {
-  animation: rpg-scan-sweep 1.2s ease-in-out infinite;
-}
-
-.rpg-scan-line::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 30px;
-  background: linear-gradient(
-    180deg,
-    var(--scan-color, #fff) 0%,
-    transparent 100%
-  );
-  opacity: 0;
-  transform: translateY(-100%);
-  filter: blur(4px);
-}
-
-.rpg-scan-line.rpg-scan-active::after {
-  animation: rpg-scan-sweep 1.2s ease-in-out infinite;
-  animation-delay: 0.05s;
-  opacity: 0.3;
-}
-
-/* Reduced motion - disable scan animation */
+/* Reduced motion for arcade effects */
 @media (prefers-reduced-motion: reduce) {
-  .rpg-scan-line.rpg-scan-active::before,
-  .rpg-scan-line.rpg-scan-active::after {
+  .arcade-stat-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .arcade-glow-pulse,
+  .arcade-light-sweep {
     animation: none;
   }
 }
