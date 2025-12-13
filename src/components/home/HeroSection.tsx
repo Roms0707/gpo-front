@@ -46,7 +46,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(https://images.pexels.com/photos/7915357/pexels-photo-7915357.jpeg?auto=compress&cs=tinysrgb&w=1920)`,
+          backgroundImage: `url(https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1920&q=80)`,
         }}
       />
 
@@ -62,7 +62,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         }`}
       >
         <source
-          src="https://videos.pexels.com/video-files/7915357/7915357-hd_1920_1080_30fps.mp4"
+          src="https://cdn.pixabay.com/video/2020/05/25/40130-424930032_large.mp4"
           type="video/mp4"
         />
       </video>
