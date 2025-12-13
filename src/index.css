@@ -1022,3 +1022,49 @@ a:focus, button:focus, [tabindex="0"]:focus {
     animation: none;
   }
 }
+
+/* PillNav Ripple Animation */
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple 0.5s ease-out forwards;
+}
+
+/* PillNav Subtle Bounce Animation */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-1px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 0.4s ease-out;
+}
+
+/* Reduced motion for PillNav animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-ripple,
+  .animate-bounce-subtle {
+    animation: none;
+  }
+}

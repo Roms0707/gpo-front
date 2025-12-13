@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useLayoutEffect } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -20,6 +20,12 @@ interface PillStyle {
   width: string;
 }
 
+interface RippleState {
+  x: number;
+  y: number;
+  id: number;
+}
+
 const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
   const { theme } = useTheme();
   const location = useLocation();
@@ -28,6 +34,9 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pillStyle, setPillStyle] = useState<PillStyle>({ transform: 'translateX(0)', width: '0px' });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [ripples, setRipples] = useState<{ [key: number]: RippleState[] }>({});
+  const [pressedIndex, setPressedIndex] = useState<number | null>(null);
+  const rippleIdRef = useRef(0);
 
   const getActiveIndex = () => {
     return items.findIndex((item) => {
@@ -94,6 +103,36 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
     setHoveredIndex(null);
   };
 
+  const createRipple = useCallback((event: React.MouseEvent, index: number) => {
+    const element = itemRefs.current[index];
+    if (!element) return;
+
+    const rect = element.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    const id = rippleIdRef.current++;
+
+    setRipples(prev => ({
+      ...prev,
+      [index]: [...(prev[index] || []), { x, y, id }]
+    }));
+
+    setTimeout(() => {
+      setRipples(prev => ({
+        ...prev,
+        [index]: (prev[index] || []).filter(r => r.id !== id)
+      }));
+    }, 500);
+  }, []);
+
+  const handleMouseDown = (index: number) => {
+    setPressedIndex(index);
+  };
+
+  const handleMouseUp = () => {
+    setPressedIndex(null);
+  };
+
   const isDark = theme === 'dark';
 
   return (
@@ -108,10 +147,14 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
       <div
         className={`absolute top-1 bottom-1 rounded-full ${
           isDark ? 'bg-primary-600/90' : 'bg-primary-500/90'
-        } ${isInitialized ? 'transition-all duration-300 ease-out' : ''}`}
+        } ${isInitialized ? 'transition-all duration-300' : ''}`}
         style={{
           ...pillStyle,
           zIndex: 0,
+          transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+          boxShadow: isDark
+            ? '0 0 12px rgba(var(--color-primary-500), 0.3)'
+            : '0 0 8px rgba(var(--color-primary-500), 0.25)',
         }}
       />
 
@@ -120,24 +163,55 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
         const isHovered = index === hoveredIndex;
         const showHighlight = isActive || isHovered;
 
+        const isPressed = index === pressedIndex;
+        const itemRipples = ripples[index] || [];
+
         const commonProps = {
           ref: (el: HTMLAnchorElement | HTMLButtonElement | null) => {
             itemRefs.current[index] = el;
           },
-          className: `relative z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200 ${
+          className: `relative z-10 flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full transition-all duration-150 overflow-hidden ${
             showHighlight
               ? 'text-white'
               : isDark
               ? 'text-gray-300 hover:text-white'
               : 'text-gray-600 hover:text-gray-900'
           }`,
+          style: {
+            transform: isPressed ? 'scale(0.97)' : 'scale(1)',
+          },
           onMouseEnter: () => handleMouseEnter(index),
-          onMouseLeave: handleMouseLeave,
+          onMouseLeave: () => {
+            handleMouseLeave();
+            handleMouseUp();
+          },
+          onMouseDown: () => handleMouseDown(index),
+          onMouseUp: handleMouseUp,
+          onClick: (e: React.MouseEvent) => createRipple(e, index),
         };
 
         const content = (
           <>
-            {item.icon && <span className="w-4 h-4">{item.icon}</span>}
+            {itemRipples.map(ripple => (
+              <span
+                key={ripple.id}
+                className="absolute rounded-full bg-white/30 pointer-events-none animate-ripple"
+                style={{
+                  left: ripple.x,
+                  top: ripple.y,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              />
+            ))}
+            {item.icon && (
+              <span
+                className={`w-4 h-4 transition-transform duration-300 ${
+                  isHovered ? 'animate-bounce-subtle' : ''
+                }`}
+              >
+                {item.icon}
+              </span>
+            )}
             <span>{item.label}</span>
             {item.badge !== undefined && item.badge > 0 && (
               <span
@@ -158,7 +232,10 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
             <button
               key={item.href}
               {...commonProps}
-              onClick={item.onClick}
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                createRipple(e, index);
+                item.onClick?.();
+              }}
               type="button"
             >
               {content}
@@ -167,7 +244,12 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
         }
 
         return (
-          <Link key={item.href} to={item.href} {...commonProps}>
+          <Link
+            key={item.href}
+            to={item.href}
+            {...commonProps}
+            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => createRipple(e, index)}
+          >
             {content}
           </Link>
         );
