@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import TournamentCard from './TournamentCard';
+import TiltedTournamentCard from './TiltedTournamentCard';
 import { Tournament } from '../../types';
 import TournamentFilters from './TournamentFilters';
 import { calculateTournamentStatus, calculateRegistrationStatus } from '../../utils/tournamentUtils';
@@ -146,9 +146,15 @@ const TournamentList: React.FC<TournamentListProps> = ({
           ))}
         </div>
       ) : sortedTournaments.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {sortedTournaments.map(tournament => (
-            <TournamentCard key={tournament.id} tournament={tournament} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-7 p-1">
+          {sortedTournaments.map((tournament, index) => (
+            <div
+              key={tournament.id}
+              className="tournament-card-entrance"
+              style={{ animationDelay: `${index * 50}ms` }}
+            >
+              <TiltedTournamentCard tournament={tournament} />
+            </div>
           ))}
         </div>
       ) : (
