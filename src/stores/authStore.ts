@@ -3,13 +3,25 @@ import { User } from '../types';
 import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from '../services/authService';
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
-import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser } from '../services/klientoAuthService';
+import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser, sendKlientoOtp, verifyKlientoOtp } from '../services/klientoAuthService';
 import { supabase } from '../lib/supabase';
 
 interface TransactionVerificationResult {
   user: User | null;
   error: string | null;
   isPending: boolean;
+}
+
+interface SendOtpResult {
+  success: boolean;
+  error: string | null;
+  expiresInSeconds?: number;
+}
+
+interface VerifyOtpResult {
+  user: User | null;
+  error: string | null;
+  remainingAttempts?: number;
 }
 
 const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
@@ -69,6 +81,8 @@ interface AuthState {
   showGamingStatsModal: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
+  sendOtp: (phone: string, projectConfigId: string) => Promise<SendOtpResult>;
+  verifyOtp: (phone: string, otpCode: string, projectConfigId: string) => Promise<VerifyOtpResult>;
   loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
   logout: () => Promise<void>;
@@ -122,6 +136,37 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       error: result.error,
       isLoading: false
     });
+  },
+
+  sendOtp: async (phone: string, projectConfigId: string): Promise<SendOtpResult> => {
+    const result = await sendKlientoOtp(phone, projectConfigId);
+    return {
+      success: result.success,
+      error: result.error,
+      expiresInSeconds: result.expiresInSeconds,
+    };
+  },
+
+  verifyOtp: async (phone: string, otpCode: string, projectConfigId: string): Promise<VerifyOtpResult> => {
+    set({ isLoading: true, error: null });
+
+    const result = await verifyKlientoOtp(phone, otpCode, projectConfigId);
+
+    if (result.user) {
+      setKlientoSession(result.user);
+    }
+
+    set({
+      user: result.user,
+      error: result.error,
+      isLoading: false,
+    });
+
+    return {
+      user: result.user,
+      error: result.error,
+      remainingAttempts: result.remainingAttempts,
+    };
   },
 
   loginTransactionUser: async (operationId: string, offerId: string): Promise<TransactionVerificationResult> => {

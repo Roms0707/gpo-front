@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette, LegalVariables, AuthMethod } from '../types/projectConfig';
+import { AppConfigContextState, ProjectConfiguration, TailwindColorPalette, LegalVariables, AuthMethod, KlientoAuthType } from '../types/projectConfig';
 import { projectConfigService } from '../services/projectConfigService';
 import { tailwindColorService } from '../services/tailwindColorService';
 import { supabase } from '../lib/supabase';
@@ -26,6 +26,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     productId: null,
     campaignId: null,
     authMethod: 'email' as AuthMethod,
+    klientoAuthType: null as KlientoAuthType | null,
     subscriptionRedirectUrl: null,
     tailwindPalette: null,
     legalVariables: {
@@ -51,6 +52,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       secondaryColor: config.secondary_color,
       accentColor: config.accent_color || 'not set',
       authMethod: config.auth_method || 'email',
+      klientoAuthType: config.kliento_auth_type || 'otp',
     });
     console.log('[AppConfigContext] ═══════════════════════════════════════════');
 
@@ -86,6 +88,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       productId: config.product_id,
       campaignId: config.campaign_id,
       authMethod: (config.auth_method || 'email') as AuthMethod,
+      klientoAuthType: (config.kliento_auth_type || null) as KlientoAuthType | null,
       subscriptionRedirectUrl: config.subscription_redirect_url || null,
       tailwindPalette: palette,
       legalVariables,

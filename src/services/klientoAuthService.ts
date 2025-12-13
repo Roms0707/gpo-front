@@ -24,6 +24,20 @@ interface TransactionVerifyResponse {
   status?: string;
 }
 
+interface SendOtpResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  expires_in_seconds?: number;
+}
+
+interface VerifyOtpResponse {
+  success: boolean;
+  user_id?: string;
+  error?: string;
+  remaining_attempts?: number;
+}
+
 export const formatPhoneNumber = (phone: string): string => {
   return normalizePhoneToE164(phone);
 };
@@ -262,6 +276,138 @@ export const verifyTransactionUser = async (
     };
   } catch (error) {
     console.error('[klientoAuthService] Transaction verification error:', error);
+    return {
+      user: null,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+};
+
+interface SendOtpResult {
+  success: boolean;
+  error: string | null;
+  expiresInSeconds?: number;
+}
+
+export const sendKlientoOtp = async (
+  phone: string,
+  projectConfigId: string
+): Promise<SendOtpResult> => {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        success: false,
+        error: 'Application configuration error',
+      };
+    }
+
+    const normalizedPhone = normalizePhoneToE164(phone);
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/kliento-send-otp`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone_number: normalizedPhone,
+        project_config_id: projectConfigId,
+      }),
+    });
+
+    const data: SendOtpResponse = await response.json();
+
+    if (!data.success) {
+      return {
+        success: false,
+        error: data.error || 'Failed to send OTP',
+      };
+    }
+
+    return {
+      success: true,
+      error: null,
+      expiresInSeconds: data.expires_in_seconds,
+    };
+  } catch (error) {
+    console.error('[klientoAuthService] Send OTP error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An unexpected error occurred',
+    };
+  }
+};
+
+interface VerifyOtpResult {
+  user: User | null;
+  error: string | null;
+  remainingAttempts?: number;
+}
+
+export const verifyKlientoOtp = async (
+  phone: string,
+  otpCode: string,
+  projectConfigId: string
+): Promise<VerifyOtpResult> => {
+  try {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return {
+        user: null,
+        error: 'Application configuration error',
+      };
+    }
+
+    const normalizedPhone = normalizePhoneToE164(phone);
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/kliento-verify-otp`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        phone_number: normalizedPhone,
+        otp_code: otpCode,
+        project_config_id: projectConfigId,
+      }),
+    });
+
+    const data: VerifyOtpResponse = await response.json();
+
+    if (!data.success || !data.user_id) {
+      return {
+        user: null,
+        error: data.error || 'Verification failed',
+        remainingAttempts: data.remaining_attempts,
+      };
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', data.user_id)
+      .single();
+
+    if (userError || !userData) {
+      console.error('[klientoAuthService] Error fetching user after OTP verification:', userError);
+      return {
+        user: null,
+        error: 'Failed to retrieve user data',
+      };
+    }
+
+    return {
+      user: mapDatabaseUserToUser(userData),
+      error: null,
+    };
+  } catch (error) {
+    console.error('[klientoAuthService] Verify OTP error:', error);
     return {
       user: null,
       error: error instanceof Error ? error.message : 'An unexpected error occurred',

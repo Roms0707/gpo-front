@@ -34,6 +34,7 @@ export interface LegalVariables {
 }
 
 export type AuthMethod = 'email' | 'discord' | 'kliento';
+export type KlientoAuthType = 'password' | 'otp';
 
 export interface ProjectConfiguration {
   id: string;
@@ -62,6 +63,7 @@ export interface ProjectConfiguration {
   registration_number?: string | null;
   discord_url?: string | null;
   auth_method?: AuthMethod;
+  kliento_auth_type?: KlientoAuthType | null;
   subscription_redirect_url?: string | null;
 }
 
@@ -78,6 +80,7 @@ export interface AppConfigContextState {
   productId: string | null;
   campaignId: string | null;
   authMethod: AuthMethod;
+  klientoAuthType: KlientoAuthType | null;
   subscriptionRedirectUrl: string | null;
   tailwindPalette: TailwindColorPalette | null;
   legalVariables: LegalVariables;

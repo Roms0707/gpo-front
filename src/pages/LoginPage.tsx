@@ -4,11 +4,12 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import LoginEmailPage from './auth/LoginEmailPage';
 import LoginDiscordPage from './auth/LoginDiscordPage';
 import LoginKlientoPage from './auth/LoginKlientoPage';
+import LoginKlientoOTPPage from './auth/LoginKlientoOTPPage';
 import { useTranslation } from 'react-i18next';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
-  const { authMethod, isLoading } = useAppConfig();
+  const { authMethod, klientoAuthType, isLoading } = useAppConfig();
 
   if (isLoading) {
     return (
@@ -22,6 +23,9 @@ const LoginPage: React.FC = () => {
     case 'discord':
       return <LoginDiscordPage />;
     case 'kliento':
+      if (klientoAuthType === 'otp') {
+        return <LoginKlientoOTPPage />;
+      }
       return <LoginKlientoPage />;
     case 'email':
     default:
