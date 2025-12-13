@@ -208,8 +208,7 @@
     "login": "Connexion",
     "logout": "Déconnexion",
     "messages": "Messages",
-    "matchNotifications": "Notifications de match",
-    "profile": "Profil"
+    "matchNotifications": "Notifications de match"
   },
   "footer": {
     "joinCompetition": "Rejoignez la compétition dès aujourd'hui !",

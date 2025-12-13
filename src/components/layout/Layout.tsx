@@ -17,10 +17,10 @@ const Layout: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-dark-200 text-gray-900 dark:text-white transition-colors duration-200 overflow-x-hidden w-full">
       <Header />
-      <main id="main-content" className="flex-grow w-full overflow-x-hidden pb-20 md:pb-0">
+      <main id="main-content" className="flex-grow w-full overflow-x-hidden">
         <Outlet />
       </main>
-      <Footer className="pb-20 md:pb-0" />
+      <Footer />
 
       {/* Chat Button - Only show for logged in users */}
       {user && <ChatButton />}
