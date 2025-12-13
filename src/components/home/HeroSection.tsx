@@ -87,7 +87,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <PixelStatCard
               value={activeTournamentsCount}
               label={t('home.activeTournaments', { count: activeTournamentsCount })}
-              color="#00E5FF"
+              color="#6B7280"
               hoverIcon={<Trophy className="w-5 h-5" />}
               isMobile={isMobile}
               onClick={onScrollToTournaments}
@@ -96,7 +96,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <PixelStatCard
               value={gamesCount}
               label={t('home.gamesAvailable')}
-              color="#39FF14"
+              color="#6B7280"
               hoverIcon={<Gamepad2 className="w-5 h-5" />}
               isMobile={isMobile}
               onClick={onScrollToTournaments}
