@@ -358,7 +358,7 @@ const LoginKlientoOTPPage: React.FC = () => {
 
   return (
     <AuthLayout
-      title={t('loginPage.otp.title')}
+      title={t('loginPage.otp.title', { brandName })}
       subtitle={t('loginPage.otp.subtitle', { brandName })}
     >
       {error && <ErrorMessage message={error} />}
@@ -382,7 +382,7 @@ const LoginKlientoOTPPage: React.FC = () => {
             />
           </div>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            {t('loginPage.otp.usernameHint')}
+            {t('loginPage.otp.usernameHint', { brandName })}
           </p>
         </div>
 

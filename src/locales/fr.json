@@ -2222,8 +2222,8 @@
     "klientoExternalSignup": "Nouvel utilisateur ?",
     "klientoExternalSignupHint": "La création de compte se fait en externe. Veuillez contacter le support si vous devez créer un nouveau compte.",
     "otp": {
-      "title": "Connexion",
-      "subtitle": "Entrez votre nom d'utilisateur pour continuer",
+      "title": "Connexion a {{brandName}}",
+      "subtitle": "Entrez votre nom d'utilisateur {{brandName}} pour continuer",
       "usernameLabel": "Nom d'utilisateur",
       "usernamePlaceholder": "Entrez votre nom d'utilisateur",
       "usernameHint": "Entrez le nom d'utilisateur ou numéro de téléphone de votre compte {{brandName}}",

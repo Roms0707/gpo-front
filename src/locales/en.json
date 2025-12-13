@@ -2222,8 +2222,8 @@
     "klientoExternalSignup": "New user?",
     "klientoExternalSignupHint": "Account creation is handled externally. Please contact support if you need to create a new account.",
     "otp": {
-      "title": "Sign In",
-      "subtitle": "Enter your username to continue",
+      "title": "Sign In to {{brandName}}",
+      "subtitle": "Enter your {{brandName}} username to continue",
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter your username",
       "usernameHint": "Enter your {{brandName}} account username or phone number",
