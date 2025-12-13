@@ -5,6 +5,7 @@ interface PixelStatCardProps {
   value: number;
   label: string;
   color: string;
+  numberColor?: string;
   hoverIcon: ReactNode;
   showPulse?: boolean;
   isMobile: boolean;
@@ -16,12 +17,14 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
   value,
   label,
   color,
+  numberColor,
   hoverIcon,
   showPulse = false,
   isMobile,
   onClick,
   animationDelay = '0s',
 }) => {
+  const displayNumberColor = numberColor || color;
   const [isHovered, setIsHovered] = useState(false);
 
   return (
@@ -84,8 +87,8 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
           <div
             className="text-2xl sm:text-3xl font-bold mb-2 flex items-center justify-center font-pixel"
             style={{
-              color,
-              textShadow: `0 0 10px ${color}, 0 0 20px ${color}50`,
+              color: displayNumberColor,
+              textShadow: `0 0 10px ${displayNumberColor}, 0 0 20px ${displayNumberColor}50`,
             }}
           >
             {value}

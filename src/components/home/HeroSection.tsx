@@ -88,6 +88,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               value={activeTournamentsCount}
               label={t('home.activeTournaments', { count: activeTournamentsCount })}
               color="#6B7280"
+              numberColor={primaryColor}
               hoverIcon={<Trophy className="w-5 h-5" />}
               isMobile={isMobile}
               onClick={onScrollToTournaments}
@@ -97,6 +98,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               value={gamesCount}
               label={t('home.gamesAvailable')}
               color="#6B7280"
+              numberColor={primaryColor}
               hoverIcon={<Gamepad2 className="w-5 h-5" />}
               isMobile={isMobile}
               onClick={onScrollToTournaments}
