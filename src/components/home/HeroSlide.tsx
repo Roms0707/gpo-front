@@ -178,7 +178,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
                 <DecryptedPhrases
                   phrases={typewriterPhrases}
-                  speed={50}
+                  speed={60}
                   maxIterations={12}
                   pauseDuration={2500}
                   className="text-white"
