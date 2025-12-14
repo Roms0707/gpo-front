@@ -190,7 +190,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className="relative min-h-[70vh] md:min-h-[80vh]"
+            className="relative min-h-[70vh] md:min-h-[80vh] flex-shrink-0"
             style={{ width: `${100 / slides.length}%` }}
           >
             <HeroSlide
