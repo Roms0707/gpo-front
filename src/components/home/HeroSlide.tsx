@@ -1,9 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { TypewriterText } from '../ui/TypewriterText';
-import { Play } from 'lucide-react';
+import { GameThemedButton } from '../ui/GameThemedButton';
 
 const isYouTubeUrl = (url: string): boolean => {
   return /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)/.test(url);
@@ -66,7 +65,6 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
   isActive,
   onScrollToTournaments,
 }) => {
-  const { t } = useTranslation();
   const { primaryColor } = useAppConfig();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -101,20 +99,6 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
       onScrollToTournaments();
     }
   };
-
-  const CtaButton = () => (
-    <button
-      onClick={handleCtaClick}
-      className="inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
-      style={{
-        backgroundColor: primaryColor,
-        boxShadow: `0 4px 14px ${primaryColor}40`,
-      }}
-    >
-      <Play className="w-5 h-5 mr-2 fill-current" />
-      {ctaText}
-    </button>
-  );
 
   return (
     <div className="relative w-full h-full flex-shrink-0">
@@ -208,7 +192,12 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
             {ctaLink && !isDefault && (
               <div className="flex justify-center">
                 <Link to={ctaLink}>
-                  <CtaButton />
+                  <GameThemedButton
+                    gameName={gameName}
+                    onClick={handleCtaClick}
+                  >
+                    {ctaText}
+                  </GameThemedButton>
                 </Link>
               </div>
             )}

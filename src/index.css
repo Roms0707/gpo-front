@@ -1163,3 +1163,191 @@ a:focus, button:focus, [tabindex="0"]:focus {
     transform: none;
   }
 }
+
+/* Game Themed Button Animations */
+.game-themed-button {
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.game-themed-button:hover .game-btn-hover-overlay {
+  opacity: 0.3;
+}
+
+.game-themed-button:active {
+  transform: scale(0.98);
+}
+
+/* FC26/Football - Kick bounce animation */
+.game-btn-kick {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+}
+
+.game-btn-kick:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(46, 125, 50, 0.6) !important;
+}
+
+.game-btn-kick:active {
+  transform: translateY(2px) scale(0.98);
+}
+
+/* Fortnite - Build/scale animation */
+.game-btn-build {
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+}
+
+.game-btn-build:hover {
+  transform: skewX(-12deg) scale(1.05) rotate(-1deg);
+  box-shadow: 0 8px 30px rgba(34, 211, 238, 0.5) !important;
+}
+
+/* League of Legends - Magical shimmer */
+.game-btn-shimmer {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.game-btn-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.game-btn-shimmer:hover::before {
+  left: 100%;
+}
+
+.game-btn-shimmer:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 40px rgba(200, 155, 60, 0.6) !important;
+}
+
+/* Valorant - Sharp flash animation */
+.game-btn-flash {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.game-btn-flash:hover {
+  transform: scale(1.03);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 25px rgba(255, 70, 85, 0.5) !important;
+}
+
+.game-btn-flash:active {
+  transform: scale(0.97);
+  filter: brightness(1.2);
+}
+
+/* Call of Duty/Military - Tactical slide */
+.game-btn-tactical {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+}
+
+.game-btn-tactical::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transition: width 0.3s ease;
+}
+
+.game-btn-tactical:hover {
+  transform: translateX(4px);
+  box-shadow: -4px 4px 20px rgba(74, 93, 35, 0.5) !important;
+}
+
+.game-btn-tactical:hover::after {
+  width: 100%;
+}
+
+/* Rocket League - Boost trail animation */
+.game-btn-boost {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  position: relative;
+}
+
+.game-btn-boost::before {
+  content: '';
+  position: absolute;
+  left: -20%;
+  top: 50%;
+  width: 20px;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8));
+  border-radius: 2px;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s ease, left 0.3s ease;
+}
+
+.game-btn-boost:hover {
+  transform: translateX(8px) scale(1.02);
+  box-shadow: -8px 4px 30px rgba(59, 130, 246, 0.5) !important;
+}
+
+.game-btn-boost:hover::before {
+  opacity: 1;
+  left: -15%;
+}
+
+/* Default - Simple pulse */
+.game-btn-pulse {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-btn-pulse:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5) !important;
+}
+
+/* Preserve skew for angled buttons content */
+.game-btn-build > span {
+  transform: skewX(12deg);
+}
+
+/* Focus visible states for accessibility */
+.game-themed-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5), 0 0 0 6px currentColor !important;
+}
+
+/* Reduced motion for game buttons */
+@media (prefers-reduced-motion: reduce) {
+  .game-btn-kick,
+  .game-btn-build,
+  .game-btn-shimmer,
+  .game-btn-flash,
+  .game-btn-tactical,
+  .game-btn-boost,
+  .game-btn-pulse {
+    transition: none;
+  }
+
+  .game-btn-shimmer::before,
+  .game-btn-tactical::after,
+  .game-btn-boost::before {
+    display: none;
+  }
+
+  .game-themed-button:hover {
+    transform: none !important;
+    filter: brightness(1.1);
+  }
+}
