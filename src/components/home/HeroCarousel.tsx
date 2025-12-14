@@ -210,22 +210,26 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
       </div>
 
       {slides.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-2">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-1">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`transition-all duration-300 ${
-                currentSlide === index
-                  ? 'w-8 h-2 skew-x-[-12deg]'
-                  : 'w-2 h-2 rotate-45 hover:scale-110'
-              }`}
-              style={{
-                backgroundColor: currentSlide === index ? primaryColor : 'rgba(255, 255, 255, 0.4)',
-                boxShadow: currentSlide === index ? `0 0 10px ${primaryColor}60` : 'none',
-              }}
+              className="p-2 cursor-pointer group focus:outline-none"
               aria-label={t('heroCarousel.goToSlide', { number: index + 1 })}
-            />
+            >
+              <span
+                className={`block transition-all duration-300 ${
+                  currentSlide === index
+                    ? 'w-10 h-2.5 skew-x-[-12deg]'
+                    : 'w-2.5 h-2.5 rotate-45 group-hover:scale-125'
+                }`}
+                style={{
+                  backgroundColor: currentSlide === index ? primaryColor : 'rgba(255, 255, 255, 0.5)',
+                  boxShadow: currentSlide === index ? `0 0 12px ${primaryColor}80` : 'none',
+                }}
+              />
+            </button>
           ))}
         </div>
       )}
