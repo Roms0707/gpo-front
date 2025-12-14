@@ -1066,3 +1066,100 @@ a:focus, button:focus, [tabindex="0"]:focus {
     transform: translateY(-50%);
   }
 }
+
+/* League-Inspired Stats Bar Styles */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Stats bar shimmer effect */
+@keyframes stats-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.stats-shimmer {
+  animation: stats-shimmer 3s ease-in-out infinite;
+}
+
+/* Stats bar border glow pulse */
+@keyframes stats-border-glow {
+  0%, 100% {
+    opacity: 0.4;
+    filter: blur(0px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(1px);
+  }
+}
+
+.stats-border-glow {
+  animation: stats-border-glow 3s ease-in-out infinite;
+}
+
+/* Stats bar entrance animation */
+@keyframes stats-bar-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stats-bar-enter {
+  animation: stats-bar-enter 0.7s ease-out forwards;
+}
+
+/* Number count-up glow effect */
+@keyframes number-glow-pulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.15);
+  }
+}
+
+.number-glow-pulse {
+  animation: number-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Hexagonal corner accents */
+.hex-accent {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* Reduced motion for stats bar */
+@media (prefers-reduced-motion: reduce) {
+  .stats-shimmer,
+  .stats-border-glow,
+  .stats-bar-enter,
+  .number-glow-pulse {
+    animation: none;
+  }
+
+  .stats-bar-enter {
+    opacity: 1;
+    transform: none;
+  }
+}

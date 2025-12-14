@@ -262,6 +262,11 @@
       "previousSlide": "Previous slide",
       "nextSlide": "Next slide",
       "goToSlide": "Go to slide {{number}}"
+    },
+    "statsBar": {
+      "viewTournaments": "View All",
+      "browseGames": "Browse",
+      "watchLive": "Watch Now"
     }
   },
   "heroCarousel": {
