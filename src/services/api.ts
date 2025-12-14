@@ -1634,7 +1634,7 @@ export const fetchHomeTrailer = async (configId: string) => {
   }
 };
 
-export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
+export const fetchFeaturedTournamentTrailers = async (configId: string, limit: number = 2) => {
   try {
     const { data, error } = await supabase
       .from('game_trailers')
@@ -1657,6 +1657,7 @@ export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
           image_url
         )
       `)
+      .eq('config_id', configId)
       .eq('is_featured', true)
       .not('tournament_id', 'is', null)
       .order('created_at', { ascending: false })
@@ -1692,7 +1693,7 @@ export const fetchHeroCarouselData = async (configId: string) => {
   try {
     const [homeTrailer, featuredTrailers] = await Promise.all([
       fetchHomeTrailer(configId),
-      fetchFeaturedTournamentTrailers(2)
+      fetchFeaturedTournamentTrailers(configId, 2)
     ]);
 
     return {
