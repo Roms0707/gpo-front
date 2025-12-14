@@ -5,6 +5,42 @@ import { useAppConfig } from '../../contexts/AppConfigContext';
 import { TypewriterText } from '../ui/TypewriterText';
 import { Play } from 'lucide-react';
 
+const isYouTubeUrl = (url: string): boolean => {
+  return /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)/.test(url);
+};
+
+const getYouTubeVideoId = (url: string): string | null => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=)([^&\s]+)/,
+    /(?:youtube\.com\/embed\/)([^?\s]+)/,
+    /(?:youtube\.com\/v\/)([^?\s]+)/,
+    /(?:youtu\.be\/)([^?\s]+)/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+};
+
+const getYouTubeEmbedUrl = (videoId: string): string => {
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: '1',
+    loop: '1',
+    playlist: videoId,
+    controls: '0',
+    showinfo: '0',
+    modestbranding: '1',
+    rel: '0',
+    iv_load_policy: '3',
+    disablekb: '1',
+    fs: '0',
+    playsinline: '1',
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+};
+
 interface HeroSlideProps {
   videoUrl: string;
   title: string;
@@ -34,9 +70,14 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
   const { primaryColor } = useAppConfig();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [isYouTubeLoaded, setIsYouTubeLoaded] = useState(false);
+
+  const isYouTube = isYouTubeUrl(videoUrl);
+  const youtubeVideoId = isYouTube ? getYouTubeVideoId(videoUrl) : null;
+  const youtubeEmbedUrl = youtubeVideoId ? getYouTubeEmbedUrl(youtubeVideoId) : null;
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (!isYouTube && videoRef.current) {
       videoRef.current.playbackRate = 0.8;
       if (isActive) {
         videoRef.current.play().catch(() => {});
@@ -44,10 +85,14 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         videoRef.current.pause();
       }
     }
-  }, [isActive]);
+  }, [isActive, isYouTube]);
 
   const handleVideoLoad = () => {
     setIsVideoLoaded(true);
+  };
+
+  const handleYouTubeLoad = () => {
+    setIsYouTubeLoaded(true);
   };
 
   const handleCtaClick = (e: React.MouseEvent) => {
@@ -80,19 +125,35 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         }}
       />
 
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        onLoadedData={handleVideoLoad}
-        className={`absolute inset-0 z-[1] w-full h-full object-cover transition-opacity duration-1000 ${
-          isVideoLoaded ? 'opacity-100' : 'opacity-0'
-        }`}
-      >
-        <source src={videoUrl} type="video/mp4" />
-      </video>
+      {isYouTube && youtubeEmbedUrl ? (
+        <div className="absolute inset-0 z-[1] overflow-hidden">
+          <iframe
+            src={youtubeEmbedUrl}
+            title="Background video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            onLoad={handleYouTubeLoad}
+            className={`absolute top-1/2 left-1/2 w-[300%] h-[300%] -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-1000 ${
+              isYouTubeLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ border: 'none' }}
+          />
+        </div>
+      ) : (
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onLoadedData={handleVideoLoad}
+          className={`absolute inset-0 z-[1] w-full h-full object-cover transition-opacity duration-1000 ${
+            isVideoLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+      )}
 
       <div
         className="absolute inset-0 z-[2]"
