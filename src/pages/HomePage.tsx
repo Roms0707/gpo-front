@@ -5,8 +5,9 @@ import { fetchTournaments, fetchGames, extractTwitchChannelName } from '../servi
 import { Tournament } from '../types';
 import TournamentList from '../components/tournaments/TournamentList';
 import GameCarousel from '../components/games/GameCarousel';
+import GameLibrarySidebar from '../components/games/GameLibrarySidebar';
 import { HeroSection } from '../components/home/HeroSection';
-import { Filter, X, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { calculateTournamentStatus } from '../utils/tournamentUtils';
 import WhitelistBadge from '../components/ui/WhitelistBadge';
@@ -21,7 +22,6 @@ const HomePage: React.FC = () => {
   const [gameFilterName, setGameFilterName] = useState<string | null>(null);
   const [games, setGames] = useState<any[]>([]);
   const [sqlQuery, setSqlQuery] = useState<string | null>(null);
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [liveTournaments, setLiveTournaments] = useState<Tournament[]>([]);
   const [isLiveTournamentsOpen, setIsLiveTournamentsOpen] = useState(false);
@@ -302,114 +302,15 @@ const HomePage: React.FC = () => {
   
   return (
     <div className="flex min-h-screen overflow-x-hidden">
-      {/* Desktop Left Sidebar - Game Filter Panel */}
       {!isMobile && (
-        <div 
-          className={`fixed inset-y-0 left-0 z-50 bg-dark-100 border-r border-gray-800 transition-all duration-300 ease-in-out ${
-            isSidebarExpanded ? 'w-80' : 'w-20'
-          }`}
-          onMouseEnter={() => setIsSidebarExpanded(true)}
-          onMouseLeave={() => setIsSidebarExpanded(false)}
-        >
-          <div className="flex flex-col h-full">
-            {/* Sidebar Header */}
-            <div className="flex items-center justify-center p-4 border-b border-gray-800 h-20">
-              {isSidebarExpanded ? (
-                <div className="flex items-center">
-                  <Filter className="h-5 w-5 mr-2 text-primary-500" />
-                  <h2 className="font-heading font-bold text-lg text-white">{t('home.filterByGame')}</h2>
-                </div>
-              ) : (
-                <Filter className="h-6 w-6 text-primary-500" />
-              )}
-            </div>
-            
-            {/* Game Selection */}
-            <div className="flex-1 overflow-y-auto p-3">
-              <div className="space-y-3">
-                {/* Clear Filter Button */}
-                {selectedGameId && (
-                  <div
-                    className={`${
-                      isSidebarExpanded
-                        ? 'p-3 bg-primary-600/20 border border-primary-600/30 rounded-lg hover:bg-primary-600/30 transition-colors cursor-pointer'
-                        : 'w-14 h-14 bg-primary-600/20 border border-primary-600/30 rounded-lg hover:bg-primary-600/30 transition-colors cursor-pointer flex items-center justify-center'
-                    }`}
-                    onClick={handleGameFilterClear}
-                  >
-                    {isSidebarExpanded ? (
-                      <div className="flex items-center justify-between">
-                        <span className="text-primary-300 font-medium">{t('home.allGames')}</span>
-                        <X className="h-4 w-4 text-primary-400" />
-                      </div>
-                    ) : (
-                      <X className="h-5 w-5 text-primary-400" />
-                    )}
-                  </div>
-                )}
-                
-                {/* Static Game List */}
-                <div className="space-y-2">
-                  {games.map((game) => (
-                    <div
-                      key={game.id}
-                      onClick={() => handleGameSelect(game.id)}
-                      className={`${
-                        isSidebarExpanded
-                          ? 'p-3 rounded-lg cursor-pointer transition-all duration-200 flex items-center'
-                          : 'w-14 h-14 rounded-lg cursor-pointer transition-all duration-200 flex items-center justify-center'
-                      } ${
-                        selectedGameId === game.id
-                          ? 'bg-primary-600/30 border border-primary-500/50 shadow-lg'
-                          : 'bg-dark-200/50 hover:bg-dark-300/70 border border-transparent hover:border-primary-500/30'
-                      }`}
-                    >
-                      <div className={`${isSidebarExpanded ? 'w-10 h-10' : 'w-8 h-8'} rounded-lg overflow-hidden flex-shrink-0 bg-dark-300`}>
-                        <img 
-                          src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} 
-                          alt={game.name} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      {isSidebarExpanded && (
-                        <div className="ml-3 flex-1 min-w-0">
-                          <h3 className={`font-medium text-sm truncate transition-colors ${
-                            selectedGameId === game.id 
-                              ? 'text-primary-300' 
-                              : 'text-white'
-                          }`}>
-                            {game.name}
-                          </h3>
-                          <p className="text-xs text-gray-400 truncate">{game.publisher}</p>
-                        </div>
-                      )}
-                      {selectedGameId === game.id && (
-                        <div className={`${isSidebarExpanded ? 'ml-2' : 'absolute -top-1 -right-1'} w-3 h-3 bg-primary-500 rounded-full border-2 border-white`}></div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            {/* Selected Game Info - Only show when expanded */}
-            {isSidebarExpanded && selectedGameId && gameFilterName && (
-              <div className="p-4 border-t border-gray-800 bg-dark-200">
-                <div className="text-center">
-                  <h3 className="font-medium text-white mb-1">{t('home.selectedGame')}</h3>
-                  <p className="text-primary-400 font-semibold">{gameFilterName}</p>
-                  <p className="text-xs text-gray-400 mt-2">
-                    {t('home.tournamentsFound', { count: filteredTournaments.length })}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <GameLibrarySidebar
+          selectedGameId={selectedGameId}
+          onGameSelect={handleGameSelect}
+          filteredTournamentsCount={filteredTournaments.length}
+        />
       )}
-      
-      {/* Main Content */}
-      <div className={`flex-1 transition-all duration-300 w-full overflow-x-hidden ${!isMobile && isSidebarExpanded ? 'ml-80' : !isMobile ? 'ml-20' : 'ml-0'}`}>
+
+      <div className={`flex-1 transition-all duration-300 w-full overflow-x-hidden ${!isMobile ? 'ml-[72px]' : 'ml-0'}`}>
         <HeroSection
           activeTournamentsCount={filteredTournaments.filter(tournament => {
             const now = new Date();

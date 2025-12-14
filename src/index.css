@@ -1041,3 +1041,28 @@ a:focus, button:focus, [tabindex="0"]:focus {
     opacity: 0.7;
   }
 }
+
+/* Game Library Sidebar Tooltip Animation */
+@keyframes tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+.animate-tooltip-fade-in {
+  animation: tooltip-fade-in 0.15s ease-out forwards;
+}
+
+/* Reduced motion for tooltip */
+@media (prefers-reduced-motion: reduce) {
+  .animate-tooltip-fade-in {
+    animation: none;
+    opacity: 1;
+    transform: translateY(-50%);
+  }
+}

@@ -248,6 +248,7 @@
     "tournamentsFound": "{{count}} tournoi trouvé",
     "tournamentsFound_plural": "{{count}} tournois trouvés",
     "resetFilter": "Réinitialiser",
+    "clearFilter": "Effacer le filtre",
     "filteredBy": "Filtré par:",
     "watchOnPlatform": "Regarder sur la plateforme",
     "live": "LIVE",

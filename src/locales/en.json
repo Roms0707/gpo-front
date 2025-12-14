@@ -248,6 +248,7 @@
     "tournamentsFound": "{{count}} tournament found",
     "tournamentsFound_plural": "{{count}} tournaments found",
     "resetFilter": "Reset",
+    "clearFilter": "Clear filter",
     "filteredBy": "Filtered by:",
     "watchOnPlatform": "Watch on platform",
     "live": "LIVE",
