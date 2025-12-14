@@ -183,7 +183,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
       <div
         className="flex h-full transition-transform duration-700 ease-in-out"
         style={{
-          transform: `translateX(-${currentSlide * 100}%)`,
+          transform: `translateX(-${currentSlide * (100 / slides.length)}%)`,
           width: `${slides.length * 100}%`,
         }}
       >
