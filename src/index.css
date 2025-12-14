@@ -1041,3 +1041,85 @@ a:focus, button:focus, [tabindex="0"]:focus {
     opacity: 0.7;
   }
 }
+
+/* Magic Card Effects - Stars Animation */
+@keyframes magic-star-twinkle {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes magic-star-drift {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(2px, -2px);
+  }
+  50% {
+    transform: translate(-1px, 1px);
+  }
+  75% {
+    transform: translate(1px, 2px);
+  }
+}
+
+/* Magic Card Effects - Click Ripple Expansion */
+@keyframes magic-click-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+/* Magic Card Effects - Particle Burst */
+@keyframes magic-click-burst {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(var(--burst-angle)) translateX(60px);
+    opacity: 0;
+  }
+}
+
+/* Magic Card Effects - Flash Overlay */
+@keyframes magic-click-flash {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Magic Card Effects - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .magic-star {
+    animation: none !important;
+  }
+
+  .magic-click-ripple,
+  .magic-click-particle,
+  .magic-click-flash {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  .magic-spotlight,
+  .magic-spotlight-glow {
+    transition: none !important;
+  }
+}
