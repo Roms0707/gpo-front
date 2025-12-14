@@ -64,8 +64,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             carouselSlides.push({
               id: trailer.id,
               videoUrl: trailer.video_url,
-              title: trailer.tournament.title,
-              logoUrl: trailer.tournament.header_url,
+              title: trailer.title,
               gameName: trailer.game?.name,
               ctaText: t('heroCarousel.registerNow'),
               ctaLink: `/tournament/${trailer.tournament.id}`,
