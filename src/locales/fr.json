@@ -264,8 +264,6 @@
     }
   },
   "heroCarousel": {
-    "defaultTitle": "Bienvenue sur {{brandName}}",
-    "defaultDescription": "Participez aux tournois, grimpez dans les classements et devenez un champion.",
     "exploreTournaments": "Explorer les tournois",
     "registerNow": "S'inscrire maintenant",
     "viewTournament": "Voir le tournoi",

@@ -2,12 +2,13 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppConfig } from '../../contexts/AppConfigContext';
+import { TypewriterText } from '../ui/TypewriterText';
 import { Play } from 'lucide-react';
 
 interface HeroSlideProps {
   videoUrl: string;
   title: string;
-  description?: string;
+  typewriterPhrases?: string[];
   logoUrl?: string;
   gameName?: string;
   ctaText: string;
@@ -20,7 +21,7 @@ interface HeroSlideProps {
 export const HeroSlide: React.FC<HeroSlideProps> = ({
   videoUrl,
   title,
-  description,
+  typewriterPhrases,
   logoUrl,
   gameName,
   ctaText,
@@ -128,25 +129,28 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               </div>
             )}
 
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-4 leading-tight drop-shadow-lg">
-              {title}
+            <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-8 leading-tight drop-shadow-lg min-h-[1.2em]">
+              {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
+                <TypewriterText
+                  phrases={typewriterPhrases}
+                  typingSpeed={70}
+                  deletingSpeed={35}
+                  pauseDuration={2500}
+                  className="text-white"
+                  cursorClassName="text-white/70"
+                />
+              ) : (
+                title
+              )}
             </h2>
 
-            {description && (
-              <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed">
-                {description}
-              </p>
-            )}
-
-            <div className="flex justify-center">
-              {ctaLink && !isDefault ? (
+            {ctaLink && !isDefault && (
+              <div className="flex justify-center">
                 <Link to={ctaLink}>
                   <CtaButton />
                 </Link>
-              ) : (
-                <CtaButton />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

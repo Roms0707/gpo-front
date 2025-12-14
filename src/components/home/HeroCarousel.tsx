@@ -9,7 +9,7 @@ interface SlideData {
   id: string;
   videoUrl: string;
   title: string;
-  description?: string;
+  typewriterPhrases?: string[];
   logoUrl?: string;
   gameName?: string;
   ctaText: string;
@@ -44,11 +44,14 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
         const carouselSlides: SlideData[] = [];
 
+        const phrase1 = defaultTrailer?.typewriter_phrase_1 || 'Welcome To the Arena';
+        const phrase2 = (defaultTrailer?.typewriter_phrase_2 || 'Welcome to {brandName}').replace('{brandName}', brandName);
+
         const defaultSlide: SlideData = {
           id: defaultTrailer?.id || 'default',
           videoUrl: defaultTrailer?.video_url || DEFAULT_VIDEO_URL,
-          title: defaultTrailer?.title || t('heroCarousel.defaultTitle', { brandName }),
-          description: defaultTrailer?.description || t('heroCarousel.defaultDescription'),
+          title: phrase1,
+          typewriterPhrases: [phrase1, phrase2],
           ctaText: t('heroCarousel.exploreTournaments'),
           isDefault: true,
         };
@@ -59,8 +62,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             carouselSlides.push({
               id: trailer.id,
               videoUrl: trailer.video_url,
-              title: trailer.title || trailer.tournament.title,
-              description: trailer.description || trailer.tournament.description,
+              title: trailer.tournament.title,
               logoUrl: trailer.tournament.header_url,
               gameName: trailer.game?.name,
               ctaText: t('heroCarousel.registerNow'),
@@ -73,11 +75,13 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         setSlides(carouselSlides);
       } catch (error) {
         console.error('Error loading carousel data:', error);
+        const fallbackPhrase1 = 'Welcome To the Arena';
+        const fallbackPhrase2 = `Welcome to ${brandName}`;
         setSlides([{
           id: 'fallback',
           videoUrl: DEFAULT_VIDEO_URL,
-          title: t('heroCarousel.defaultTitle', { brandName }),
-          description: t('heroCarousel.defaultDescription'),
+          title: fallbackPhrase1,
+          typewriterPhrases: [fallbackPhrase1, fallbackPhrase2],
           ctaText: t('heroCarousel.exploreTournaments'),
           isDefault: true,
         }]);
@@ -190,7 +194,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             <HeroSlide
               videoUrl={slide.videoUrl}
               title={slide.title}
-              description={slide.description}
+              typewriterPhrases={slide.typewriterPhrases}
               logoUrl={slide.logoUrl}
               gameName={slide.gameName}
               ctaText={slide.ctaText}
@@ -204,18 +208,19 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
       </div>
 
       {slides.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-3">
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex items-center space-x-2">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`transition-all duration-300 rounded-full ${
+              className={`transition-all duration-300 ${
                 currentSlide === index
-                  ? 'w-8 h-2'
-                  : 'w-2 h-2 hover:bg-white/60'
+                  ? 'w-8 h-2 skew-x-[-12deg]'
+                  : 'w-2 h-2 rotate-45 hover:scale-110'
               }`}
               style={{
                 backgroundColor: currentSlide === index ? primaryColor : 'rgba(255, 255, 255, 0.4)',
+                boxShadow: currentSlide === index ? `0 0 10px ${primaryColor}60` : 'none',
               }}
               aria-label={t('heroCarousel.goToSlide', { number: index + 1 })}
             />

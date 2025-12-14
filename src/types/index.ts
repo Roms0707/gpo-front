@@ -402,7 +402,8 @@ export interface GameTrailer {
   is_featured: boolean;
   is_default: boolean;
   title?: string;
-  description?: string;
+  typewriter_phrase_1?: string;
+  typewriter_phrase_2?: string;
   created_at: string;
   updated_at: string;
   tournament?: Tournament;
