@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface DecryptedPhrasesProps {
   phrases: string[];
   speed?: number;
+  revealDuration?: number;
   maxIterations?: number;
   pauseDuration?: number;
   className?: string;
@@ -15,6 +16,7 @@ interface DecryptedPhrasesProps {
 export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
   phrases,
   speed = 50,
+  revealDuration,
   maxIterations = 10,
   pauseDuration = 2500,
   className = '',
@@ -103,13 +105,18 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     pauseStartTimeRef.current = null;
     remainingPauseRef.current = null;
 
+    const nonSpaceCount = getNonSpaceCount(currentPhrase);
+    const effectiveSpeed = revealDuration && nonSpaceCount > 0
+      ? revealDuration / (nonSpaceCount * maxIterations)
+      : speed;
+
     intervalRef.current = setInterval(() => {
       iterationCountRef.current++;
 
       setRevealedIndices((prevRevealed) => {
-        const nonSpaceCount = getNonSpaceCount(currentPhrase);
+        const charCount = getNonSpaceCount(currentPhrase);
 
-        if (prevRevealed.size >= nonSpaceCount) {
+        if (prevRevealed.size >= charCount) {
           return prevRevealed;
         }
 
@@ -128,10 +135,11 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
 
         return prevRevealed;
       });
-    }, speed);
+    }, effectiveSpeed);
   }, [
     currentPhrase,
     speed,
+    revealDuration,
     maxIterations,
     clearTimers,
     shuffleText,
