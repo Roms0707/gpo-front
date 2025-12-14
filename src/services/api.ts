@@ -1613,12 +1613,11 @@ export const extractTwitchChannelName = (twitchUrl: string): string | null => {
   }
 };
 
-export const fetchHomeTrailer = async (configId: string) => {
+export const fetchHomeTrailer = async () => {
   try {
     const { data, error } = await supabase
       .from('game_trailers')
       .select('*')
-      .eq('config_id', configId)
       .eq('is_default', true)
       .maybeSingle();
 
@@ -1634,7 +1633,7 @@ export const fetchHomeTrailer = async (configId: string) => {
   }
 };
 
-export const fetchFeaturedTournamentTrailers = async (configId: string, limit: number = 2) => {
+export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
   try {
     const { data, error } = await supabase
       .from('game_trailers')
@@ -1657,7 +1656,6 @@ export const fetchFeaturedTournamentTrailers = async (configId: string, limit: n
           image_url
         )
       `)
-      .eq('config_id', configId)
       .eq('is_featured', true)
       .not('tournament_id', 'is', null)
       .order('created_at', { ascending: false })
@@ -1689,11 +1687,11 @@ export const fetchFeaturedTournamentTrailers = async (configId: string, limit: n
   }
 };
 
-export const fetchHeroCarouselData = async (configId: string) => {
+export const fetchHeroCarouselData = async () => {
   try {
     const [homeTrailer, featuredTrailers] = await Promise.all([
-      fetchHomeTrailer(configId),
-      fetchFeaturedTournamentTrailers(configId, 2)
+      fetchHomeTrailer(),
+      fetchFeaturedTournamentTrailers(2)
     ]);
 
     return {

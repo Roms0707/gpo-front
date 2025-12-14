@@ -27,7 +27,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   onScrollToTournaments,
 }) => {
   const { t } = useTranslation();
-  const { configId, brandName, primaryColor } = useAppConfig();
+  const { brandName, primaryColor } = useAppConfig();
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +40,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     const loadCarouselData = async () => {
       try {
         setIsLoading(true);
-        const { homeTrailer, featuredTrailers } = await fetchHeroCarouselData(configId);
+        const { homeTrailer, featuredTrailers } = await fetchHeroCarouselData();
 
         const carouselSlides: SlideData[] = [];
 
@@ -93,7 +93,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     };
 
     loadCarouselData();
-  }, [t, configId, brandName]);
+  }, [t, brandName]);
 
   const goToSlide = useCallback((index: number) => {
     setCurrentSlide(index);
