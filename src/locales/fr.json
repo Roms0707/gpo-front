@@ -263,6 +263,14 @@
       "goToSlide": "Aller à la diapositive {{number}}"
     }
   },
+  "heroCarousel": {
+    "defaultTitle": "Bienvenue sur {{brandName}}",
+    "defaultDescription": "Participez aux tournois, grimpez dans les classements et devenez un champion.",
+    "exploreTournaments": "Explorer les tournois",
+    "registerNow": "S'inscrire maintenant",
+    "viewTournament": "Voir le tournoi",
+    "goToSlide": "Aller à la diapositive {{number}}"
+  },
   "tournamentFilters": {
     "availableTournaments": "Tournois disponibles",
     "searchPlaceholder": "Rechercher un tournoi...",

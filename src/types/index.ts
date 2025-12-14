@@ -393,3 +393,18 @@ export interface DiscordVerificationStatus {
   lastVerified?: string;
   error?: string;
 }
+
+export interface GameTrailer {
+  id: string;
+  game_id?: string;
+  tournament_id?: string;
+  video_url: string;
+  is_featured: boolean;
+  is_default: boolean;
+  title?: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+  tournament?: Tournament;
+  game?: Game;
+}

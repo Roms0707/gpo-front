@@ -1601,14 +1601,110 @@ export const extractTwitchChannelName = (twitchUrl: string): string | null => {
   try {
     const url = new URL(twitchUrl);
     const pathParts = url.pathname.split('/').filter(part => part.length > 0);
-    
+
     if (pathParts.length > 0) {
       return pathParts[pathParts.length - 1];
     }
-    
+
     return null;
   } catch (error) {
     console.error('Error extracting Twitch channel name:', error);
     return null;
+  }
+};
+
+export const fetchDefaultTrailer = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('game_trailers')
+      .select('*')
+      .eq('is_default', true)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching default trailer:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in fetchDefaultTrailer:', error);
+    return null;
+  }
+};
+
+export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
+  try {
+    const { data, error } = await supabase
+      .from('game_trailers')
+      .select(`
+        *,
+        tournament:tournament_id (
+          id,
+          title,
+          description,
+          start_date,
+          end_date,
+          header_url,
+          status,
+          game_id
+        ),
+        game:game_id (
+          id,
+          name,
+          publisher,
+          image_url
+        )
+      `)
+      .eq('is_featured', true)
+      .not('tournament_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching featured tournament trailers:', error);
+      return [];
+    }
+
+    const transformedData = (data || []).map(trailer => ({
+      ...trailer,
+      tournament: trailer.tournament ? {
+        id: trailer.tournament.id,
+        title: trailer.tournament.title,
+        description: trailer.tournament.description,
+        startDate: trailer.tournament.start_date,
+        endDate: trailer.tournament.end_date,
+        header_url: trailer.tournament.header_url,
+        status: trailer.tournament.status,
+        game_id: trailer.tournament.game_id
+      } : null
+    }));
+
+    return transformedData;
+  } catch (error) {
+    console.error('Error in fetchFeaturedTournamentTrailers:', error);
+    return [];
+  }
+};
+
+export const fetchHeroCarouselData = async () => {
+  try {
+    const [defaultTrailer, featuredTrailers] = await Promise.all([
+      fetchDefaultTrailer(),
+      fetchFeaturedTournamentTrailers(2)
+    ]);
+
+    return {
+      defaultTrailer,
+      featuredTrailers,
+      success: true
+    };
+  } catch (error) {
+    console.error('Error fetching hero carousel data:', error);
+    return {
+      defaultTrailer: null,
+      featuredTrailers: [],
+      success: false
+    };
   }
 };
