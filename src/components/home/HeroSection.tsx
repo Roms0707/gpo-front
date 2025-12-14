@@ -1,9 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, Trophy, Gamepad2, Radio } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { TypewriterText } from '../ui/TypewriterText';
-import { PixelStatCard } from '../ui/PixelStatCard';
+import { HeroThemeCarousel } from './hero-cards';
 
 interface HeroSectionProps {
   activeTournamentsCount: number;
@@ -91,39 +91,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </h1>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-3xl mx-auto">
-            <PixelStatCard
-              value={activeTournamentsCount}
-              label={t('home.activeTournaments', { count: activeTournamentsCount })}
-              color="#6B7280"
-              numberColor={primaryColor}
-              hoverIcon={<Trophy className="w-5 h-5" />}
-              isMobile={isMobile}
-              onClick={onScrollToTournaments}
-            />
-
-            <PixelStatCard
-              value={gamesCount}
-              label={t('home.gamesAvailable')}
-              color="#6B7280"
-              numberColor={primaryColor}
-              hoverIcon={<Gamepad2 className="w-5 h-5" />}
-              isMobile={isMobile}
-              onClick={onScrollToTournaments}
-              animationDelay="0.1s"
-            />
-
-            <PixelStatCard
-              value={liveTournamentsCount}
-              label={t('home.liveTournaments', { count: liveTournamentsCount })}
-              color="#EF4444"
-              hoverIcon={<Radio className="w-5 h-5" />}
-              showPulse={liveTournamentsCount > 0}
-              isMobile={isMobile}
-              onClick={onScrollToTournaments}
-              animationDelay="0.2s"
-            />
-          </div>
+          <HeroThemeCarousel
+            activeTournamentsCount={activeTournamentsCount}
+            gamesCount={gamesCount}
+            liveTournamentsCount={liveTournamentsCount}
+            isMobile={isMobile}
+            onScrollToTournaments={onScrollToTournaments}
+            primaryColor={primaryColor}
+            t={t}
+          />
         </div>
       </div>
 
