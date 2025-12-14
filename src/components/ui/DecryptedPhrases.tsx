@@ -25,13 +25,15 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
-  const [isScrambling, setIsScrambling] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const iterationCountRef = useRef(0);
   const wasActiveRef = useRef(isActive);
+  const pauseStartTimeRef = useRef<number | null>(null);
+  const remainingPauseRef = useRef<number | null>(null);
 
   const currentPhrase = phrases[currentPhraseIndex] || '';
 
@@ -65,6 +67,10 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     []
   );
 
+  const getNonSpaceCount = useCallback((text: string) => {
+    return text.split('').filter((c) => c !== ' ').length;
+  }, []);
+
   const clearTimers = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -76,31 +82,34 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     }
   }, []);
 
+  const scheduleNextPhrase = useCallback((delay: number) => {
+    pauseStartTimeRef.current = Date.now();
+    remainingPauseRef.current = delay;
+
+    pauseTimeoutRef.current = setTimeout(() => {
+      pauseStartTimeRef.current = null;
+      remainingPauseRef.current = null;
+      setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
+      setAnimationKey((k) => k + 1);
+    }, delay);
+  }, [phrases.length]);
+
   const startAnimation = useCallback(() => {
     clearTimers();
     setRevealedIndices(new Set());
     setDisplayText(shuffleText(currentPhrase, new Set()));
-    setIsScrambling(true);
+    setIsComplete(false);
     iterationCountRef.current = 0;
+    pauseStartTimeRef.current = null;
+    remainingPauseRef.current = null;
 
     intervalRef.current = setInterval(() => {
       iterationCountRef.current++;
 
       setRevealedIndices((prevRevealed) => {
-        const nonSpaceCount = currentPhrase
-          .split('')
-          .filter((c) => c !== ' ').length;
+        const nonSpaceCount = getNonSpaceCount(currentPhrase);
 
         if (prevRevealed.size >= nonSpaceCount) {
-          clearTimers();
-          setIsScrambling(false);
-          setDisplayText(currentPhrase);
-
-          pauseTimeoutRef.current = setTimeout(() => {
-            setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
-            setAnimationKey((k) => k + 1);
-          }, pauseDuration);
-
           return prevRevealed;
         }
 
@@ -122,14 +131,29 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     }, speed);
   }, [
     currentPhrase,
-    phrases.length,
     speed,
     maxIterations,
-    pauseDuration,
     clearTimers,
     shuffleText,
     getNextIndex,
+    getNonSpaceCount,
   ]);
+
+  useEffect(() => {
+    if (!currentPhrase) return;
+
+    const nonSpaceCount = getNonSpaceCount(currentPhrase);
+
+    if (revealedIndices.size >= nonSpaceCount && nonSpaceCount > 0 && !isComplete) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setIsComplete(true);
+      setDisplayText(currentPhrase);
+      scheduleNextPhrase(pauseDuration);
+    }
+  }, [revealedIndices.size, currentPhrase, isComplete, pauseDuration, getNonSpaceCount, scheduleNextPhrase]);
 
   useEffect(() => {
     if (isActive && currentPhrase) {
@@ -141,15 +165,32 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
 
   useEffect(() => {
     if (isActive && !wasActiveRef.current) {
-      setCurrentPhraseIndex(0);
-      setAnimationKey((k) => k + 1);
+      if (remainingPauseRef.current !== null && pauseStartTimeRef.current !== null) {
+        const elapsed = Date.now() - pauseStartTimeRef.current;
+        const remaining = Math.max(0, remainingPauseRef.current - elapsed);
+
+        if (remaining > 0) {
+          scheduleNextPhrase(remaining);
+        } else {
+          setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
+          setAnimationKey((k) => k + 1);
+        }
+      } else if (!isComplete) {
+        setAnimationKey((k) => k + 1);
+      } else {
+        scheduleNextPhrase(pauseDuration);
+      }
     }
     wasActiveRef.current = isActive;
-  }, [isActive]);
+  }, [isActive, phrases.length, isComplete, pauseDuration, scheduleNextPhrase]);
 
   useEffect(() => {
     if (!isActive) {
       clearTimers();
+      if (pauseStartTimeRef.current !== null && remainingPauseRef.current !== null) {
+        const elapsed = Date.now() - pauseStartTimeRef.current;
+        remainingPauseRef.current = Math.max(0, remainingPauseRef.current - elapsed);
+      }
     }
   }, [isActive, clearTimers]);
 
@@ -172,7 +213,7 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
         <span aria-hidden="true">
           {displayText.split('').map((char, index) => {
             const isRevealed =
-              revealedIndices.has(index) || currentPhrase[index] === ' ';
+              isComplete || revealedIndices.has(index) || currentPhrase[index] === ' ';
             return (
               <span
                 key={index}
