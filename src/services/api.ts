@@ -1613,22 +1613,23 @@ export const extractTwitchChannelName = (twitchUrl: string): string | null => {
   }
 };
 
-export const fetchDefaultTrailer = async () => {
+export const fetchHomeTrailer = async (configId: string) => {
   try {
     const { data, error } = await supabase
       .from('game_trailers')
       .select('*')
+      .eq('config_id', configId)
       .eq('is_default', true)
       .maybeSingle();
 
     if (error) {
-      console.error('Error fetching default trailer:', error);
+      console.error('Error fetching home trailer:', error);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Error in fetchDefaultTrailer:', error);
+    console.error('Error in fetchHomeTrailer:', error);
     return null;
   }
 };
@@ -1687,22 +1688,22 @@ export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
   }
 };
 
-export const fetchHeroCarouselData = async () => {
+export const fetchHeroCarouselData = async (configId: string) => {
   try {
-    const [defaultTrailer, featuredTrailers] = await Promise.all([
-      fetchDefaultTrailer(),
+    const [homeTrailer, featuredTrailers] = await Promise.all([
+      fetchHomeTrailer(configId),
       fetchFeaturedTournamentTrailers(2)
     ]);
 
     return {
-      defaultTrailer,
+      homeTrailer,
       featuredTrailers,
       success: true
     };
   } catch (error) {
     console.error('Error fetching hero carousel data:', error);
     return {
-      defaultTrailer: null,
+      homeTrailer: null,
       featuredTrailers: [],
       success: false
     };

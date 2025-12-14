@@ -27,7 +27,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
   onScrollToTournaments,
 }) => {
   const { t } = useTranslation();
-  const { brandName, primaryColor } = useAppConfig();
+  const { configId, brandName, primaryColor } = useAppConfig();
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,22 +40,24 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     const loadCarouselData = async () => {
       try {
         setIsLoading(true);
-        const { defaultTrailer, featuredTrailers } = await fetchHeroCarouselData();
+        const { homeTrailer, featuredTrailers } = await fetchHeroCarouselData(configId);
 
         const carouselSlides: SlideData[] = [];
 
-        const phrase1 = defaultTrailer?.typewriter_phrase_1 || 'Welcome To the Arena';
-        const phrase2 = (defaultTrailer?.typewriter_phrase_2 || 'Welcome to {brandName}').replace('{brandName}', brandName);
+        const phraseKey1 = homeTrailer?.typewriter_phrase_1 || 'heroCarousel.home.phrase1';
+        const phraseKey2 = homeTrailer?.typewriter_phrase_2 || 'heroCarousel.home.phrase2';
+        const phrase1 = t(phraseKey1, { brandName });
+        const phrase2 = t(phraseKey2, { brandName });
 
-        const defaultSlide: SlideData = {
-          id: defaultTrailer?.id || 'default',
-          videoUrl: defaultTrailer?.video_url || DEFAULT_VIDEO_URL,
+        const homeSlide: SlideData = {
+          id: homeTrailer?.id || 'home',
+          videoUrl: homeTrailer?.video_url || DEFAULT_VIDEO_URL,
           title: phrase1,
           typewriterPhrases: [phrase1, phrase2],
           ctaText: t('heroCarousel.exploreTournaments'),
           isDefault: true,
         };
-        carouselSlides.push(defaultSlide);
+        carouselSlides.push(homeSlide);
 
         featuredTrailers.forEach((trailer: any) => {
           if (trailer.tournament) {
@@ -75,8 +77,8 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         setSlides(carouselSlides);
       } catch (error) {
         console.error('Error loading carousel data:', error);
-        const fallbackPhrase1 = 'Welcome To the Arena';
-        const fallbackPhrase2 = `Welcome to ${brandName}`;
+        const fallbackPhrase1 = t('heroCarousel.home.phrase1', { brandName });
+        const fallbackPhrase2 = t('heroCarousel.home.phrase2', { brandName });
         setSlides([{
           id: 'fallback',
           videoUrl: DEFAULT_VIDEO_URL,
@@ -91,7 +93,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
     };
 
     loadCarouselData();
-  }, [t, brandName]);
+  }, [t, configId, brandName]);
 
   const goToSlide = useCallback((index: number) => {
     setCurrentSlide(index);

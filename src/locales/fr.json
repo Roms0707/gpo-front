@@ -268,7 +268,11 @@
     "exploreTournaments": "Explorer les tournois",
     "registerNow": "S'inscrire maintenant",
     "viewTournament": "Voir le tournoi",
-    "goToSlide": "Aller à la diapositive {{number}}"
+    "goToSlide": "Aller à la diapositive {{number}}",
+    "home": {
+      "phrase1": "Bienvenue dans l'Arene",
+      "phrase2": "Bienvenue sur {{brandName}}"
+    }
   },
   "tournamentFilters": {
     "availableTournaments": "Tournois disponibles",

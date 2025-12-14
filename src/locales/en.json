@@ -268,7 +268,11 @@
     "exploreTournaments": "Explore Tournaments",
     "registerNow": "Register Now",
     "viewTournament": "View Tournament",
-    "goToSlide": "Go to slide {{number}}"
+    "goToSlide": "Go to slide {{number}}",
+    "home": {
+      "phrase1": "Welcome To the Arena",
+      "phrase2": "Welcome to {{brandName}}"
+    }
   },
   "tournamentFilters": {
     "availableTournaments": "Available Tournaments",

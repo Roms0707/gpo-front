@@ -396,6 +396,7 @@ export interface DiscordVerificationStatus {
 
 export interface GameTrailer {
   id: string;
+  config_id: string;
   game_id?: string;
   tournament_id?: string;
   video_url: string;
