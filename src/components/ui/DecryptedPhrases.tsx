@@ -23,14 +23,14 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
   characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*<>[]{}',
 }) => {
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
-  const [displayText, setDisplayText] = useState<string[]>([]);
+  const [displayText, setDisplayText] = useState('');
   const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isScrambling, setIsScrambling] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pauseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const iterationCountRef = useRef<number[]>([]);
+  const iterationCountRef = useRef(0);
   const wasActiveRef = useRef(isActive);
 
   const currentPhrase = phrases[currentPhraseIndex] || '';
@@ -38,6 +38,32 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
   const getRandomChar = useCallback(() => {
     return characters[Math.floor(Math.random() * characters.length)];
   }, [characters]);
+
+  const shuffleText = useCallback(
+    (text: string, revealed: Set<number>) => {
+      return text
+        .split('')
+        .map((char, i) => {
+          if (char === ' ') return ' ';
+          if (revealed.has(i)) return text[i];
+          return getRandomChar();
+        })
+        .join('');
+    },
+    [getRandomChar]
+  );
+
+  const getNextIndex = useCallback(
+    (revealed: Set<number>, text: string): number => {
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] !== ' ' && !revealed.has(i)) {
+          return i;
+        }
+      }
+      return -1;
+    },
+    []
+  );
 
   const clearTimers = useCallback(() => {
     if (intervalRef.current) {
@@ -50,67 +76,48 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     }
   }, []);
 
-  const initializeText = useCallback((text: string) => {
-    const chars = text.split('');
-    iterationCountRef.current = new Array(chars.length).fill(0);
-    setDisplayText(chars.map((char) => (char === ' ' ? ' ' : getRandomChar())));
-    setRevealedIndices(new Set());
-  }, [getRandomChar]);
-
   const startAnimation = useCallback(() => {
     clearTimers();
-    initializeText(currentPhrase);
-    setIsAnimating(true);
+    setRevealedIndices(new Set());
+    setDisplayText(shuffleText(currentPhrase, new Set()));
+    setIsScrambling(true);
+    iterationCountRef.current = 0;
 
     intervalRef.current = setInterval(() => {
-      setDisplayText((prev) => {
-        const newDisplay = [...prev];
+      iterationCountRef.current++;
 
-        for (let i = 0; i < currentPhrase.length; i++) {
-          if (currentPhrase[i] === ' ') continue;
+      setRevealedIndices((prevRevealed) => {
+        const nonSpaceCount = currentPhrase
+          .split('')
+          .filter((c) => c !== ' ').length;
 
-          setRevealedIndices((revealed) => {
-            if (revealed.has(i)) {
-              newDisplay[i] = currentPhrase[i];
-              return revealed;
-            }
-
-            iterationCountRef.current[i]++;
-
-            const firstUnrevealedIndex = currentPhrase
-              .split('')
-              .findIndex((char, idx) => char !== ' ' && !revealed.has(idx));
-
-            if (i === firstUnrevealedIndex && iterationCountRef.current[i] >= maxIterations) {
-              const newRevealed = new Set(revealed);
-              newRevealed.add(i);
-              newDisplay[i] = currentPhrase[i];
-              return newRevealed;
-            }
-
-            if (!revealed.has(i)) {
-              newDisplay[i] = getRandomChar();
-            }
-
-            return revealed;
-          });
-        }
-
-        return newDisplay;
-      });
-
-      setRevealedIndices((revealed) => {
-        const nonSpaceCount = currentPhrase.split('').filter((c) => c !== ' ').length;
-        if (revealed.size >= nonSpaceCount && isAnimating) {
+        if (prevRevealed.size >= nonSpaceCount) {
           clearTimers();
-          setIsAnimating(false);
+          setIsScrambling(false);
+          setDisplayText(currentPhrase);
 
           pauseTimeoutRef.current = setTimeout(() => {
             setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
             setAnimationKey((k) => k + 1);
           }, pauseDuration);
+
+          return prevRevealed;
         }
-        return revealed;
+
+        if (iterationCountRef.current >= maxIterations) {
+          iterationCountRef.current = 0;
+          const nextIndex = getNextIndex(prevRevealed, currentPhrase);
+          if (nextIndex !== -1) {
+            const newRevealed = new Set(prevRevealed);
+            newRevealed.add(nextIndex);
+            setDisplayText(shuffleText(currentPhrase, newRevealed));
+            return newRevealed;
+          }
+        } else {
+          setDisplayText(shuffleText(currentPhrase, prevRevealed));
+        }
+
+        return prevRevealed;
       });
     }, speed);
   }, [
@@ -120,9 +127,8 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
     maxIterations,
     pauseDuration,
     clearTimers,
-    initializeText,
-    getRandomChar,
-    isAnimating,
+    shuffleText,
+    getNextIndex,
   ]);
 
   useEffect(() => {
@@ -158,14 +164,15 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.15 }}
         className="inline-block"
         aria-label={currentPhrase}
       >
         <span className="sr-only">{currentPhrase}</span>
         <span aria-hidden="true">
-          {displayText.map((char, index) => {
-            const isRevealed = revealedIndices.has(index) || currentPhrase[index] === ' ';
+          {displayText.split('').map((char, index) => {
+            const isRevealed =
+              revealedIndices.has(index) || currentPhrase[index] === ' ';
             return (
               <span
                 key={index}
@@ -174,8 +181,7 @@ export const DecryptedPhrases: React.FC<DecryptedPhrasesProps> = ({
                   !isRevealed
                     ? {
                         color: encryptedColor,
-                        opacity: 0.8,
-                        fontFamily: 'monospace',
+                        opacity: 0.9,
                       }
                     : undefined
                 }
