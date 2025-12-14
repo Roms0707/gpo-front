@@ -1,6 +1,5 @@
 import React, { useState, ReactNode } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { MagicCardEffects } from './MagicCardEffects';
 
 interface PixelStatCardProps {
   value: number;
@@ -29,34 +28,27 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <MagicCardEffects
-      color={numberColor || color}
+    <div
       onClick={onClick}
-      starCount={15}
-      enableStars={true}
-      enableSpotlight={true}
-      enableClickEffect={true}
-      className="arcade-stat-card cursor-pointer group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="arcade-stat-card relative cursor-pointer group"
+      style={{ animationDelay }}
     >
       <div
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{ animationDelay }}
+        className={`
+          relative overflow-hidden rounded-2xl p-5 sm:p-6
+          transition-all duration-300 ease-out
+          ${isHovered ? 'scale-[1.02]' : 'scale-100'}
+        `}
+        style={{
+          background: `linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,20,30,0.95) 100%)`,
+          boxShadow: isHovered
+            ? `0 0 30px ${color}50, 0 0 60px ${color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
+            : `0 0 15px ${color}30, inset 0 1px 0 rgba(255,255,255,0.05)`,
+          border: `2px solid ${color}${isHovered ? '80' : '40'}`,
+        }}
       >
-        <div
-          className={`
-            relative overflow-hidden rounded-2xl p-5 sm:p-6
-            transition-all duration-300 ease-out
-            ${isHovered ? 'scale-[1.02]' : 'scale-100'}
-          `}
-          style={{
-            background: `linear-gradient(135deg, rgba(0,0,0,0.9) 0%, rgba(20,20,30,0.95) 100%)`,
-            boxShadow: isHovered
-              ? `0 0 30px ${color}50, 0 0 60px ${color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
-              : `0 0 15px ${color}30, inset 0 1px 0 rgba(255,255,255,0.05)`,
-            border: `2px solid ${color}${isHovered ? '80' : '40'}`,
-          }}
-        >
         <div
           className="absolute inset-0 rounded-2xl pointer-events-none transition-opacity duration-300"
           style={{
@@ -154,8 +146,7 @@ export const PixelStatCard: React.FC<PixelStatCardProps> = ({
             opacity: isHovered ? 1 : 0.5,
           }}
         />
-        </div>
       </div>
-    </MagicCardEffects>
+    </div>
   );
 };
