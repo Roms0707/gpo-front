@@ -140,13 +140,13 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
       )}
 
       <div
-        className="absolute inset-0 z-[2]"
+        className="absolute inset-0 z-[2] pointer-events-none"
         style={{
           background: `linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 40%, ${primaryColor}30 100%)`,
         }}
       />
 
-      <div className="absolute inset-0 z-[3] flex items-center justify-center">
+      <div className="absolute inset-0 z-[3] flex items-center justify-center pointer-events-none">
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-3xl mx-auto">
             {logoUrl && (
@@ -190,7 +190,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
             </h2>
 
             {ctaLink && !isDefault && (
-              <div className="flex justify-center">
+              <div className="flex justify-center pointer-events-auto">
                 <Link to={ctaLink}>
                   <GameThemedButton
                     gameName={gameName}
