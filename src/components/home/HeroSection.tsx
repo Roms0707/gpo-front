@@ -1,6 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { ChevronDown } from 'lucide-react';
 import { HeroCarousel } from './HeroCarousel';
 import { UnifiedStatsBar } from './UnifiedStatsBar';
 
@@ -18,8 +16,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   liveTournamentsCount,
   onScrollToTournaments,
 }) => {
-  const { t } = useTranslation();
-
   return (
     <section className="relative overflow-hidden bg-black">
       <HeroCarousel onScrollToTournaments={onScrollToTournaments} />
@@ -35,16 +31,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             />
           </div>
         </div>
-      </div>
-
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 hidden md:block">
-        <button
-          onClick={onScrollToTournaments}
-          className="text-white/60 hover:text-white transition-colors p-2 animate-bounce"
-          aria-label={t('home.scrollToTournaments')}
-        >
-          <ChevronDown className="h-8 w-8" />
-        </button>
       </div>
     </section>
   );
