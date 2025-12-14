@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppConfig } from '../../contexts/AppConfigContext';
-import { TypewriterText } from '../ui/TypewriterText';
+import { DecryptedPhrases } from '../ui/DecryptedPhrases';
 import { GameThemedButton } from '../ui/GameThemedButton';
 
 const isYouTubeUrl = (url: string): boolean => {
@@ -176,13 +176,14 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
 
             <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-8 leading-tight drop-shadow-lg min-h-[1.2em]">
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
-                <TypewriterText
+                <DecryptedPhrases
                   phrases={typewriterPhrases}
-                  typingSpeed={70}
-                  deletingSpeed={35}
+                  speed={50}
+                  maxIterations={12}
                   pauseDuration={2500}
                   className="text-white"
-                  cursorClassName="text-white/70"
+                  encryptedColor={primaryColor}
+                  isActive={isActive}
                 />
               ) : (
                 title
