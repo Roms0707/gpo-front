@@ -57,7 +57,7 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
 
   return (
     <div
-      className={`relative cursor-pointer group transition-all duration-500 min-h-[80px] ${
+      className={`relative cursor-pointer group transition-all duration-500 min-h-[56px] sm:min-h-[70px] md:min-h-[80px] ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
       style={{
@@ -79,9 +79,9 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
           className="relative"
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <div className="relative px-4 py-4 sm:px-6 sm:py-5">
+          <div className="relative px-1.5 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-6 lg:py-5">
             <div
-              className="absolute top-2 right-2 sm:top-3 sm:right-3 transition-all duration-300 group-hover:scale-110"
+              className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-3 md:right-3 transition-all duration-300 group-hover:scale-110"
               style={{
                 color: accentColor,
                 filter: `drop-shadow(0 0 8px ${accentColor})`,
@@ -91,9 +91,9 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
             </div>
 
             <div className="relative z-10 flex flex-col items-center justify-center">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 mb-0.5 sm:mb-1">
                 <span
-                  className="text-3xl sm:text-4xl font-bold tracking-wider tabular-nums"
+                  className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-wider tabular-nums"
                   style={{
                     fontFamily: "'Orbitron', 'Rajdhani', monospace",
                     color: accentColor,
@@ -104,7 +104,7 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
                 </span>
                 {isLive && value > 0 && (
                   <span
-                    className="w-2.5 h-2.5 rounded-full animate-pulse"
+                    className="w-1.5 h-1.5 sm:w-2 sm:h-2 md:w-2.5 md:h-2.5 rounded-full animate-pulse"
                     style={{
                       backgroundColor: accentColor,
                       boxShadow: `0 0 8px ${accentColor}, 0 0 16px ${accentColor}80`,
@@ -112,7 +112,7 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
                   />
                 )}
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold tracking-widest uppercase text-gray-200 text-center">
+              <span className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs font-semibold tracking-wide sm:tracking-widest uppercase text-gray-200 text-center leading-tight">
                 {label}
               </span>
             </div>
@@ -126,7 +126,7 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
             transform: 'rotateY(180deg)',
           }}
         >
-          <div className="relative h-full px-4 py-4 sm:px-6 sm:py-5 flex items-center justify-center min-h-[80px]">
+          <div className="relative h-full px-1.5 py-2 sm:px-3 sm:py-3 md:px-4 md:py-4 lg:px-6 lg:py-5 flex items-center justify-center min-h-[56px] sm:min-h-[70px] md:min-h-[80px]">
             <div
               className="absolute inset-0 opacity-30"
               style={{
@@ -134,7 +134,7 @@ export const FlippableStatCard: React.FC<FlippableStatCardProps> = ({
               }}
             />
             <span
-              className="text-xs sm:text-sm font-bold tracking-wide text-center uppercase"
+              className="text-[9px] sm:text-xs md:text-sm font-bold tracking-wide text-center uppercase"
               style={{
                 color: accentColor,
                 textShadow: `0 0 12px ${accentColor}`,

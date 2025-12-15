@@ -44,21 +44,21 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
       value: activeTournamentsCount,
       labelKey: 'home.activeTournaments',
       backLabelKey: 'home.statsBar.viewTournaments',
-      icon: <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />,
+      icon: <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: goldColor,
     },
     {
       value: gamesCount,
       labelKey: 'home.gamesAvailable',
       backLabelKey: 'home.statsBar.browseGames',
-      icon: <Gamepad2 className="w-4 h-4 sm:w-5 sm:h-5" />,
+      icon: <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: primaryColor,
     },
     {
       value: liveTournamentsCount,
       labelKey: 'home.liveTournaments',
       backLabelKey: 'home.statsBar.watchLive',
-      icon: <Radio className="w-4 h-4 sm:w-5 sm:h-5" />,
+      icon: <Radio className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: liveColor,
       isLive: true,
     },
@@ -102,7 +102,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
           }}
         />
 
-        <div className="relative z-10 px-6 sm:px-8 md:px-12 py-2">
+        <div className="relative z-10 px-2 sm:px-4 md:px-8 lg:px-12 py-1 sm:py-2">
           <div className="grid grid-cols-3 divide-x divide-gray-700/50">
             {stats.map((stat, index) => (
               <FlippableStatCard
@@ -135,7 +135,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
           }}
         />
 
-        <div className="absolute top-0 left-[1.5%] w-3 h-3 sm:w-4 sm:h-4 -translate-y-1/2">
+        <div className="absolute top-0 left-[1.5%] w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 -translate-y-1/2">
           <div
             className="w-full h-full rotate-45 transition-all duration-500"
             style={{
@@ -144,7 +144,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
             }}
           />
         </div>
-        <div className="absolute top-0 right-[1.5%] w-3 h-3 sm:w-4 sm:h-4 -translate-y-1/2">
+        <div className="absolute top-0 right-[1.5%] w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 -translate-y-1/2">
           <div
             className="w-full h-full rotate-45 transition-all duration-500"
             style={{
@@ -153,7 +153,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
             }}
           />
         </div>
-        <div className="absolute bottom-0 left-[1.5%] w-3 h-3 sm:w-4 sm:h-4 translate-y-1/2">
+        <div className="absolute bottom-0 left-[1.5%] w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 translate-y-1/2">
           <div
             className="w-full h-full rotate-45 transition-all duration-500"
             style={{
@@ -162,7 +162,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
             }}
           />
         </div>
-        <div className="absolute bottom-0 right-[1.5%] w-3 h-3 sm:w-4 sm:h-4 translate-y-1/2">
+        <div className="absolute bottom-0 right-[1.5%] w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-4 lg:h-4 translate-y-1/2">
           <div
             className="w-full h-full rotate-45 transition-all duration-500"
             style={{

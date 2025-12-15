@@ -160,12 +160,12 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-[70vh] md:min-h-[80vh] bg-dark-100 flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-48 h-8 bg-dark-300 rounded mb-4"></div>
-          <div className="w-96 h-12 bg-dark-300 rounded mb-4"></div>
-          <div className="w-64 h-6 bg-dark-300 rounded mb-8"></div>
-          <div className="w-40 h-12 bg-dark-300 rounded-lg"></div>
+      <div className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] bg-dark-100 flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center px-4">
+          <div className="w-32 sm:w-48 h-6 sm:h-8 bg-dark-300 rounded mb-3 sm:mb-4"></div>
+          <div className="w-64 sm:w-96 h-8 sm:h-12 bg-dark-300 rounded mb-3 sm:mb-4"></div>
+          <div className="w-48 sm:w-64 h-5 sm:h-6 bg-dark-300 rounded mb-6 sm:mb-8"></div>
+          <div className="w-32 sm:w-40 h-10 sm:h-12 bg-dark-300 rounded-lg"></div>
         </div>
       </div>
     );
@@ -173,7 +173,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   return (
     <div
-      className="relative min-h-[70vh] md:min-h-[80vh] overflow-hidden"
+      className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] overflow-hidden"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
@@ -190,7 +190,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className="relative min-h-[70vh] md:min-h-[80vh] flex-shrink-0"
+            className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] flex-shrink-0"
             style={{ width: `${100 / slides.length}%` }}
           >
             <HeroSlide
@@ -210,19 +210,19 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
       </div>
 
       {slides.length > 1 && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex items-center space-x-1">
+        <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex items-center space-x-0.5 sm:space-x-1">
           {slides.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className="p-2 cursor-pointer group focus:outline-none"
+              className="p-1.5 sm:p-2 cursor-pointer group focus:outline-none"
               aria-label={t('heroCarousel.goToSlide', { number: index + 1 })}
             >
               <span
                 className={`block transition-all duration-300 ${
                   currentSlide === index
-                    ? 'w-10 h-2.5 skew-x-[-12deg]'
-                    : 'w-2.5 h-2.5 rotate-45 group-hover:scale-125'
+                    ? 'w-6 sm:w-8 md:w-10 h-2 sm:h-2.5 skew-x-[-12deg]'
+                    : 'w-2 sm:w-2.5 h-2 sm:h-2.5 rotate-45 group-hover:scale-125'
                 }`}
                 style={{
                   backgroundColor: currentSlide === index ? primaryColor : 'rgba(255, 255, 255, 0.5)',

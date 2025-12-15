@@ -146,23 +146,23 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none">
-        <div className="container mx-auto px-4 text-center">
+      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none pb-24 sm:pb-28 md:pb-32 lg:pb-36">
+        <div className="container mx-auto px-3 sm:px-4 text-center">
           <div className="max-w-3xl mx-auto">
             {logoUrl && (
-              <div className="mb-6 flex justify-center">
+              <div className="mb-3 sm:mb-4 md:mb-6 flex justify-center">
                 <img
                   src={logoUrl}
                   alt={title}
-                  className="h-16 md:h-24 w-auto object-contain drop-shadow-2xl"
+                  className="h-12 sm:h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-2xl"
                 />
               </div>
             )}
 
             {gameName && !isDefault && (
-              <div className="mb-4">
+              <div className="mb-2 sm:mb-3 md:mb-4">
                 <span
-                  className="inline-block px-4 py-1.5 text-sm font-medium rounded-full"
+                  className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 text-xs sm:text-sm font-medium rounded-full"
                   style={{
                     backgroundColor: `${primaryColor}30`,
                     color: primaryColor,
@@ -174,7 +174,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               </div>
             )}
 
-            <div className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-8 leading-tight drop-shadow-lg min-h-[2.4em]">
+            <div className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-lg min-h-[2em] sm:min-h-[2.2em] md:min-h-[2.4em]">
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
                 <GlitchPhrases
                   phrases={typewriterPhrases}
