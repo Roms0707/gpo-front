@@ -72,7 +72,6 @@ const GameHubPage: React.FC = () => {
 
   const handleTabChange = (tab: GameHubTabId) => {
     setActiveTab(tab);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
