@@ -147,10 +147,10 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative h-[400px] md:h-[500px] lg:h-[600px] bg-dark-100 flex items-center justify-center">
+      <div className="relative h-[350px] md:h-[420px] lg:h-[500px] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-64 h-80 bg-dark-300 rounded-2xl mb-4"></div>
-          <div className="w-48 h-6 bg-dark-300 rounded"></div>
+          <div className="w-48 h-64 bg-dark-300 rounded-xl mb-4"></div>
+          <div className="w-36 h-5 bg-dark-300 rounded"></div>
         </div>
       </div>
     );
@@ -158,10 +158,10 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative h-[400px] bg-dark-100 flex items-center justify-center">
+      <div className="relative h-[350px] md:h-[420px] lg:h-[500px] bg-dark-100 flex items-center justify-center">
         <div className="text-center text-gray-400">
-          <Gamepad2 className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p>{t('gameHub.noGamesAvailable')}</p>
+          <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
         </div>
       </div>
     );
@@ -169,11 +169,12 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   const currentGame = games[currentIndex];
   const theme = getGameTheme(currentGame?.name);
+  const currentGameCover = currentGame ? getGameCover(currentGame) : '';
 
   return (
     <div
       ref={containerRef}
-      className="relative h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden"
+      className="relative h-[350px] md:h-[420px] lg:h-[500px] overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -183,11 +184,23 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       <div
         className="absolute inset-0 transition-all duration-700 ease-out"
         style={{
-          background: `linear-gradient(135deg, ${theme.colors.primary}15 0%, transparent 50%, ${theme.colors.secondary}10 100%)`,
+          backgroundImage: `url(${currentGameCover})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.15,
+          filter: 'blur(8px)',
+          transform: 'scale(1.1)',
         }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/50 to-transparent z-10" />
+      <div
+        className="absolute inset-0 transition-all duration-700 ease-out"
+        style={{
+          background: `linear-gradient(135deg, ${theme.colors.primary}20 0%, transparent 50%, ${theme.colors.secondary}15 100%)`,
+        }}
+      />
+
+      <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/70 to-dark-100/30 z-10" />
 
       <div className="relative h-full flex items-center justify-center z-20">
         <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4">
@@ -213,15 +226,15 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                 onClick={() => isActive ? handleGameClick(game.slug) : goToSlide(index)}
               >
                 <div
-                  className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${
+                  className={`relative rounded-xl overflow-hidden transition-all duration-500 ${
                     isActive ? 'shadow-2xl ring-2' : 'shadow-lg'
                   }`}
                   style={{
-                    width: isActive ? '280px' : '200px',
-                    height: isActive ? '380px' : '280px',
+                    width: isActive ? '200px' : '140px',
+                    height: isActive ? '280px' : '200px',
                     ringColor: isActive ? gameTheme.colors.primary : 'transparent',
                     boxShadow: isActive
-                      ? `0 25px 50px -12px ${gameTheme.colors.glow}, 0 0 30px ${gameTheme.colors.glow}`
+                      ? `0 20px 40px -12px ${gameTheme.colors.glow}, 0 0 25px ${gameTheme.colors.glow}`
                       : undefined,
                   }}
                 >
@@ -239,25 +252,25 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   />
 
                   {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <h3 className="text-xl md:text-2xl font-bold mb-1 drop-shadow-lg">
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                      <h3 className="text-base md:text-lg font-bold mb-0.5 drop-shadow-lg truncate">
                         {game.name}
                       </h3>
-                      <p className="text-sm text-white/80 mb-3">{game.publisher}</p>
+                      <p className="text-xs text-white/80 mb-2 truncate">{game.publisher}</p>
 
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1.5">
-                          <Trophy className="w-4 h-4" style={{ color: gameTheme.colors.secondary }} />
-                          <span>{stats.tournaments || 0} {t('gameHub.tournaments')}</span>
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="flex items-center gap-1">
+                          <Trophy className="w-3 h-3" style={{ color: gameTheme.colors.secondary }} />
+                          <span>{stats.tournaments || 0}</span>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <Users className="w-4 h-4" style={{ color: gameTheme.colors.secondary }} />
-                          <span>{stats.players || 0} {t('gameHub.players')}</span>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3" style={{ color: gameTheme.colors.secondary }} />
+                          <span>{stats.players || 0}</span>
                         </div>
                       </div>
 
                       <button
-                        className="mt-4 w-full py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-300 hover:scale-105"
+                        className="mt-2.5 w-full py-2 px-3 rounded-lg font-semibold text-xs transition-all duration-300 hover:scale-105"
                         style={{
                           backgroundColor: gameTheme.colors.primary,
                           color: gameTheme.colors.text,
@@ -294,7 +307,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         <ChevronRight className="w-6 h-6" />
       </button>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
         {games.map((game, index) => {
           const gameTheme = getGameTheme(game.name);
           const isActive = index === currentIndex;
@@ -303,16 +316,16 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
             <button
               key={game.id}
               onClick={() => goToSlide(index)}
-              className="relative p-1 group focus:outline-none"
+              className="relative p-0.5 group focus:outline-none"
               aria-label={`${t('gameHub.goToGame')} ${game.name}`}
             >
               <div
-                className={`w-10 h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                className={`w-8 h-8 rounded-md overflow-hidden border-2 transition-all duration-300 ${
                   isActive ? 'scale-110' : 'opacity-60 group-hover:opacity-100'
                 }`}
                 style={{
                   borderColor: isActive ? gameTheme.colors.primary : 'transparent',
-                  boxShadow: isActive ? `0 0 12px ${gameTheme.colors.glow}` : 'none',
+                  boxShadow: isActive ? `0 0 10px ${gameTheme.colors.glow}` : 'none',
                 }}
               >
                 <img
