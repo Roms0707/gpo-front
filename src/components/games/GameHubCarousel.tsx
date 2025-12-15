@@ -147,7 +147,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative h-[350px] md:h-[420px] lg:h-[500px] bg-dark-100 flex items-center justify-center">
+      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-48 h-64 bg-dark-300 rounded-xl mb-4"></div>
           <div className="w-36 h-5 bg-dark-300 rounded"></div>
@@ -158,7 +158,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative h-[350px] md:h-[420px] lg:h-[500px] bg-dark-100 flex items-center justify-center">
+      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
@@ -174,7 +174,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative h-[350px] md:h-[420px] lg:h-[500px] overflow-hidden"
+      className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -187,8 +187,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
           backgroundImage: `url(${currentGameCover})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.15,
-          filter: 'blur(8px)',
+          opacity: 0.35,
+          filter: 'blur(4px)',
           transform: 'scale(1.1)',
         }}
       />
@@ -200,7 +200,12 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-dark-100/70 to-dark-100/30 z-10" />
+      <div
+        className="absolute inset-0 z-10"
+        style={{
+          background: `linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 40%, ${theme.colors.primary}30 100%)`,
+        }}
+      />
 
       <div className="relative h-full flex items-center justify-center z-20">
         <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4">
