@@ -19,6 +19,7 @@ import { fetchTournaments, fetchGameContent, fetchLeaderboardByGameId } from '..
 import { GameTheme } from '../../../utils/gameThemes';
 import { GameHubTabId } from '../GameHubTabs';
 import { getLatestNews, EsportsNewsItem } from '../../../data/mockEsportsNews';
+import TiltedCard from '../../ui/TiltedCard';
 
 interface Tournament {
   id: string;
@@ -111,6 +112,43 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
     return { background: theme.colors.primary, color: theme.colors.text };
   };
 
+  const getTiltConfig = (status: string) => {
+    switch (status) {
+      case 'ongoing':
+        return {
+          maxTilt: 5,
+          scale: 1.025,
+          shineIntensity: 0.15,
+          glowIntensity: 1,
+          glowColor: `${theme.colors.primary}66`
+        };
+      case 'upcoming':
+        return {
+          maxTilt: 4,
+          scale: 1.02,
+          shineIntensity: 0.12,
+          glowIntensity: 0.5,
+          glowColor: `${theme.colors.primary}4D`
+        };
+      case 'completed':
+        return {
+          maxTilt: 2,
+          scale: 1.01,
+          shineIntensity: 0.08,
+          glowIntensity: 0,
+          glowColor: 'transparent'
+        };
+      default:
+        return {
+          maxTilt: 3,
+          scale: 1.015,
+          shineIntensity: 0.1,
+          glowIntensity: 0.3,
+          glowColor: `${theme.colors.primary}40`
+        };
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -154,44 +192,54 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {tournaments.map((tournament) => (
-              <div
-                key={tournament.id}
-                onClick={() => navigate(`/tournaments/${tournament.id}`)}
-                className="group bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:border-gray-700 hover:-translate-y-1"
-              >
-                <div className="relative h-28 overflow-hidden">
-                  <img
-                    src={tournament.header_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=600'}
-                    alt={tournament.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${theme.colors.primary}80, transparent)` }} />
-                  {tournament.full_prize && (
-                    <div
-                      className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
-                      style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      {tournament.full_prize}
+            {tournaments.map((tournament) => {
+              const tiltConfig = getTiltConfig(tournament.status);
+              return (
+                <TiltedCard
+                  key={tournament.id}
+                  maxTilt={tiltConfig.maxTilt}
+                  scale={tiltConfig.scale}
+                  shineIntensity={tiltConfig.shineIntensity}
+                  glowIntensity={tiltConfig.glowIntensity}
+                  glowColor={tiltConfig.glowColor}
+                  transitionDuration={250}
+                  onClick={() => navigate(`/tournaments/${tournament.id}`)}
+                >
+                  <div className="group bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:border-gray-700">
+                    <div className="relative h-28 overflow-hidden">
+                      <img
+                        src={tournament.header_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=600'}
+                        alt={tournament.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${theme.colors.primary}80, transparent)` }} />
+                      {tournament.full_prize && (
+                        <div
+                          className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-bold flex items-center gap-1"
+                          style={{ backgroundColor: theme.colors.primary, color: theme.colors.text }}
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          {tournament.full_prize}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="p-3">
-                  <h3 className="font-semibold text-white text-sm line-clamp-1 mb-2">{tournament.title}</h3>
-                  <div className="flex items-center gap-3 text-xs text-gray-400">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      <span>{format(new Date(tournament.start_date), 'MMM d')}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      <span>{tournament.registration_count || 0}/{tournament.max_nb_players || '?'}</span>
+                    <div className="p-3">
+                      <h3 className="font-semibold text-white text-sm line-clamp-1 mb-2">{tournament.title}</h3>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          <span>{format(new Date(tournament.start_date), 'MMM d')}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          <span>{tournament.registration_count || 0}/{tournament.max_nb_players || '?'}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </TiltedCard>
+              );
+            })}
           </div>
         )}
       </section>

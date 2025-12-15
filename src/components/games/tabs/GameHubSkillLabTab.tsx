@@ -1,18 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Zap, Crosshair, Timer, TrendingUp, Trophy, ExternalLink, Gamepad2 } from 'lucide-react';
+import { Target, Zap, TrendingUp, Crosshair, Timer, Trophy, Gamepad2 } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
 import { APP_CONFIG } from '../../../constants';
+import AimTrainerGame from '../AimTrainerGame';
+import ReactionTimeGame from '../ReactionTimeGame';
 
-interface SkillGame {
-  id: string;
-  titleKey: string;
-  descriptionKey: string;
-  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-  url: string;
-  features: string[];
-  color: string;
-}
+type SkillGameTab = 'aim-trainer' | 'reaction-time';
 
 interface GameHubSkillLabTabProps {
   gameId: string;
@@ -30,45 +24,27 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
   const hasAimTrainer = APP_CONFIG.AIM_TRAINER_GAME_IDS.includes(gameId);
   const hasReactionGame = APP_CONFIG.REACTION_TIME_ONLY_GAME_IDS.includes(gameId) || hasAimTrainer;
 
-  const availableGames: SkillGame[] = [];
+  const availableTabs: { id: SkillGameTab; labelKey: string; icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }> }[] = [];
 
   if (hasAimTrainer) {
-    availableGames.push({
+    availableTabs.push({
       id: 'aim-trainer',
-      titleKey: 'gameHub.skillLab.aimTrainer.title',
-      descriptionKey: 'gameHub.skillLab.aimTrainer.description',
+      labelKey: 'gameHub.skillLab.aimTrainer.title',
       icon: Target,
-      url: '/aim-trainer-game/index.html',
-      features: [
-        'gameHub.skillLab.aimTrainer.feature1',
-        'gameHub.skillLab.aimTrainer.feature2',
-        'gameHub.skillLab.aimTrainer.feature3',
-      ],
-      color: theme.colors.primary,
     });
   }
 
   if (hasReactionGame) {
-    availableGames.push({
+    availableTabs.push({
       id: 'reaction-time',
-      titleKey: 'gameHub.skillLab.reactionTime.title',
-      descriptionKey: 'gameHub.skillLab.reactionTime.description',
+      labelKey: 'gameHub.skillLab.reactionTime.title',
       icon: Zap,
-      url: '/reaction-time-game/index.html',
-      features: [
-        'gameHub.skillLab.reactionTime.feature1',
-        'gameHub.skillLab.reactionTime.feature2',
-        'gameHub.skillLab.reactionTime.feature3',
-      ],
-      color: theme.colors.secondary,
     });
   }
 
-  const handlePlayGame = (url: string) => {
-    window.open(url, '_blank');
-  };
+  const [activeTab, setActiveTab] = useState<SkillGameTab>(availableTabs[0]?.id || 'aim-trainer');
 
-  if (availableGames.length === 0) {
+  if (availableTabs.length === 0) {
     return (
       <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-12 text-center">
         <div
@@ -102,75 +78,54 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
+    <div className="space-y-6">
+      <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">{t('gameHub.skillLab.title')}</h2>
         <p className="text-gray-400 max-w-2xl mx-auto">
           {t('gameHub.skillLab.subtitle')}
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {availableGames.map((game) => {
-          const GameIcon = game.icon;
+      {availableTabs.length > 1 && (
+        <div className="flex justify-center">
+          <div className="inline-flex bg-dark-300/50 p-1 rounded-xl border border-gray-800">
+            {availableTabs.map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = activeTab === tab.id;
+              const tabColor = tab.id === 'aim-trainer' ? theme.colors.primary : theme.colors.secondary;
 
-          return (
-            <div
-              key={game.id}
-              className="group relative bg-dark-200/50 border border-gray-800 rounded-2xl overflow-hidden transition-all duration-300 hover:border-gray-700 hover:shadow-2xl"
-            >
-              <div
-                className="absolute inset-0 opacity-5 transition-opacity group-hover:opacity-10"
-                style={{
-                  background: `radial-gradient(circle at top right, ${game.color}, transparent 70%)`,
-                }}
-              />
-
-              <div className="relative p-6 sm:p-8">
-                <div className="flex items-start gap-5">
-                  <div
-                    className="p-4 rounded-xl transition-transform group-hover:scale-110 flex-shrink-0"
-                    style={{ backgroundColor: `${game.color}20` }}
-                  >
-                    <GameIcon className="w-10 h-10" style={{ color: game.color }} />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-white mb-2">{t(game.titleKey)}</h3>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-4">
-                      {t(game.descriptionKey)}
-                    </p>
-
-                    <div className="space-y-2 mb-6">
-                      {game.features.map((featureKey, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-gray-300">
-                          <div
-                            className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: game.color }}
-                          />
-                          {t(featureKey)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
+              return (
                 <button
-                  onClick={() => handlePlayGame(game.url)}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02]"
-                  style={{
-                    backgroundColor: game.color,
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                    ${isActive ? 'shadow-lg' : 'hover:bg-dark-300/50'}
+                  `}
+                  style={isActive ? {
+                    backgroundColor: tabColor,
                     color: theme.colors.text,
+                    boxShadow: `0 4px 20px ${tabColor}40`,
+                  } : {
+                    color: 'rgb(156, 163, 175)',
                   }}
                 >
-                  <Gamepad2 className="w-5 h-5" />
-                  {t('gameHub.skillLab.playNow')}
-                  <ExternalLink className="w-4 h-4" />
+                  <TabIcon className="w-4 h-4" />
+                  {t(tab.labelKey)}
                 </button>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="relative">
+        {activeTab === 'aim-trainer' && hasAimTrainer && (
+          <AimTrainerGame gameName={gameName} />
+        )}
+        {activeTab === 'reaction-time' && hasReactionGame && (
+          <ReactionTimeGame gameName={gameName} gameId={gameId} />
+        )}
       </div>
 
       <div className="bg-dark-200/30 border border-gray-800/50 rounded-xl p-6">

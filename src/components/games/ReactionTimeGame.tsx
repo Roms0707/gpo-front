@@ -596,7 +596,7 @@ const ReactionTimeGame: React.FC<ReactionTimeGameProps> = ({ gameName, gameId })
         <iframe
           ref={iframeRef}
           src="/reaction-time-game/index.html"
-          className="w-full h-96 border-0"
+          className="w-full h-[500px] border-0"
           title="Reaction Time Game"
           allow="fullscreen"
         />

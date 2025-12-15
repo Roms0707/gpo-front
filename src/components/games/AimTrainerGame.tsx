@@ -645,7 +645,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
         <iframe
           ref={iframeRef}
           src="/aim-trainer-game/index.html"
-          className="w-full h-96 border-0"
+          className="w-full h-[500px] border-0"
           title="Aim Trainer Game"
           allow="fullscreen"
         />

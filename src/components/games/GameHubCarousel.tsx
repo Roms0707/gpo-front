@@ -308,64 +308,114 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center">
-        {games.map((game, index) => {
-          const gameTheme = getGameTheme(game.name);
-          const isActive = index === currentIndex;
-          const distanceFromActive = Math.abs(index - currentIndex);
-          const isLeftOfActive = index < currentIndex;
-          const isRightOfActive = index > currentIndex;
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3">
+        <div className="flex items-center">
+          {games.map((game, index) => {
+            const gameTheme = getGameTheme(game.name);
+            const isActive = index === currentIndex;
+            const distanceFromActive = Math.abs(index - currentIndex);
+            const isLeftOfActive = index < currentIndex;
+            const isRightOfActive = index > currentIndex;
 
-          const clusterMargin = isActive
-            ? 'mx-3'
-            : isLeftOfActive
-              ? 'mr-1 ml-0.5'
-              : isRightOfActive
-                ? 'ml-1 mr-0.5'
-                : 'mx-1';
+            const clusterMargin = isActive
+              ? 'mx-3'
+              : isLeftOfActive
+                ? 'mr-1 ml-0.5'
+                : isRightOfActive
+                  ? 'ml-1 mr-0.5'
+                  : 'mx-1';
 
-          const diamondScale = isActive ? 1 : distanceFromActive === 1 ? 0.75 : 0.6;
+            const diamondScale = isActive ? 1 : distanceFromActive === 1 ? 0.75 : 0.6;
 
-          return (
-            <button
-              key={game.id}
-              onClick={() => goToSlide(index)}
-              className={`group focus:outline-none p-1.5 ${clusterMargin} transition-all duration-300 relative`}
-              aria-label={`${t('gameHub.goToGame')} ${game.name}`}
-              style={{
-                '--glow-color': gameTheme.colors.glow,
-                '--glow-color-40': `${gameTheme.colors.glow}66`,
-                '--glow-color-20': `${gameTheme.colors.glow}33`,
-                '--primary-color': gameTheme.colors.primary,
-              } as React.CSSProperties}
-            >
-              <div
-                className={`transition-all duration-300 ${isActive ? 'diamond-pulse' : ''}`}
+            return (
+              <button
+                key={game.id}
+                onClick={() => goToSlide(index)}
+                className={`group focus:outline-none p-1.5 ${clusterMargin} transition-all duration-300 relative`}
+                aria-label={`${t('gameHub.goToGame')} ${game.name}`}
                 style={{
-                  width: isActive ? '14px' : '10px',
-                  height: isActive ? '14px' : '10px',
-                  transform: `rotate(45deg) scale(${diamondScale})`,
-                  backgroundColor: isActive ? gameTheme.colors.primary : 'transparent',
-                  border: isActive ? 'none' : '2px solid rgba(156, 163, 175, 0.6)',
-                  boxShadow: isActive
-                    ? `0 0 12px ${gameTheme.colors.glow}, 0 0 20px ${gameTheme.colors.glow}66`
-                    : 'none',
-                }}
-              />
-              {!isActive && (
+                  '--glow-color': gameTheme.colors.glow,
+                  '--glow-color-40': `${gameTheme.colors.glow}66`,
+                  '--glow-color-20': `${gameTheme.colors.glow}33`,
+                  '--primary-color': gameTheme.colors.primary,
+                } as React.CSSProperties}
+              >
                 <div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  className={`transition-all duration-300 ${isActive ? 'diamond-pulse' : ''}`}
                   style={{
-                    width: '10px',
-                    height: '10px',
-                    transform: `translate(-50%, -50%) rotate(45deg) scale(${diamondScale})`,
-                    backgroundColor: `${gameTheme.colors.primary}40`,
+                    width: isActive ? '14px' : '10px',
+                    height: isActive ? '14px' : '10px',
+                    transform: `rotate(45deg) scale(${diamondScale})`,
+                    backgroundColor: isActive ? gameTheme.colors.primary : 'transparent',
+                    border: isActive ? 'none' : '2px solid rgba(156, 163, 175, 0.6)',
+                    boxShadow: isActive
+                      ? `0 0 12px ${gameTheme.colors.glow}, 0 0 20px ${gameTheme.colors.glow}66`
+                      : 'none',
                   }}
                 />
-              )}
-            </button>
-          );
-        })}
+                {!isActive && (
+                  <div
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      width: '10px',
+                      height: '10px',
+                      transform: `translate(-50%, -50%) rotate(45deg) scale(${diamondScale})`,
+                      backgroundColor: `${gameTheme.colors.primary}40`,
+                    }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="hidden md:flex items-center justify-center gap-2">
+          {games.map((game, index) => {
+            const gameTheme = getGameTheme(game.name);
+            const isActive = index === currentIndex;
+
+            return (
+              <button
+                key={`icon-${game.id}`}
+                onClick={() => goToSlide(index)}
+                className="focus:outline-none transition-all duration-300 relative group"
+                aria-label={`${t('gameHub.goToGame')} ${game.name}`}
+              >
+                <div
+                  className="w-10 h-10 rounded-full overflow-hidden border-2 transition-all duration-300"
+                  style={{
+                    borderColor: isActive ? gameTheme.colors.primary : 'rgba(75, 85, 99, 0.5)',
+                    boxShadow: isActive
+                      ? `0 0 16px ${gameTheme.colors.glow}, 0 0 24px ${gameTheme.colors.glow}66`
+                      : 'none',
+                    transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                  }}
+                >
+                  <img
+                    src={getGameCover(game)}
+                    alt={game.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {isActive && (
+                  <div
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      background: `radial-gradient(circle, ${gameTheme.colors.primary}40 0%, transparent 70%)`,
+                      animation: 'iconPulse 2s ease-in-out infinite',
+                    }}
+                  />
+                )}
+                <div
+                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none px-2 py-1 rounded bg-dark-300/90"
+                  style={{ color: gameTheme.colors.primary }}
+                >
+                  {game.name}
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {games.length > 1 && !isPaused && (
@@ -394,6 +444,17 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
           50% {
             box-shadow: 0 0 20px var(--glow-color), 0 0 35px var(--glow-color-40), 0 0 50px var(--glow-color-20);
             transform: rotate(45deg) scale(1.15);
+          }
+        }
+
+        @keyframes iconPulse {
+          0%, 100% {
+            opacity: 0.6;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.3;
+            transform: scale(1.2);
           }
         }
 
