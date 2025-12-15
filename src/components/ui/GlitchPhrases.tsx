@@ -5,7 +5,6 @@ import { GlitchText } from './GlitchText';
 interface GlitchPhrasesProps {
   phrases: string[];
   pauseDuration?: number;
-  transitionDuration?: number;
   speed?: number;
   className?: string;
   isActive?: boolean;
@@ -38,18 +37,19 @@ const parsePhrase = (phrase: string): ParsedPhrase => {
   };
 };
 
+type TransitionPhase = 'idle' | 'glitch-out' | 'switching' | 'glitch-in';
+
 export const GlitchPhrases: React.FC<GlitchPhrasesProps> = ({
   phrases,
-  pauseDuration = 4000,
-  transitionDuration = 0.4,
-  speed = 0.8,
+  pauseDuration = 5000,
+  speed = 1.2,
   className = '',
   isActive = true,
   shadowColor1 = '#ef4444',
   shadowColor2 = '#06b6d4',
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [phase, setPhase] = useState<TransitionPhase>('idle');
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pauseStartRef = useRef<number | null>(null);
   const remainingPauseRef = useRef<number>(pauseDuration);
@@ -62,22 +62,35 @@ export const GlitchPhrases: React.FC<GlitchPhrasesProps> = ({
     }
   }, []);
 
+  const startTransition = useCallback(() => {
+    setPhase('glitch-out');
+
+    setTimeout(() => {
+      setPhase('switching');
+
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % phrases.length);
+        setPhase('glitch-in');
+
+        setTimeout(() => {
+          setPhase('idle');
+        }, 400);
+      }, 150);
+    }, 500);
+  }, [phrases.length]);
+
   const scheduleNext = useCallback((delay: number) => {
     clearTimer();
     pauseStartRef.current = Date.now();
     remainingPauseRef.current = delay;
 
     timeoutRef.current = setTimeout(() => {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % phrases.length);
-        setIsTransitioning(false);
-        pauseStartRef.current = Date.now();
-        remainingPauseRef.current = pauseDuration;
-        scheduleNext(pauseDuration);
-      }, transitionDuration * 1000);
+      startTransition();
+      pauseStartRef.current = Date.now();
+      remainingPauseRef.current = pauseDuration;
+      scheduleNext(pauseDuration + 1050);
     }, delay);
-  }, [clearTimer, phrases.length, pauseDuration, transitionDuration]);
+  }, [clearTimer, pauseDuration, startTransition]);
 
   useEffect(() => {
     if (isActive && phrases.length > 1) {
@@ -113,40 +126,64 @@ export const GlitchPhrases: React.FC<GlitchPhrasesProps> = ({
 
   const currentPhrase = phrases[currentIndex] || phrases[0];
   const parsed = parsePhrase(currentPhrase);
+  const isIntense = phase === 'glitch-out' || phase === 'glitch-in';
+  const isHidden = phase === 'switching';
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
         key={currentIndex}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, scale: 0.95, filter: 'blur(8px)' }}
         animate={{
-          opacity: isTransitioning ? 0 : 1,
-          y: isTransitioning ? -10 : 0,
-          filter: isTransitioning ? 'blur(4px)' : 'blur(0px)',
+          opacity: isHidden ? 0 : 1,
+          scale: isHidden ? 1.02 : 1,
+          filter: isHidden ? 'blur(12px)' : 'blur(0px)',
+          x: phase === 'glitch-out' ? [0, -3, 3, -2, 2, 0] : 0,
         }}
-        exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
-        transition={{ duration: transitionDuration, ease: 'easeInOut' }}
+        exit={{ opacity: 0, scale: 1.02, filter: 'blur(8px)' }}
+        transition={{
+          duration: 0.5,
+          ease: [0.25, 0.46, 0.45, 0.94],
+          x: { duration: 0.3, ease: 'easeInOut' },
+        }}
         className={`flex flex-col items-center ${className}`}
       >
         {parsed.lines.map((line, lineIndex) => (
-          <div
+          <motion.div
             key={lineIndex}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: lineIndex * 0.1,
+              ease: [0.25, 0.46, 0.45, 0.94],
+            }}
             className="flex flex-wrap justify-center items-center gap-x-3 md:gap-x-4"
           >
             {line.map((segment, segmentIndex) => (
-              <GlitchText
+              <motion.span
                 key={`${lineIndex}-${segmentIndex}`}
-                speed={speed}
-                enableShadows={true}
-                enableOnHover={false}
-                shadowColor1={shadowColor1}
-                shadowColor2={shadowColor2}
-                className="inline-block"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  duration: 0.3,
+                  delay: lineIndex * 0.1 + segmentIndex * 0.08,
+                }}
               >
-                {segment}
-              </GlitchText>
+                <GlitchText
+                  speed={speed}
+                  enableShadows={true}
+                  enableOnHover={false}
+                  intense={isIntense}
+                  shadowColor1={shadowColor1}
+                  shadowColor2={shadowColor2}
+                  className="inline-block"
+                >
+                  {segment}
+                </GlitchText>
+              </motion.span>
             ))}
-          </div>
+          </motion.div>
         ))}
       </motion.div>
     </AnimatePresence>

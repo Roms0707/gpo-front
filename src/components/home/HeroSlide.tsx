@@ -178,8 +178,8 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
                 <GlitchPhrases
                   phrases={typewriterPhrases}
-                  pauseDuration={4000}
-                  speed={0.8}
+                  pauseDuration={5000}
+                  speed={1.5}
                   className="text-white"
                   shadowColor1={primaryColor}
                   shadowColor2="#06b6d4"
