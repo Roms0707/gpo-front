@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchGames } from '../../services/api';
-import { Gamepad2, X } from 'lucide-react';
+import { Gamepad2, X, LayoutGrid } from 'lucide-react';
 
 interface Game {
   id: string;
@@ -29,6 +30,8 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
   filteredTournamentsCount
 }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [tooltip, setTooltip] = useState<TooltipState>({
@@ -39,6 +42,8 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
   });
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  const isOnHubPage = location.pathname.startsWith('/hub');
 
   useEffect(() => {
     const loadGames = async () => {
@@ -123,8 +128,18 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
       ref={sidebarRef}
       className="fixed inset-y-0 left-0 z-50 w-[72px] bg-dark-100 border-r border-gray-800 flex flex-col"
     >
-      <div className="flex items-center justify-center p-4 border-b border-gray-800 h-20">
-        <Gamepad2 className="h-6 w-6 text-primary-500" />
+      <div className="flex flex-col items-center justify-center p-3 border-b border-gray-800 h-20 gap-1">
+        <button
+          onClick={() => navigate('/hub')}
+          className={`p-2 rounded-lg transition-all duration-200 ${
+            isOnHubPage
+              ? 'bg-primary-500/20 text-primary-500'
+              : 'text-gray-400 hover:text-primary-500 hover:bg-dark-200'
+          }`}
+          title={t('gameHub.title')}
+        >
+          <LayoutGrid className="h-5 w-5" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto py-3 px-2 relative">

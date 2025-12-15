@@ -35,6 +35,7 @@ const TwitchEmbedPage = React.lazy(() => import('./pages/TwitchEmbedPage'));
 const CommunitiesPage = React.lazy(() => import('./pages/CommunitiesPage'));
 const VideoPlayerPage = React.lazy(() => import('./pages/VideoPlayerPage'));
 const TransactionWaitingPage = React.lazy(() => import('./pages/TransactionWaitingPage'));
+const GameHubPage = React.lazy(() => import('./pages/GameHubPage'));
 
 // Loading fallback component
 const PageLoadingFallback = () => {
@@ -124,6 +125,18 @@ const AppContent = () => {
              <CommunitiesPage />
            </Suspense>
          } />
+
+          {/* Game Hub */}
+          <Route path="hub" element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <GameHubPage />
+            </Suspense>
+          } />
+          <Route path="hub/:gameId" element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <GameHubPage />
+            </Suspense>
+          } />
           
           <Route element={<ProtectedRoute />}>
             <Route path="tournaments/:id/register" element={
