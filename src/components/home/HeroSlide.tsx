@@ -146,7 +146,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none pt-16 sm:pt-20 md:pt-16 lg:pt-0 pb-28 sm:pb-32 md:pb-36 lg:pb-44 xl:pb-48">
+      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none pt-16 sm:pt-20 md:pt-16 lg:pt-20 xl:pt-24 2xl:pt-28 pb-24 sm:pb-28 md:pb-32 lg:pb-36 xl:pb-40 2xl:pb-44">
         <div className="container mx-auto px-3 sm:px-4 text-center">
           <div className="max-w-3xl mx-auto">
             {logoUrl && (
@@ -174,7 +174,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               </div>
             )}
 
-            <div className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white mb-4 sm:mb-6 md:mb-8 leading-tight drop-shadow-lg min-h-[2em] sm:min-h-[2.2em] md:min-h-[2.4em]">
+            <div className="font-heading font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl text-white mb-4 sm:mb-6 md:mb-8 lg:mb-6 xl:mb-5 leading-tight drop-shadow-lg min-h-[2em] sm:min-h-[2.2em] md:min-h-[2.4em] lg:min-h-[2.2em]">
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
                 <GlitchPhrases
                   phrases={typewriterPhrases}

@@ -160,7 +160,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[85vh] xl:min-h-[88vh] 2xl:min-h-[90vh] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center px-4">
           <div className="w-32 sm:w-48 h-6 sm:h-8 bg-dark-300 rounded mb-3 sm:mb-4"></div>
           <div className="w-64 sm:w-96 h-8 sm:h-12 bg-dark-300 rounded mb-3 sm:mb-4"></div>
@@ -173,7 +173,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
 
   return (
     <div
-      className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] overflow-hidden"
+      className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[85vh] xl:min-h-[88vh] 2xl:min-h-[90vh] overflow-hidden"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onTouchStart={handleTouchStart}
@@ -190,7 +190,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         {slides.map((slide, index) => (
           <div
             key={slide.id}
-            className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[80vh] flex-shrink-0"
+            className="relative min-h-[55vh] sm:min-h-[65vh] md:min-h-[75vh] lg:min-h-[85vh] xl:min-h-[88vh] 2xl:min-h-[90vh] flex-shrink-0"
             style={{ width: `${100 / slides.length}%` }}
           >
             <HeroSlide
