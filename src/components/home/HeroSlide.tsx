@@ -146,7 +146,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none pb-24 sm:pb-28 md:pb-32 lg:pb-36">
+      <div className="absolute inset-0 z-[25] flex items-center justify-center pointer-events-none pt-20 sm:pt-24 md:pt-28 lg:pt-32 pb-24 sm:pb-28 md:pb-32 lg:pb-36">
         <div className="container mx-auto px-3 sm:px-4 text-center">
           <div className="max-w-3xl mx-auto">
             {logoUrl && (
