@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppConfig } from '../../contexts/AppConfigContext';
-import { DecryptedPhrases } from '../ui/DecryptedPhrases';
+import { GlitchPhrases } from '../ui/GlitchPhrases';
 import { GameThemedButton } from '../ui/GameThemedButton';
 
 const isYouTubeUrl = (url: string): boolean => {
@@ -174,21 +174,21 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
               </div>
             )}
 
-            <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-8 leading-tight drop-shadow-lg min-h-[1.2em]">
+            <div className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-8 leading-tight drop-shadow-lg min-h-[2.4em]">
               {isDefault && typewriterPhrases && typewriterPhrases.length > 0 ? (
-                <DecryptedPhrases
+                <GlitchPhrases
                   phrases={typewriterPhrases}
-                  revealDuration={2300}
-                  maxIterations={1}
-                  pauseDuration={10}
+                  pauseDuration={4000}
+                  speed={0.8}
                   className="text-white"
-                  encryptedColor={primaryColor}
+                  shadowColor1={primaryColor}
+                  shadowColor2="#06b6d4"
                   isActive={isActive}
                 />
               ) : (
-                title
+                <h2>{title}</h2>
               )}
-            </h2>
+            </div>
 
             {ctaLink && !isDefault && (
               <div className="flex justify-center pointer-events-auto">
