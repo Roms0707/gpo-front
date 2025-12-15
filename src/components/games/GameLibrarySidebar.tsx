@@ -2,19 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchGames } from '../../services/api';
-import { Gamepad2, X, LayoutGrid } from 'lucide-react';
+import { LayoutGrid } from 'lucide-react';
 
 interface Game {
   id: string;
   name: string;
   publisher: string;
   image_url: string;
-}
-
-interface GameLibrarySidebarProps {
-  selectedGameId: string | null;
-  onGameSelect: (gameId: string | null) => void;
-  filteredTournamentsCount: number;
+  slug: string;
 }
 
 interface TooltipState {
@@ -24,11 +19,7 @@ interface TooltipState {
   y: number;
 }
 
-const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
-  selectedGameId,
-  onGameSelect,
-  filteredTournamentsCount
-}) => {
+const GameLibrarySidebar: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +35,9 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   const isOnHubPage = location.pathname.startsWith('/hub');
+  const currentSlug = location.pathname.startsWith('/hub/')
+    ? location.pathname.split('/hub/')[1]?.split('/')[0]
+    : null;
 
   useEffect(() => {
     const loadGames = async () => {
@@ -89,30 +83,12 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
     setTooltip(prev => ({ ...prev, visible: false }));
   };
 
-  const handleGameClick = (gameId: string) => {
-    if (selectedGameId === gameId) {
-      onGameSelect(null);
+  const handleGameClick = (gameSlug: string) => {
+    if (currentSlug === gameSlug) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      onGameSelect(gameId);
-
-      setTimeout(() => {
-        const tournamentsSection = document.getElementById('tournaments');
-        if (tournamentsSection) {
-          const headerOffset = 80;
-          const elementPosition = tournamentsSection.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: 'smooth'
-          });
-        }
-      }, 100);
+      navigate(`/hub/${gameSlug}`);
     }
-  };
-
-  const handleClearFilter = () => {
-    onGameSelect(null);
   };
 
   useEffect(() => {
@@ -143,31 +119,6 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto py-3 px-2 relative">
-        {selectedGameId && (
-          <div
-            className="w-14 h-14 mx-auto mb-3 bg-primary-600/20 border border-primary-600/30 rounded-xl hover:bg-primary-600/30 transition-all duration-200 cursor-pointer flex items-center justify-center group"
-            onClick={handleClearFilter}
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const sidebarRect = sidebarRef.current?.getBoundingClientRect();
-              const relativeY = rect.top - (sidebarRect?.top || 0) + rect.height / 2;
-
-              if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-              hoverTimeoutRef.current = setTimeout(() => {
-                setTooltip({
-                  visible: true,
-                  gameId: 'clear',
-                  gameName: t('home.clearFilter'),
-                  y: relativeY
-                });
-              }, 350);
-            }}
-            onMouseLeave={handleMouseLeave}
-          >
-            <X className="h-5 w-5 text-primary-400 group-hover:text-primary-300 transition-colors" />
-          </div>
-        )}
-
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(6)].map((_, index) => (
@@ -177,7 +128,7 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
         ) : (
           <div className="space-y-2">
             {games.map((game) => {
-              const isSelected = selectedGameId === game.id;
+              const isSelected = currentSlug === game.slug;
 
               return (
                 <div
@@ -191,7 +142,7 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
                   )}
 
                   <div
-                    onClick={() => handleGameClick(game.id)}
+                    onClick={() => handleGameClick(game.slug)}
                     className={`w-14 h-14 mx-auto rounded-xl cursor-pointer transition-all duration-200 overflow-hidden relative group ${
                       isSelected
                         ? 'ring-2 ring-primary-500 shadow-lg shadow-primary-500/20 scale-105'
@@ -229,14 +180,6 @@ const GameLibrarySidebar: React.FC<GameLibrarySidebarProps> = ({
           </div>
         )}
       </div>
-
-      {selectedGameId && (
-        <div className="p-2 border-t border-gray-800 bg-dark-200/50">
-          <div className="text-center">
-            <span className="text-xs text-gray-400">{filteredTournamentsCount}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

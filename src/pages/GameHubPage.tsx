@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchGames, fetchGameById } from '../services/api';
+import { fetchGames, fetchGameBySlug } from '../services/api';
 import { getGameTheme } from '../utils/gameThemes';
 import GameHubCarousel from '../components/games/GameHubCarousel';
 import GameHubFeaturedTournaments from '../components/games/GameHubFeaturedTournaments';
@@ -15,11 +15,12 @@ interface Game {
   name: string;
   publisher: string;
   image_url: string;
+  slug: string;
   twitch_cover_url?: string;
 }
 
 const GameHubPage: React.FC = () => {
-  const { gameId } = useParams<{ gameId?: string }>();
+  const { gameSlug } = useParams<{ gameSlug?: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
@@ -32,14 +33,20 @@ const GameHubPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
-        if (gameId) {
-          const game = await fetchGameById(gameId);
+        if (gameSlug) {
+          if (selectedGame?.slug === gameSlug) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setIsLoading(false);
+            return;
+          }
+          const game = await fetchGameBySlug(gameSlug);
           setSelectedGame(game);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           const games = await fetchGames();
           if (games && games.length > 0) {
             setSelectedGame(games[0]);
-            navigate(`/hub/${games[0].id}`, { replace: true });
+            navigate(`/hub/${games[0].slug}`, { replace: true });
           }
         }
       } catch (err) {
@@ -51,10 +58,10 @@ const GameHubPage: React.FC = () => {
     };
 
     loadGame();
-  }, [gameId, navigate, t]);
+  }, [gameSlug, navigate, t]);
 
-  const handleGameSelect = (newGameId: string) => {
-    navigate(`/hub/${newGameId}`);
+  const handleGameSelect = (newGameSlug: string) => {
+    navigate(`/hub/${newGameSlug}`);
   };
 
   if (isLoading) {

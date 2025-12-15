@@ -512,6 +512,23 @@ export const fetchGameById = async (id: string) => {
   return result.data;
 };
 
+export const fetchGameBySlug = async (slug: string) => {
+  const result = await executeQuery(
+    () => supabase
+      .from('games')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+  );
+
+  if (result.error) {
+    console.error('Error fetching game by slug:', result.error);
+    throw new Error('Failed to fetch game');
+  }
+
+  return result.data;
+};
+
 export const fetchLeaderboardByGameId = async (gameId: string) => {
   try {
     // Call the new aggregated Edge Function

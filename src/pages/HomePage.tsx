@@ -303,11 +303,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="flex min-h-screen overflow-x-hidden">
       {!isMobile && (
-        <GameLibrarySidebar
-          selectedGameId={selectedGameId}
-          onGameSelect={handleGameSelect}
-          filteredTournamentsCount={filteredTournaments.length}
-        />
+        <GameLibrarySidebar />
       )}
 
       <div className={`flex-1 transition-all duration-300 w-full overflow-x-hidden ${!isMobile ? 'ml-[72px]' : 'ml-0'}`}>

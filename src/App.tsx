@@ -132,7 +132,7 @@ const AppContent = () => {
               <GameHubPage />
             </Suspense>
           } />
-          <Route path="hub/:gameId" element={
+          <Route path="hub/:gameSlug" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <GameHubPage />
             </Suspense>

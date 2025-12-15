@@ -11,6 +11,7 @@ interface Game {
   name: string;
   publisher: string;
   image_url: string;
+  slug: string;
   twitch_cover_url?: string;
   trailer_url?: string;
 }
@@ -22,7 +23,7 @@ interface GameStats {
 
 interface GameHubCarouselProps {
   selectedGameId?: string | null;
-  onGameSelect: (gameId: string) => void;
+  onGameSelect: (gameSlug: string) => void;
 }
 
 const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
@@ -134,9 +135,9 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
     touchEndX.current = null;
   };
 
-  const handleGameClick = (gameId: string) => {
-    onGameSelect(gameId);
-    navigate(`/hub/${gameId}`);
+  const handleGameClick = (gameSlug: string) => {
+    onGameSelect(gameSlug);
+    navigate(`/hub/${gameSlug}`);
   };
 
   const getGameCover = (game: Game): string => {
@@ -209,7 +210,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   zIndex: isActive ? 30 : 20 - Math.abs(offset),
                   filter: isActive ? 'none' : 'blur(2px)',
                 }}
-                onClick={() => isActive ? handleGameClick(game.id) : goToSlide(index)}
+                onClick={() => isActive ? handleGameClick(game.slug) : goToSlide(index)}
               >
                 <div
                   className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${
@@ -263,7 +264,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleGameClick(game.id);
+                          handleGameClick(game.slug);
                         }}
                       >
                         {t('gameHub.exploreGame')}
