@@ -187,9 +187,21 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
           backgroundImage: `url(${currentGameCover})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.35,
-          filter: 'blur(4px)',
-          transform: 'scale(1.1)',
+          opacity: 0.15,
+          filter: 'blur(25px)',
+          transform: 'scale(1.15)',
+        }}
+      />
+
+      <div
+        className="absolute inset-0 transition-all duration-700 ease-out"
+        style={{
+          backgroundImage: `url(${currentGameCover})`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.22,
+          filter: 'blur(1px)',
         }}
       />
 
