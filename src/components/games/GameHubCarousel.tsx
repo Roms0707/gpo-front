@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft, ChevronRight, Trophy, Users, Gamepad2 } from 'lucide-react';
+import { Trophy, Users, Gamepad2 } from 'lucide-react';
 import { fetchGames } from '../../services/api';
 import { getGameTheme } from '../../utils/gameThemes';
 import { APP_CONFIG } from '../../constants';
@@ -207,8 +207,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         }}
       />
 
-      <div className="relative h-full flex items-center justify-center z-20">
-        <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4">
+      <div className="relative h-full flex items-center justify-center z-20 pt-8 pb-16">
+        <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4 mt-4">
           {games.map((game, index) => {
             const offset = index - currentIndex;
             const isActive = index === currentIndex;
@@ -296,23 +296,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         </div>
       </div>
 
-      <button
-        onClick={goToPrevSlide}
-        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-dark-200/80 backdrop-blur-sm border border-gray-700 text-white hover:bg-dark-300 transition-all duration-200 hover:scale-110"
-        aria-label={t('gameHub.previousGame')}
-      >
-        <ChevronLeft className="w-6 h-6" />
-      </button>
-
-      <button
-        onClick={goToNextSlide}
-        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 p-3 rounded-full bg-dark-200/80 backdrop-blur-sm border border-gray-700 text-white hover:bg-dark-300 transition-all duration-200 hover:scale-110"
-        aria-label={t('gameHub.nextGame')}
-      >
-        <ChevronRight className="w-6 h-6" />
-      </button>
-
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
         {games.map((game, index) => {
           const gameTheme = getGameTheme(game.name);
           const isActive = index === currentIndex;
@@ -321,24 +305,20 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
             <button
               key={game.id}
               onClick={() => goToSlide(index)}
-              className="relative p-0.5 group focus:outline-none"
+              className="group focus:outline-none p-1"
               aria-label={`${t('gameHub.goToGame')} ${game.name}`}
             >
               <div
-                className={`w-8 h-8 rounded-md overflow-hidden border-2 transition-all duration-300 ${
-                  isActive ? 'scale-110' : 'opacity-60 group-hover:opacity-100'
+                className={`rounded-full transition-all duration-300 ${
+                  isActive
+                    ? 'w-3 h-3'
+                    : 'w-2 h-2 bg-gray-500 group-hover:bg-gray-400'
                 }`}
                 style={{
-                  borderColor: isActive ? gameTheme.colors.primary : 'transparent',
-                  boxShadow: isActive ? `0 0 10px ${gameTheme.colors.glow}` : 'none',
+                  backgroundColor: isActive ? gameTheme.colors.primary : undefined,
+                  boxShadow: isActive ? `0 0 8px ${gameTheme.colors.glow}` : 'none',
                 }}
-              >
-                <img
-                  src={getGameCover(game)}
-                  alt={game.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+              />
             </button>
           );
         })}
