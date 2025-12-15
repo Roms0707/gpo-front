@@ -147,7 +147,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center pt-20">
+      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-48 h-64 bg-dark-300 rounded-xl mb-4"></div>
           <div className="w-36 h-5 bg-dark-300 rounded"></div>
@@ -158,7 +158,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center pt-20">
+      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
@@ -207,7 +207,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         }}
       />
 
-      <div className="relative h-full flex items-center justify-center z-20 pt-24 pb-20">
+      <div className="relative h-full flex items-center justify-center z-20 pb-12">
         <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4">
           {games.map((game, index) => {
             const offset = index - currentIndex;
