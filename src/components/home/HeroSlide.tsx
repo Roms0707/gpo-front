@@ -142,7 +142,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
       <div
         className="absolute inset-0 z-[2] pointer-events-none"
         style={{
-          background: `linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 40%, ${primaryColor}30 100%)`,
+          background: `linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 40%, ${primaryColor}20 100%)`,
         }}
       />
 
