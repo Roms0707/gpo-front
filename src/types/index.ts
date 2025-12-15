@@ -103,6 +103,13 @@ export interface Game {
   image_url: string;
   has_an_api?: boolean;
   api_key?: string;
+  slug?: string;
+  twitch_cover_url?: string;
+  twitch_game_id?: string;
+  cover_last_updated?: string;
+  igdb_game_id?: string;
+  igdb_artwork_url?: string;
+  igdb_last_updated?: string;
 }
 
 export interface GameContent {

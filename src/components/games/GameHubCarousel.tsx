@@ -13,6 +13,7 @@ interface Game {
   image_url: string;
   slug: string;
   twitch_cover_url?: string;
+  igdb_artwork_url?: string;
   trailer_url?: string;
 }
 
@@ -145,6 +146,15 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
   };
 
+  const getGameBackground = (game: Game): string => {
+    return game.igdb_artwork_url || game.twitch_cover_url || game.image_url ||
+      'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
+  };
+
+  const hasWideArtwork = (game: Game): boolean => {
+    return !!game.igdb_artwork_url;
+  };
+
   if (isLoading) {
     return (
       <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
@@ -169,7 +179,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   const currentGame = games[currentIndex];
   const theme = getGameTheme(currentGame?.name);
-  const currentGameCover = currentGame ? getGameCover(currentGame) : '';
+  const currentGameBackground = currentGame ? getGameBackground(currentGame) : '';
+  const isWideBackground = currentGame ? hasWideArtwork(currentGame) : false;
 
   return (
     <div
@@ -184,24 +195,13 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       <div
         className="absolute inset-0 transition-all duration-700 ease-out"
         style={{
-          backgroundImage: `url(${currentGameCover})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.15,
-          filter: 'blur(25px)',
-          transform: 'scale(1.15)',
-        }}
-      />
-
-      <div
-        className="absolute inset-0 transition-all duration-700 ease-out"
-        style={{
-          backgroundImage: `url(${currentGameCover})`,
-          backgroundSize: 'contain',
+          backgroundImage: `url(${currentGameBackground})`,
+          backgroundSize: isWideBackground ? 'cover' : 'contain',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          opacity: 0.22,
-          filter: 'blur(1px)',
+          opacity: isWideBackground ? 0.35 : 0.22,
+          filter: isWideBackground ? 'blur(2px)' : 'blur(1px)',
+          transform: isWideBackground ? 'scale(1.02)' : 'none',
         }}
       />
 
