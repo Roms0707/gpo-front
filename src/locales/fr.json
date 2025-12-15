@@ -1834,6 +1834,56 @@
       "tip3Title": "Gestion de l'Economie",
       "tip3Desc": "Equilibrez vos depenses pour maintenir des performances constantes sur tous les rounds.",
       "viewDetailedStats": "Voir les Stats Detaillees"
+    },
+    "tabs": {
+      "overview": "Apercu",
+      "tournaments": "Tournois",
+      "leaderboard": "Classement",
+      "training": "Entrainement",
+      "skillLab": "Labo de Skills",
+      "coaching": "Coaching"
+    },
+    "viewAll": "Voir Tout",
+    "latestNews": "Dernieres Actualites",
+    "searchLeaderboard": "Rechercher un joueur ou une equipe...",
+    "searchVideos": "Rechercher des videos...",
+    "rank": "Rang",
+    "player": "Joueur",
+    "team": "Equipe",
+    "winLoss": "V/D",
+    "winRate": "Taux de Victoire",
+    "elo": "ELO",
+    "views": "vues",
+    "noLeaderboardDataDesc": "Les classements apparaitront une fois que les joueurs commenceront a participer aux tournois.",
+    "noTrainingContentDesc": "Les videos et contenus d'entrainement seront bientot disponibles.",
+    "skillLab": {
+      "title": "Labo de Skills",
+      "subtitle": "Affinez vos competences de jeu avec des jeux d'entrainement interactifs concus pour ameliorer vos reflexes et votre precision.",
+      "noGamesAvailable": "Aucun Jeu d'Entrainement Disponible",
+      "noGamesAvailableDesc": "Les jeux d'entrainement pour {{gameName}} ne sont pas encore disponibles. Revenez bientot !",
+      "comingSoon": "Bientot Disponible",
+      "playNow": "Jouer Maintenant",
+      "whyTrain": "Pourquoi S'entrainer ?",
+      "aimTrainer": {
+        "title": "Entrainement de Visee",
+        "description": "Ameliorez votre precision avec notre entrainement interactif sur cibles. Parfait pour s'echauffer avant les matchs ou pour des sessions d'entrainement dediees.",
+        "feature1": "Patterns de cibles dynamiques",
+        "feature2": "Niveaux de difficulte ajustables",
+        "feature3": "Suivi des performances"
+      },
+      "reactionTime": {
+        "title": "Temps de Reaction",
+        "description": "Testez et ameliorez vos reflexes avec des defis de vitesse. Essentiel pour le gaming competitif ou chaque milliseconde compte.",
+        "feature1": "Tests de reaction visuelle",
+        "feature2": "Suivi du temps moyen",
+        "feature3": "Progression dans le temps"
+      },
+      "benefit1Title": "Meilleure Precision",
+      "benefit1Desc": "Developpez la memoire musculaire pour une visee plus rapide et precise",
+      "benefit2Title": "Reflexes Plus Rapides",
+      "benefit2Desc": "Reduisez votre temps de reaction pour un avantage competitif",
+      "benefit3Title": "Pret pour les Tournois",
+      "benefit3Desc": "Echauffez-vous avant les matchs pour des performances optimales"
     }
   },
   "error": {

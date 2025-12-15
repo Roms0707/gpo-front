@@ -4,10 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { fetchGames, fetchGameBySlug } from '../services/api';
 import { getGameTheme } from '../utils/gameThemes';
 import GameHubCarousel from '../components/games/GameHubCarousel';
-import GameHubFeaturedTournaments from '../components/games/GameHubFeaturedTournaments';
-import GameHubTrainingSection from '../components/games/GameHubTrainingSection';
-import GameHubLeaderboardSection from '../components/games/GameHubLeaderboardSection';
-import GameHubCoachingSection from '../components/games/GameHubCoachingSection';
+import GameHubTabs, { GameHubTabId } from '../components/games/GameHubTabs';
+import GameHubOverviewTab from '../components/games/tabs/GameHubOverviewTab';
+import GameHubTournamentsTab from '../components/games/tabs/GameHubTournamentsTab';
+import GameHubLeaderboardTab from '../components/games/tabs/GameHubLeaderboardTab';
+import GameHubTrainingTab from '../components/games/tabs/GameHubTrainingTab';
+import GameHubSkillLabTab from '../components/games/tabs/GameHubSkillLabTab';
+import GameHubCoachingTab from '../components/games/tabs/GameHubCoachingTab';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 interface Game {
@@ -26,6 +29,7 @@ const GameHubPage: React.FC = () => {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<GameHubTabId>('overview');
 
   useEffect(() => {
     const loadGame = async () => {
@@ -41,6 +45,7 @@ const GameHubPage: React.FC = () => {
           }
           const game = await fetchGameBySlug(gameSlug);
           setSelectedGame(game);
+          setActiveTab('overview');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
           const games = await fetchGames();
@@ -61,7 +66,13 @@ const GameHubPage: React.FC = () => {
   }, [gameSlug, navigate, t]);
 
   const handleGameSelect = (newGameSlug: string) => {
+    setActiveTab('overview');
     navigate(`/hub/${newGameSlug}`);
+  };
+
+  const handleTabChange = (tab: GameHubTabId) => {
+    setActiveTab(tab);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isLoading) {
@@ -90,6 +101,64 @@ const GameHubPage: React.FC = () => {
 
   const theme = selectedGame ? getGameTheme(selectedGame.name) : null;
 
+  const renderTabContent = () => {
+    if (!selectedGame || !theme) return null;
+
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <GameHubOverviewTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+            onNavigateToTab={handleTabChange}
+          />
+        );
+      case 'tournaments':
+        return (
+          <GameHubTournamentsTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+          />
+        );
+      case 'leaderboard':
+        return (
+          <GameHubLeaderboardTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+          />
+        );
+      case 'training':
+        return (
+          <GameHubTrainingTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+          />
+        );
+      case 'skillLab':
+        return (
+          <GameHubSkillLabTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+          />
+        );
+      case 'coaching':
+        return (
+          <GameHubCoachingTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark-100">
       <div
@@ -107,39 +176,31 @@ const GameHubPage: React.FC = () => {
           onGameSelect={handleGameSelect}
         />
 
-        {selectedGame && (
-          <div className="relative">
-            <div
-              className="absolute top-0 left-0 right-0 h-32 pointer-events-none"
-              style={{
-                background: theme
-                  ? `linear-gradient(to bottom, ${theme.colors.primary}10, transparent)`
-                  : undefined,
-              }}
-            />
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-              <GameHubFeaturedTournaments
-                gameId={selectedGame.id}
-                gameName={selectedGame.name}
-              />
-
-              <GameHubTrainingSection
-                gameId={selectedGame.id}
-                gameName={selectedGame.name}
-              />
-
-              <GameHubLeaderboardSection
-                gameId={selectedGame.id}
-                gameName={selectedGame.name}
-              />
-
-              <GameHubCoachingSection
-                gameId={selectedGame.id}
-                gameName={selectedGame.name}
+        {selectedGame && theme && (
+          <>
+            <div className="sticky top-0 z-20">
+              <GameHubTabs
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+                theme={theme}
               />
             </div>
-          </div>
+
+            <div className="relative">
+              <div
+                className="absolute top-0 left-0 right-0 h-32 pointer-events-none"
+                style={{
+                  background: theme
+                    ? `linear-gradient(to bottom, ${theme.colors.primary}10, transparent)`
+                    : undefined,
+                }}
+              />
+
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {renderTabContent()}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

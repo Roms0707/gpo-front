@@ -1834,6 +1834,56 @@
       "tip3Title": "Economy Management",
       "tip3Desc": "Balance your spending to maintain consistent performance across rounds.",
       "viewDetailedStats": "View Detailed Stats"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "tournaments": "Tournaments",
+      "leaderboard": "Leaderboard",
+      "training": "Training",
+      "skillLab": "Skill Lab",
+      "coaching": "Coaching"
+    },
+    "viewAll": "View All",
+    "latestNews": "Latest News",
+    "searchLeaderboard": "Search player or team...",
+    "searchVideos": "Search videos...",
+    "rank": "Rank",
+    "player": "Player",
+    "team": "Team",
+    "winLoss": "W/L",
+    "winRate": "Win Rate",
+    "elo": "ELO",
+    "views": "views",
+    "noLeaderboardDataDesc": "Rankings will appear once players start competing in tournaments.",
+    "noTrainingContentDesc": "Training videos and content will be available soon.",
+    "skillLab": {
+      "title": "Skill Lab",
+      "subtitle": "Sharpen your gaming skills with interactive training games designed to improve your reflexes and precision.",
+      "noGamesAvailable": "No Training Games Available",
+      "noGamesAvailableDesc": "Training games for {{gameName}} are not yet available. Check back soon!",
+      "comingSoon": "Coming Soon",
+      "playNow": "Play Now",
+      "whyTrain": "Why Train?",
+      "aimTrainer": {
+        "title": "Aim Trainer",
+        "description": "Improve your precision and accuracy with our interactive target practice. Perfect for warming up before matches or dedicated training sessions.",
+        "feature1": "Dynamic target patterns",
+        "feature2": "Adjustable difficulty levels",
+        "feature3": "Performance tracking"
+      },
+      "reactionTime": {
+        "title": "Reaction Time",
+        "description": "Test and improve your reflexes with speed challenges. Essential for competitive gaming where milliseconds matter.",
+        "feature1": "Visual reaction tests",
+        "feature2": "Average time tracking",
+        "feature3": "Progress over time"
+      },
+      "benefit1Title": "Better Accuracy",
+      "benefit1Desc": "Develop muscle memory for faster, more precise aim",
+      "benefit2Title": "Faster Reflexes",
+      "benefit2Desc": "Reduce reaction time for competitive advantage",
+      "benefit3Title": "Tournament Ready",
+      "benefit3Desc": "Warm up before matches for peak performance"
     }
   },
   "error": {
