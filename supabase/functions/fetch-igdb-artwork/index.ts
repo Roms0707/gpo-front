@@ -15,10 +15,19 @@ interface IGDBArtwork {
   height: number;
 }
 
+interface IGDBScreenshot {
+  id: number;
+  game: number;
+  image_id: string;
+  width: number;
+  height: number;
+}
+
 interface IGDBGame {
   id: number;
   name: string;
   artworks?: number[];
+  screenshots?: number[];
 }
 
 let cachedAccessToken: string | null = null;
@@ -73,7 +82,7 @@ const searchIGDBGame = async (
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "text/plain",
     },
-    body: `search "${gameName}"; fields id, name, artworks; limit 1;`
+    body: `search "${gameName}"; fields id, name, artworks, screenshots; limit 1;`
   });
 
   if (!response.ok) {
@@ -117,6 +126,43 @@ const fetchArtworkForGame = async (
 
   if (selectedArtwork?.image_id) {
     return `https://images.igdb.com/igdb/image/upload/t_1080p/${selectedArtwork.image_id}.jpg`;
+  }
+
+  return null;
+};
+
+const fetchScreenshotForGame = async (
+  screenshotIds: number[],
+  clientId: string,
+  accessToken: string
+): Promise<string | null> => {
+  if (!screenshotIds || screenshotIds.length === 0) {
+    return null;
+  }
+
+  const idsString = screenshotIds.join(",");
+  const response = await fetch("https://api.igdb.com/v4/screenshots", {
+    method: "POST",
+    headers: {
+      "Client-ID": clientId,
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "text/plain",
+    },
+    body: `where id = (${idsString}); fields id, image_id, width, height; sort width desc; limit 10;`
+  });
+
+  if (!response.ok) {
+    console.error(`[IGDB] Screenshot fetch failed: ${response.status}`);
+    return null;
+  }
+
+  const screenshots: IGDBScreenshot[] = await response.json();
+
+  const landscapeScreenshot = screenshots.find(s => s.width > s.height);
+  const selectedScreenshot = landscapeScreenshot || screenshots[0];
+
+  if (selectedScreenshot?.image_id) {
+    return `https://images.igdb.com/igdb/image/upload/t_1080p/${selectedScreenshot.image_id}.jpg`;
   }
 
   return null;
@@ -222,39 +268,35 @@ Deno.serve(async (req: Request) => {
           if (igdbGame) {
             igdbGameId = igdbGame.id.toString();
 
+            let imageUrl: string | null = null;
+            let imageSource = "";
+
             if (igdbGame.artworks && igdbGame.artworks.length > 0) {
-              const artworkUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
+              imageUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
+              if (imageUrl) imageSource = "artwork";
+            }
 
-              if (artworkUrl) {
-                const { error: updateError } = await supabase
-                  .from("games")
-                  .update({
-                    igdb_game_id: igdbGameId,
-                    igdb_artwork_url: artworkUrl,
-                    igdb_last_updated: new Date().toISOString()
-                  })
-                  .eq("id", game.id);
+            if (!imageUrl && igdbGame.screenshots && igdbGame.screenshots.length > 0) {
+              imageUrl = await fetchScreenshotForGame(igdbGame.screenshots, client_id, accessToken);
+              if (imageUrl) imageSource = "screenshot";
+            }
 
-                if (updateError) {
-                  console.error(`[IGDB] Error updating game ${game.name}:`, updateError);
-                  failedCount++;
-                } else {
-                  updatedCount++;
-                  console.log(`[IGDB] Updated artwork for ${game.name}`);
-                }
+            if (imageUrl) {
+              const { error: updateError } = await supabase
+                .from("games")
+                .update({
+                  igdb_game_id: igdbGameId,
+                  igdb_artwork_url: imageUrl,
+                  igdb_last_updated: new Date().toISOString()
+                })
+                .eq("id", game.id);
+
+              if (updateError) {
+                console.error(`[IGDB] Error updating game ${game.name}:`, updateError);
+                failedCount++;
               } else {
-                const { error: updateError } = await supabase
-                  .from("games")
-                  .update({
-                    igdb_game_id: igdbGameId,
-                    igdb_last_updated: new Date().toISOString()
-                  })
-                  .eq("id", game.id);
-
-                if (updateError) {
-                  console.error(`[IGDB] Error updating game ID for ${game.name}:`, updateError);
-                }
-                console.log(`[IGDB] No artwork found for ${game.name}, saved IGDB ID`);
+                updatedCount++;
+                console.log(`[IGDB] Updated ${game.name} with ${imageSource}`);
               }
             } else {
               const { error: updateError } = await supabase
@@ -268,7 +310,7 @@ Deno.serve(async (req: Request) => {
               if (updateError) {
                 console.error(`[IGDB] Error updating game ID for ${game.name}:`, updateError);
               }
-              console.log(`[IGDB] No artworks array for ${game.name}, saved IGDB ID`);
+              console.log(`[IGDB] No artwork or screenshots for ${game.name}, saved IGDB ID`);
             }
           } else {
             console.log(`[IGDB] No IGDB match found for ${game.name}`);
@@ -276,24 +318,35 @@ Deno.serve(async (req: Request) => {
           }
         } else {
           const igdbGame = await searchIGDBGame(game.name, client_id, accessToken);
-          if (igdbGame && igdbGame.artworks && igdbGame.artworks.length > 0) {
-            const artworkUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
+          if (igdbGame) {
+            let imageUrl: string | null = null;
+            let imageSource = "";
 
-            if (artworkUrl) {
+            if (igdbGame.artworks && igdbGame.artworks.length > 0) {
+              imageUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
+              if (imageUrl) imageSource = "artwork";
+            }
+
+            if (!imageUrl && igdbGame.screenshots && igdbGame.screenshots.length > 0) {
+              imageUrl = await fetchScreenshotForGame(igdbGame.screenshots, client_id, accessToken);
+              if (imageUrl) imageSource = "screenshot";
+            }
+
+            if (imageUrl) {
               const { error: updateError } = await supabase
                 .from("games")
                 .update({
-                  igdb_artwork_url: artworkUrl,
+                  igdb_artwork_url: imageUrl,
                   igdb_last_updated: new Date().toISOString()
                 })
                 .eq("id", game.id);
 
               if (updateError) {
-                console.error(`[IGDB] Error updating artwork for ${game.name}:`, updateError);
+                console.error(`[IGDB] Error updating ${game.name}:`, updateError);
                 failedCount++;
               } else {
                 updatedCount++;
-                console.log(`[IGDB] Refreshed artwork for ${game.name}`);
+                console.log(`[IGDB] Refreshed ${game.name} with ${imageSource}`);
               }
             }
           }
