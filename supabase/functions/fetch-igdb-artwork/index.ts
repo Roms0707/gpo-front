@@ -28,7 +28,80 @@ interface IGDBGame {
   name: string;
   artworks?: number[];
   screenshots?: number[];
+  first_release_date?: number;
 }
+
+const GAME_NAME_MAPPINGS: Record<string, string[]> = {
+  "fc26": ["EA Sports FC 26", "EA Sports FC 25"],
+  "fc25": ["EA Sports FC 25", "EA Sports FC 24"],
+  "fc24": ["EA Sports FC 24"],
+  "fifa": ["EA Sports FC 25", "EA Sports FC 24"],
+  "lol": ["League of Legends"],
+  "league": ["League of Legends"],
+  "cs2": ["Counter-Strike 2"],
+  "csgo": ["Counter-Strike: Global Offensive", "Counter-Strike 2"],
+  "cs": ["Counter-Strike 2", "Counter-Strike: Global Offensive"],
+  "valorant": ["VALORANT", "Valorant"],
+  "val": ["VALORANT", "Valorant"],
+  "fortnite": ["Fortnite"],
+  "fn": ["Fortnite"],
+  "apex": ["Apex Legends"],
+  "rl": ["Rocket League"],
+  "rocketleague": ["Rocket League"],
+  "ow2": ["Overwatch 2"],
+  "overwatch": ["Overwatch 2", "Overwatch"],
+  "dota": ["Dota 2"],
+  "dota2": ["Dota 2"],
+  "pubg": ["PUBG: BATTLEGROUNDS", "PlayerUnknown's Battlegrounds"],
+  "cod": ["Call of Duty"],
+  "warzone": ["Call of Duty: Warzone"],
+  "mw3": ["Call of Duty: Modern Warfare III"],
+  "mw2": ["Call of Duty: Modern Warfare II"],
+  "tft": ["Teamfight Tactics"],
+  "tekken8": ["Tekken 8"],
+  "tekken": ["Tekken 8", "Tekken 7"],
+  "sf6": ["Street Fighter 6"],
+  "streetfighter": ["Street Fighter 6", "Street Fighter V"],
+  "mk1": ["Mortal Kombat 1"],
+  "mortalkombat": ["Mortal Kombat 1", "Mortal Kombat 11"],
+  "r6": ["Tom Clancy's Rainbow Six Siege"],
+  "rainbow6": ["Tom Clancy's Rainbow Six Siege"],
+  "siege": ["Tom Clancy's Rainbow Six Siege"],
+  "nba2k": ["NBA 2K25", "NBA 2K24"],
+  "nba2k25": ["NBA 2K25"],
+  "nba2k24": ["NBA 2K24"],
+  "madden": ["Madden NFL 25", "Madden NFL 24"],
+  "madden25": ["Madden NFL 25"],
+  "mlb": ["MLB The Show 24"],
+  "starcraft": ["StarCraft II: Wings of Liberty"],
+  "sc2": ["StarCraft II: Wings of Liberty"],
+  "hearthstone": ["Hearthstone"],
+  "hs": ["Hearthstone"],
+  "wow": ["World of Warcraft"],
+  "worldofwarcraft": ["World of Warcraft"],
+  "diablo": ["Diablo IV", "Diablo III"],
+  "diablo4": ["Diablo IV"],
+  "poe": ["Path of Exile"],
+  "pathofexile": ["Path of Exile"],
+  "gta": ["Grand Theft Auto V"],
+  "gtav": ["Grand Theft Auto V"],
+  "gta5": ["Grand Theft Auto V"],
+  "minecraft": ["Minecraft"],
+  "mc": ["Minecraft"],
+  "roblox": ["Roblox"],
+  "freefire": ["Free Fire"],
+  "ff": ["Free Fire"],
+  "mobilelegends": ["Mobile Legends: Bang Bang"],
+  "mlbb": ["Mobile Legends: Bang Bang"],
+  "wildrift": ["League of Legends: Wild Rift"],
+  "wr": ["League of Legends: Wild Rift"],
+  "codm": ["Call of Duty: Mobile"],
+  "pubgm": ["PUBG Mobile"],
+  "brawlstars": ["Brawl Stars"],
+  "clashroyale": ["Clash Royale"],
+  "clashofclans": ["Clash of Clans"],
+  "coc": ["Clash of Clans"],
+};
 
 let cachedAccessToken: string | null = null;
 let tokenExpiresAt = 0;
@@ -70,11 +143,50 @@ const getTwitchAccessToken = async (clientId: string, clientSecret: string): Pro
   return cachedAccessToken;
 };
 
-const searchIGDBGame = async (
-  gameName: string,
+const normalizeGameName = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .trim();
+};
+
+const getSearchVariants = (gameName: string, igdbSearchName?: string | null): string[] => {
+  const variants: string[] = [];
+
+  if (igdbSearchName) {
+    variants.push(igdbSearchName);
+  }
+
+  const normalizedName = normalizeGameName(gameName);
+
+  if (GAME_NAME_MAPPINGS[normalizedName]) {
+    variants.push(...GAME_NAME_MAPPINGS[normalizedName]);
+  }
+
+  if (!variants.includes(gameName)) {
+    variants.push(gameName);
+  }
+
+  const versionMatch = gameName.match(/(\d+)$/);
+  if (versionMatch) {
+    const version = parseInt(versionMatch[1]);
+    const baseName = gameName.replace(/\d+$/, "").trim();
+    const normalizedBase = normalizeGameName(baseName);
+
+    if (version > 1 && GAME_NAME_MAPPINGS[normalizedBase + (version - 1)]) {
+      variants.push(...GAME_NAME_MAPPINGS[normalizedBase + (version - 1)]);
+    }
+  }
+
+  return [...new Set(variants)];
+};
+
+const searchIGDBGameSingle = async (
+  searchTerm: string,
   clientId: string,
-  accessToken: string
-): Promise<IGDBGame | null> => {
+  accessToken: string,
+  limit: number = 5
+): Promise<IGDBGame[]> => {
   const response = await fetch("https://api.igdb.com/v4/games", {
     method: "POST",
     headers: {
@@ -82,16 +194,65 @@ const searchIGDBGame = async (
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "text/plain",
     },
-    body: `search "${gameName}"; fields id, name, artworks, screenshots; limit 1;`
+    body: `search "${searchTerm}"; fields id, name, artworks, screenshots, first_release_date; limit ${limit};`
   });
 
   if (!response.ok) {
-    console.error(`[IGDB] Game search failed for ${gameName}: ${response.status}`);
-    return null;
+    console.error(`[IGDB] Game search failed for "${searchTerm}": ${response.status}`);
+    return [];
   }
 
-  const games: IGDBGame[] = await response.json();
-  return games.length > 0 ? games[0] : null;
+  return await response.json();
+};
+
+const selectBestMatch = (games: IGDBGame[], searchTerm: string): IGDBGame | null => {
+  if (games.length === 0) return null;
+  if (games.length === 1) return games[0];
+
+  const normalizedSearch = searchTerm.toLowerCase();
+
+  const exactMatch = games.find(g => g.name.toLowerCase() === normalizedSearch);
+  if (exactMatch) return exactMatch;
+
+  const startsWithMatch = games.find(g => g.name.toLowerCase().startsWith(normalizedSearch));
+  if (startsWithMatch) return startsWithMatch;
+
+  const sortedByDate = [...games].sort((a, b) => {
+    const dateA = a.first_release_date || 0;
+    const dateB = b.first_release_date || 0;
+    return dateB - dateA;
+  });
+
+  return sortedByDate[0];
+};
+
+const searchIGDBGameWithFallback = async (
+  gameName: string,
+  igdbSearchName: string | null | undefined,
+  clientId: string,
+  accessToken: string
+): Promise<IGDBGame | null> => {
+  const searchVariants = getSearchVariants(gameName, igdbSearchName);
+
+  console.log(`[IGDB] Searching for "${gameName}" with variants:`, searchVariants);
+
+  for (const variant of searchVariants) {
+    console.log(`[IGDB] Trying search variant: "${variant}"`);
+    const games = await searchIGDBGameSingle(variant, clientId, accessToken);
+
+    if (games.length > 0) {
+      const bestMatch = selectBestMatch(games, variant);
+      if (bestMatch) {
+        console.log(`[IGDB] Found match: "${bestMatch.name}" (ID: ${bestMatch.id}) using variant "${variant}"`);
+        return bestMatch;
+      }
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  console.log(`[IGDB] No match found for "${gameName}" after trying all variants`);
+  return null;
 };
 
 const fetchArtworkForGame = async (
@@ -223,7 +384,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: games, error: gamesError } = await supabase
       .from("games")
-      .select("id, name, igdb_game_id, igdb_artwork_url, igdb_last_updated");
+      .select("id, name, igdb_game_id, igdb_artwork_url, igdb_last_updated, igdb_search_name");
 
     if (gamesError) {
       console.error("[IGDB] Error fetching games:", gamesError.message);
@@ -261,95 +422,63 @@ Deno.serve(async (req: Request) => {
 
     for (const game of gamesToUpdate) {
       try {
-        let igdbGameId = game.igdb_game_id;
+        const igdbGame = await searchIGDBGameWithFallback(
+          game.name,
+          game.igdb_search_name,
+          client_id,
+          accessToken
+        );
 
-        if (!igdbGameId) {
-          const igdbGame = await searchIGDBGame(game.name, client_id, accessToken);
-          if (igdbGame) {
-            igdbGameId = igdbGame.id.toString();
+        if (igdbGame) {
+          const igdbGameId = igdbGame.id.toString();
 
-            let imageUrl: string | null = null;
-            let imageSource = "";
+          let imageUrl: string | null = null;
+          let imageSource = "";
 
-            if (igdbGame.artworks && igdbGame.artworks.length > 0) {
-              imageUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
-              if (imageUrl) imageSource = "artwork";
-            }
+          if (igdbGame.artworks && igdbGame.artworks.length > 0) {
+            imageUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
+            if (imageUrl) imageSource = "artwork";
+          }
 
-            if (!imageUrl && igdbGame.screenshots && igdbGame.screenshots.length > 0) {
-              imageUrl = await fetchScreenshotForGame(igdbGame.screenshots, client_id, accessToken);
-              if (imageUrl) imageSource = "screenshot";
-            }
+          if (!imageUrl && igdbGame.screenshots && igdbGame.screenshots.length > 0) {
+            imageUrl = await fetchScreenshotForGame(igdbGame.screenshots, client_id, accessToken);
+            if (imageUrl) imageSource = "screenshot";
+          }
 
-            if (imageUrl) {
-              const { error: updateError } = await supabase
-                .from("games")
-                .update({
-                  igdb_game_id: igdbGameId,
-                  igdb_artwork_url: imageUrl,
-                  igdb_last_updated: new Date().toISOString()
-                })
-                .eq("id", game.id);
+          if (imageUrl) {
+            const { error: updateError } = await supabase
+              .from("games")
+              .update({
+                igdb_game_id: igdbGameId,
+                igdb_artwork_url: imageUrl,
+                igdb_last_updated: new Date().toISOString()
+              })
+              .eq("id", game.id);
 
-              if (updateError) {
-                console.error(`[IGDB] Error updating game ${game.name}:`, updateError);
-                failedCount++;
-              } else {
-                updatedCount++;
-                console.log(`[IGDB] Updated ${game.name} with ${imageSource}`);
-              }
+            if (updateError) {
+              console.error(`[IGDB] Error updating game ${game.name}:`, updateError);
+              failedCount++;
             } else {
-              const { error: updateError } = await supabase
-                .from("games")
-                .update({
-                  igdb_game_id: igdbGameId,
-                  igdb_last_updated: new Date().toISOString()
-                })
-                .eq("id", game.id);
-
-              if (updateError) {
-                console.error(`[IGDB] Error updating game ID for ${game.name}:`, updateError);
-              }
-              console.log(`[IGDB] No artwork or screenshots for ${game.name}, saved IGDB ID`);
+              updatedCount++;
+              console.log(`[IGDB] Updated ${game.name} -> ${igdbGame.name} with ${imageSource}`);
             }
           } else {
-            console.log(`[IGDB] No IGDB match found for ${game.name}`);
-            failedCount++;
+            const { error: updateError } = await supabase
+              .from("games")
+              .update({
+                igdb_game_id: igdbGameId,
+                igdb_last_updated: new Date().toISOString()
+              })
+              .eq("id", game.id);
+
+            if (updateError) {
+              console.error(`[IGDB] Error updating game ID for ${game.name}:`, updateError);
+            }
+            console.log(`[IGDB] No artwork or screenshots for ${game.name} (matched ${igdbGame.name}), saved IGDB ID`);
           }
         } else {
-          const igdbGame = await searchIGDBGame(game.name, client_id, accessToken);
-          if (igdbGame) {
-            let imageUrl: string | null = null;
-            let imageSource = "";
-
-            if (igdbGame.artworks && igdbGame.artworks.length > 0) {
-              imageUrl = await fetchArtworkForGame(igdbGame.artworks, client_id, accessToken);
-              if (imageUrl) imageSource = "artwork";
-            }
-
-            if (!imageUrl && igdbGame.screenshots && igdbGame.screenshots.length > 0) {
-              imageUrl = await fetchScreenshotForGame(igdbGame.screenshots, client_id, accessToken);
-              if (imageUrl) imageSource = "screenshot";
-            }
-
-            if (imageUrl) {
-              const { error: updateError } = await supabase
-                .from("games")
-                .update({
-                  igdb_artwork_url: imageUrl,
-                  igdb_last_updated: new Date().toISOString()
-                })
-                .eq("id", game.id);
-
-              if (updateError) {
-                console.error(`[IGDB] Error updating ${game.name}:`, updateError);
-                failedCount++;
-              } else {
-                updatedCount++;
-                console.log(`[IGDB] Refreshed ${game.name} with ${imageSource}`);
-              }
-            }
-          }
+          console.log(`[IGDB] No IGDB match found for ${game.name}`);
+          failedCount++;
         }
 
         await new Promise(resolve => setTimeout(resolve, 250));
