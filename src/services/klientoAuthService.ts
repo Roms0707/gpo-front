@@ -63,8 +63,6 @@ export const loginWithKliento = async (
       };
     }
 
-    const normalizedPhone = normalizePhoneToE164(phone);
-
     const response = await fetch(`${supabaseUrl}/functions/v1/kliento-auth`, {
       method: 'POST',
       headers: {
@@ -72,7 +70,7 @@ export const loginWithKliento = async (
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        msisdn: normalizedPhone,
+        login: phone,
         password,
         product_id: productId,
       }),
@@ -88,7 +86,7 @@ export const loginWithKliento = async (
     }
 
     const klientoUserId = String(data.user_id);
-    const localUser = await findOrCreateKlientoUser(klientoUserId, normalizedPhone, data.account_info);
+    const localUser = await findOrCreateKlientoUser(klientoUserId, phone, data.account_info);
 
     if (!localUser) {
       return {

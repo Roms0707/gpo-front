@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 interface KlientoLoginRequest {
-  msisdn: string;
+  login: string;
   password: string;
   product_id: string;
 }
@@ -81,13 +81,13 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { msisdn, password, product_id }: KlientoLoginRequest = await req.json();
+    const { login, password, product_id }: KlientoLoginRequest = await req.json();
 
-    if (!msisdn || !password || !product_id) {
+    if (!login || !password || !product_id) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Missing required fields: msisdn, password, or product_id",
+          error: "Missing required fields: login, password, or product_id",
         } as KlientoLoginResponse),
         {
           status: 400,
@@ -132,18 +132,20 @@ Deno.serve(async (req: Request) => {
     const klientoBaseUrl = klientoConfig.api_url;
     const loginUrl = `${klientoBaseUrl}/login/dve`;
 
-    console.log(`[kliento-auth] Attempting login for MSISDN: ${msisdn.substring(0, 4)}***`);
+    const isPhoneNumber = /^\+?\d{9,15}$/.test(login.replace(/\s/g, ''));
+    console.log(`[kliento-auth] Login type: ${isPhoneNumber ? 'phone' : 'username'}`);
+    console.log(`[kliento-auth] Attempting login for: ${login.substring(0, 4)}***`);
 
     const hashedPassword = await hashPassword(password);
     console.log(`[kliento-auth] Password hashed successfully`);
 
     const formData = new URLSearchParams();
-    formData.append("login", msisdn);
+    formData.append("login", login);
     formData.append("password_dve", hashedPassword);
     formData.append("service_id", product_id);
 
     console.log(`[kliento-auth] Request URL: ${loginUrl}`);
-    console.log(`[kliento-auth] Request body: login=${msisdn.substring(0, 4)}***, service_id=${product_id}`);
+    console.log(`[kliento-auth] Request body: login=${login.substring(0, 4)}***, service_id=${product_id}`);
 
     const loginResponse = await fetch(loginUrl, {
       method: "POST",
