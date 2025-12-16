@@ -21,6 +21,13 @@ interface CheckSubscriptionResponse {
   error?: string;
 }
 
+interface KlientoOffer {
+  account_offer_id: string;
+  bizoffer_id: string;
+  status?: string;
+  expire_date?: string;
+}
+
 interface KlientoAccountInfoResponse {
   code: number;
   error: number;
@@ -30,6 +37,7 @@ interface KlientoAccountInfoResponse {
     subscribed: boolean;
     suspended?: boolean;
     status?: string;
+    offer?: KlientoOffer[];
   }>;
 }
 
@@ -205,16 +213,28 @@ Deno.serve(async (req: Request) => {
     const accountInfo = data.data[0];
     const isSubscribed = accountInfo.subscribed === true;
     const isSuspended = accountInfo.suspended === true;
+    const hasValidOffer = Array.isArray(accountInfo.offer) && accountInfo.offer.length > 0;
+    const firstOffer = hasValidOffer ? accountInfo.offer![0] : null;
 
-    console.log(`[kliento-check-subscription-by-login] User ${accountInfo.user_id}: subscribed=${isSubscribed}, suspended=${isSuspended}`);
+    console.log(`[kliento-check-subscription-by-login] User ${accountInfo.user_id}: subscribed=${isSubscribed}, suspended=${isSuspended}, hasValidOffer=${hasValidOffer}`);
+    if (firstOffer) {
+      console.log(`[kliento-check-subscription-by-login] First offer - bizoffer_id: ${firstOffer.bizoffer_id}, status: ${firstOffer.status || 'N/A'}`);
+    }
 
-    if (!isSubscribed || isSuspended) {
+    if (!isSubscribed || isSuspended || !hasValidOffer) {
+      let errorMessage = "Subscription required";
+      if (isSuspended) {
+        errorMessage = "Account is suspended";
+      } else if (isSubscribed && !hasValidOffer) {
+        errorMessage = "No active offer found";
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
           isSubscribed: false,
           redirectUrl: projectConfig.subscription_redirect_url || undefined,
-          error: isSuspended ? "Account is suspended" : "Subscription required",
+          error: errorMessage,
         } as CheckSubscriptionResponse),
         {
           status: 200,
