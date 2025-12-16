@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
 import { User, AuthContextType } from '../types';
+import { translationService } from '../services/translationService';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -27,7 +28,14 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const checkSession = useAuthStore(state => state.checkSession);
-  
+  const user = useAuthStore(state => state.user);
+
+  useEffect(() => {
+    if (user?.preferred_language) {
+      translationService.changeLanguage(user.preferred_language);
+    }
+  }, [user?.id, user?.preferred_language]);
+
   // Initialize authentication on app start
   useEffect(() => {
     console.log('[AuthContext] Initializing authentication system...');
@@ -38,18 +46,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('[AuthContext] Auth state change:', event, session?.user?.id);
 
       if (event === 'SIGNED_OUT') {
-        // Handle sign out
         console.log('[AuthContext] User signed out, clearing configuration');
         useAuthStore.setState({ user: null, isLoading: false });
       } else if (event === 'TOKEN_REFRESHED') {
-        // Token was refreshed, no need to refetch user data
         console.log('[AuthContext] Token refreshed successfully for user:', session?.user?.id);
       } else if (event === 'SIGNED_IN' && session) {
-        // This will be handled by the login function
         console.log('[AuthContext] User signed in via auth state change:', session.user.id, session.user.email);
+        translationService.applyUserLanguagePreference(session.user.id);
       }
     });
-    
+
     return () => {
       subscription.unsubscribe();
     };

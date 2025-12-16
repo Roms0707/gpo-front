@@ -63,6 +63,7 @@ export interface User {
   phone_number?: string;
   kliento_user_id?: string;
   auth_provider?: AuthProvider;
+  preferred_language?: 'en' | 'fr';
 }
 
 export interface KlientoLoginResponse {

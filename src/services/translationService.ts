@@ -1,4 +1,5 @@
 import i18n from '../locales/i18n';
+import { supabase } from '../lib/supabase';
 
 export type SupportedLanguage = 'en' | 'fr';
 
@@ -9,11 +10,11 @@ export interface LanguageConfig {
 }
 
 export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'en', name: 'English', nativeName: 'English' }
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'fr', name: 'French', nativeName: 'Français' }
 ];
 
-export const DEFAULT_LANGUAGE: SupportedLanguage = 'fr';
+export const DEFAULT_LANGUAGE: SupportedLanguage = 'en';
 
 export class TranslationService {
   private static instance: TranslationService;
@@ -34,9 +35,23 @@ export class TranslationService {
 
     if (savedLanguage && this.isSupportedLanguage(savedLanguage)) {
       i18n.changeLanguage(savedLanguage);
-    } else {
-      i18n.changeLanguage(DEFAULT_LANGUAGE);
+      return;
     }
+
+    const detectedLanguage = this.detectBrowserLanguage();
+    i18n.changeLanguage(detectedLanguage);
+    localStorage.setItem('userLanguagePreference', detectedLanguage);
+  }
+
+  private detectBrowserLanguage(): SupportedLanguage {
+    const browserLang = navigator.language || (navigator as any).userLanguage || '';
+    const langCode = browserLang.split('-')[0].toLowerCase();
+
+    if (langCode === 'fr') {
+      return 'fr';
+    }
+
+    return DEFAULT_LANGUAGE;
   }
 
   public async changeLanguage(language: SupportedLanguage): Promise<void> {
@@ -49,6 +64,60 @@ export class TranslationService {
     localStorage.setItem('userLanguagePreference', language);
 
     console.log(`[TranslationService] Language changed to: ${language}`);
+  }
+
+  public async syncLanguageToSupabase(userId: string, language: SupportedLanguage): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ preferred_language: language })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('[TranslationService] Error syncing language to Supabase:', error);
+        return false;
+      }
+
+      console.log(`[TranslationService] Language preference synced to Supabase: ${language}`);
+      return true;
+    } catch (err) {
+      console.error('[TranslationService] Exception syncing language to Supabase:', err);
+      return false;
+    }
+  }
+
+  public async loadLanguageFromSupabase(userId: string): Promise<SupportedLanguage | null> {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('preferred_language')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.log('[TranslationService] No saved language preference found in Supabase');
+        return null;
+      }
+
+      const savedLanguage = data.preferred_language;
+      if (savedLanguage && this.isSupportedLanguage(savedLanguage)) {
+        console.log(`[TranslationService] Loaded language preference from Supabase: ${savedLanguage}`);
+        return savedLanguage as SupportedLanguage;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[TranslationService] Exception loading language from Supabase:', err);
+      return null;
+    }
+  }
+
+  public async applyUserLanguagePreference(userId: string): Promise<void> {
+    const supabaseLanguage = await this.loadLanguageFromSupabase(userId);
+
+    if (supabaseLanguage) {
+      await this.changeLanguage(supabaseLanguage);
+    }
   }
 
   public getCurrentLanguage(): SupportedLanguage {

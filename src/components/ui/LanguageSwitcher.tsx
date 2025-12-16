@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Languages, ChevronDown } from 'lucide-react';
 import { translationService, SupportedLanguage } from '../../services/translationService';
+import { useAuthStore } from '../../stores/authStore';
 
 interface LanguageSwitcherProps {
   className?: string;
@@ -10,8 +11,8 @@ interface LanguageSwitcherProps {
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', variant = 'inline' }) => {
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>(translationService.getCurrentLanguage());
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuthStore();
 
-  // Update language when i18n changes (e.g., from browser detection)
   useEffect(() => {
     const handleLanguageChanged = () => {
       setCurrentLanguage(translationService.getCurrentLanguage());
@@ -27,7 +28,10 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
       setCurrentLanguage(lang);
       setIsOpen(false);
 
-      // Dispatch custom event for other components to listen
+      if (user?.id) {
+        translationService.syncLanguageToSupabase(user.id, lang);
+      }
+
       window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
     }
   };
@@ -57,14 +61,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
 
         {isOpen && (
           <>
-            {/* Backdrop */}
             <div
               className="fixed inset-0 z-10"
               onClick={() => setIsOpen(false)}
               aria-hidden="true"
             />
 
-            {/* Dropdown */}
             <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-dark-200 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-20">
               <button
                 onClick={() => handleLanguageChange('fr')}
@@ -104,7 +106,6 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
     );
   }
 
-  // Inline variant (default)
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
       <Languages className="h-4 w-4 opacity-70" aria-hidden="true" />
