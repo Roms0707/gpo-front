@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Target, Zap, TrendingUp, Crosshair, Timer, Trophy, Gamepad2 } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
@@ -43,6 +43,14 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
   }
 
   const [activeTab, setActiveTab] = useState<SkillGameTab>(availableTabs[0]?.id || 'aim-trainer');
+  const gameContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleTabChange = (tabId: SkillGameTab) => {
+    setActiveTab(tabId);
+    setTimeout(() => {
+      gameContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
 
   if (availableTabs.length === 0) {
     return (
@@ -97,7 +105,7 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => handleTabChange(tab.id)}
                   className={`
                     flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200
                     ${isActive ? 'shadow-lg' : 'hover:bg-dark-300/50'}
@@ -119,7 +127,7 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
         </div>
       )}
 
-      <div className="relative">
+      <div ref={gameContainerRef} className="relative">
         {activeTab === 'aim-trainer' && hasAimTrainer && (
           <AimTrainerGame gameName={gameName} />
         )}
