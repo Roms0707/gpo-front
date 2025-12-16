@@ -283,7 +283,7 @@ Deno.serve(async (req: Request) => {
     formData.append("destination", phone_number);
     formData.append("message", message);
     formData.append("type", "push");
-    formData.append("country", projectConfig.default_phone_country_code);
+    formData.append("country", "FR");
 
     const smsResponse = await fetch(senditoUrl.toString(), {
       method: "POST",
