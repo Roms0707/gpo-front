@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { crypto } from "jsr:@std/crypto";
 import { encodeHex } from "jsr:@std/encoding/hex";
 
+const TEST_MODE = true;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -66,6 +68,44 @@ Deno.serve(async (req: Request) => {
         } as SendOtpResponse),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (TEST_MODE) {
+      console.log("[kliento-send-otp] TEST MODE ENABLED - Skipping SMS send");
+      console.log(`[kliento-send-otp] TEST MODE - OTP for ${phone_number.substring(0, 4)}***: 1234`);
+
+      const testOtpHash = await hashOtp("1234");
+      const testExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+      await supabase
+        .from("kliento_otp_codes")
+        .update({ status: "invalidated" })
+        .eq("phone_number", phone_number)
+        .eq("project_config_id", project_config_id)
+        .eq("status", "valid");
+
+      await supabase
+        .from("kliento_otp_codes")
+        .insert({
+          phone_number,
+          otp_code_hash: testOtpHash,
+          status: "valid",
+          expires_at: testExpiresAt.toISOString(),
+          attempt_count: 0,
+          project_config_id,
+        });
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          message: "OTP sent successfully (TEST MODE - use code: 1234)",
+          expires_in_seconds: 300,
+        } as SendOtpResponse),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );

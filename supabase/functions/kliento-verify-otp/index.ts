@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { crypto } from "jsr:@std/crypto";
 import { encodeHex } from "jsr:@std/encoding/hex";
 
+const TEST_MODE = true;
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -65,6 +67,101 @@ Deno.serve(async (req: Request) => {
         } as VerifyOtpResponse),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (TEST_MODE) {
+      console.log("[kliento-verify-otp] TEST MODE ENABLED - Accepting any OTP code");
+
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", phone_number)
+        .eq("auth_provider", "kliento")
+        .maybeSingle();
+
+      if (existingUser) {
+        console.log(`[kliento-verify-otp] TEST MODE - Existing user found: ${existingUser.id}`);
+        await supabase
+          .from("users")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", existingUser.id);
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            user_id: existingUser.id,
+          } as VerifyOtpResponse),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      const cleanPhone = phone_number.replace(/\D/g, "");
+      const username = `user_${cleanPhone.substring(cleanPhone.length - 8)}`;
+      const email = `${cleanPhone}@kliento-otp.local`;
+
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert({
+          username,
+          email,
+          type: "gamer",
+          phone_number,
+          auth_provider: "kliento",
+          is_profile_public: true,
+          is_profile_completed: false,
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        if (createError.code === "23505") {
+          const { data: retryUser } = await supabase
+            .from("users")
+            .select("*")
+            .eq("phone_number", phone_number)
+            .maybeSingle();
+
+          if (retryUser) {
+            return new Response(
+              JSON.stringify({
+                success: true,
+                user_id: retryUser.id,
+              } as VerifyOtpResponse),
+              {
+                status: 200,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              }
+            );
+          }
+        }
+
+        console.error("[kliento-verify-otp] TEST MODE - Error creating user:", createError);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Failed to create user account",
+          } as VerifyOtpResponse),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      console.log(`[kliento-verify-otp] TEST MODE - New user created: ${newUser.id}`);
+      return new Response(
+        JSON.stringify({
+          success: true,
+          user_id: newUser.id,
+        } as VerifyOtpResponse),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
