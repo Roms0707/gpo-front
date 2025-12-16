@@ -239,14 +239,11 @@ Deno.serve(async (req: Request) => {
     const smsTemplate = projectConfig.kliento_otp_sms_template || "Your OTP is {{OTP_CODE}}";
     const message = smsTemplate.replace("{{OTP_CODE}}", otpCode);
 
-    let senditoCredentials: { sesame_login: string; sesame_password: string };
-    try {
-      senditoCredentials = JSON.parse(senditoConfig.api_key);
-      if (!senditoCredentials.sesame_login || !senditoCredentials.sesame_password) {
-        throw new Error("Missing sesame_login or sesame_password in credentials");
-      }
-    } catch (parseError) {
-      console.error("[kliento-send-otp] Failed to parse Sendito credentials:", parseError);
+    const sesameLogin = senditoConfig.api_key;
+    const sesamePasswordBase64 = senditoConfig.extra_config?.api_secret_key;
+
+    if (!sesameLogin || !sesamePasswordBase64) {
+      console.error("[kliento-send-otp] Missing Sendito credentials: api_key or extra_config.api_secret_key");
       return new Response(
         JSON.stringify({
           success: false,
@@ -259,9 +256,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const sesamePassword = atob(sesamePasswordBase64);
+
     const senditoUrl = new URL(senditoConfig.api_url);
-    senditoUrl.searchParams.set("sesame_login", senditoCredentials.sesame_login);
-    senditoUrl.searchParams.set("sesame_password", senditoCredentials.sesame_password);
+    senditoUrl.searchParams.set("sesame_login", sesameLogin);
+    senditoUrl.searchParams.set("sesame_password", sesamePassword);
 
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
     console.log(`[kliento-send-otp] Sendito URL: ${senditoConfig.api_url} (with auth params)`);
