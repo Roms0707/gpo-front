@@ -8,6 +8,7 @@ import { Tournament, TournamentPrize } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { calculateTournamentStatus } from '../../utils/tournamentUtils';
 import { formatPrizePoolDisplay, getFirstPlacePrizeDisplay } from '../../utils/prizePoolUtils';
+import { getUserTimezoneAbbreviation } from '../../utils/timezoneUtils';
 
 interface TournamentHeroProps {
   tournament: Tournament;
@@ -66,7 +67,9 @@ const TournamentHero: React.FC<TournamentHeroProps> = ({
       const currentLanguage = i18n.language || 'en';
       const locale = currentLanguage.startsWith('fr') ? fr : enUS;
       const formatStr = currentLanguage.startsWith('fr') ? 'dd MMMM yyyy à HH:mm' : 'dd MMMM yyyy \'at\' HH:mm';
-      return format(date, formatStr, { locale });
+      const formattedDate = format(date, formatStr, { locale });
+      const timezone = getUserTimezoneAbbreviation();
+      return timezone ? `${formattedDate} ${timezone}` : formattedDate;
     } catch (error) {
       return t('tournamentHero.dateToConfirm');
     }

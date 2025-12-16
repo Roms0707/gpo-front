@@ -2,6 +2,7 @@ import { format, isValid } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { formatCountryDisplay } from '../utils/countries';
 import i18n from '../locales/i18n';
+import { getUserTimezoneAbbreviation } from './timezoneUtils';
 
 const getDateFnsLocale = () => {
   const currentLanguage = i18n.language || 'en';
@@ -16,7 +17,9 @@ export const formatDate = (dateString: string) => {
     }
     const locale = getDateFnsLocale();
     const pattern = locale === fr ? 'dd MMMM yyyy à HH:mm' : 'MMMM dd, yyyy \'at\' HH:mm';
-    return format(date, pattern, { locale });
+    const formattedDate = format(date, pattern, { locale });
+    const timezone = getUserTimezoneAbbreviation();
+    return timezone ? `${formattedDate} ${timezone}` : formattedDate;
   } catch (error) {
     return i18n.t('common.dateToBeConfirmed');
   }
