@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { crypto } from "jsr:@std/crypto";
 import { encodeHex } from "jsr:@std/encoding/hex";
 
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -240,28 +240,13 @@ Deno.serve(async (req: Request) => {
     const message = smsTemplate.replace("{{OTP_CODE}}", otpCode);
 
     const senditoUrl = senditoConfig.api_url;
-    const sesameLogin = senditoConfig.api_key;
-    const sesamePassword = senditoConfig.extra_config?.api_secret_key || "";
 
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
     console.log(`[kliento-send-otp] Sendito URL: ${senditoUrl}`);
 
     const formData = new FormData();
-    formData.append("type", "push");
-    formData.append("sesame_login", sesameLogin);
-    formData.append("sesame_password", sesamePassword);
-    formData.append("to", phone_number);
+    formData.append("destination", phone_number);
     formData.append("message", message);
-
-    if (billing_info) {
-      formData.append("billingchannel", billing_info.billingchannel);
-      formData.append("bizoffer_id", billing_info.bizoffer_id);
-      formData.append("product_id", billing_info.product_id);
-      formData.append("atom_product_id", billing_info.atom_product_id);
-      formData.append("subscription_id", billing_info.subscription_id);
-      formData.append("offer_mccmnc", billing_info.offer_mccmnc);
-      console.log(`[kliento-send-otp] Added billing info to Sendito request: billingchannel=${billing_info.billingchannel}, bizoffer_id=${billing_info.bizoffer_id}`);
-    }
 
     const smsResponse = await fetch(senditoUrl, {
       method: "POST",

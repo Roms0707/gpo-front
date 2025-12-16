@@ -2,7 +2,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const TEST_MODE = true;
-const TEST_PHONE = "+33612345678";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -128,12 +127,15 @@ Deno.serve(async (req: Request) => {
   }
 
   if (TEST_MODE) {
+    const { login }: CheckSubscriptionRequest = await req.json();
+    const testPhoneNumber = login?.startsWith("+") ? login : `+${login}`;
     console.log("[kliento-check-subscription-by-login] TEST MODE ENABLED - Bypassing subscription check");
+    console.log(`[kliento-check-subscription-by-login] TEST MODE - Using phone: ${testPhoneNumber.substring(0, 4)}***`);
     return new Response(
       JSON.stringify({
         success: true,
         isSubscribed: true,
-        phoneNumber: TEST_PHONE,
+        phoneNumber: testPhoneNumber,
         userId: "test-user-12345",
         billingInfo: {
           bizoffer_id: "4691",
