@@ -286,7 +286,7 @@ const fetchArtworkForGame = async (
   const selectedArtwork = landscapeArtwork || artworks[0];
 
   if (selectedArtwork?.image_id) {
-    return `https://images.igdb.com/igdb/image/upload/t_1080p/${selectedArtwork.image_id}.jpg`;
+    return `https://images.igdb.com/igdb/image/upload/t_original/${selectedArtwork.image_id}.jpg`;
   }
 
   return null;
@@ -323,7 +323,7 @@ const fetchScreenshotForGame = async (
   const selectedScreenshot = landscapeScreenshot || screenshots[0];
 
   if (selectedScreenshot?.image_id) {
-    return `https://images.igdb.com/igdb/image/upload/t_1080p/${selectedScreenshot.image_id}.jpg`;
+    return `https://images.igdb.com/igdb/image/upload/t_original/${selectedScreenshot.image_id}.jpg`;
   }
 
   return null;

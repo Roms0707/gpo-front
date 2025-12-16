@@ -202,8 +202,8 @@ const fetchSingleGameCover = async (
     console.log(`[Twitch Games] Search for "${searchName}" found: ${data.data.map(g => g.name).join(", ")} -> selected "${bestMatch.name}"`);
 
     const coverUrl = bestMatch.box_art_url
-      .replace("{width}", "600")
-      .replace("{height}", "800");
+      .replace("{width}", "1920")
+      .replace("{height}", "2560");
 
     return {
       twitchId: bestMatch.id,
@@ -270,8 +270,8 @@ const fetchGameCovers = async (
 
     for (const game of data.data) {
       const coverUrl = game.box_art_url
-        .replace("{width}", "600")
-        .replace("{height}", "800");
+        .replace("{width}", "1920")
+        .replace("{height}", "2560");
 
       coverMap.set(game.name.toLowerCase(), {
         twitchId: game.id,
