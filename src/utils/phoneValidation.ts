@@ -12,6 +12,7 @@ const COUNTRY_CODE_MAP: { [key: string]: string } = {
   '225': 'ci',
   '237': 'cm',
   '20': 'eg',
+  '33': 'fr',
   '241': 'ga',
   '233': 'gh',
   '224': 'gn',

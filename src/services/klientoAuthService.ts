@@ -290,7 +290,8 @@ interface SendOtpResult {
 export const sendKlientoOtp = async (
   phone: string,
   projectConfigId: string,
-  billingInfo?: BillingInfo | null
+  billingInfo?: BillingInfo | null,
+  defaultCountryCode?: string | null
 ): Promise<SendOtpResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -303,7 +304,7 @@ export const sendKlientoOtp = async (
       };
     }
 
-    const normalizedPhone = normalizePhoneToE164(phone);
+    const normalizedPhone = normalizePhoneToE164(phone, defaultCountryCode || undefined);
 
     const requestBody: {
       phone_number: string;
@@ -379,7 +380,8 @@ export interface CheckSubscriptionResult {
 export const verifyKlientoOtp = async (
   phone: string,
   otpCode: string,
-  projectConfigId: string
+  projectConfigId: string,
+  defaultCountryCode?: string | null
 ): Promise<VerifyOtpResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -392,7 +394,7 @@ export const verifyKlientoOtp = async (
       };
     }
 
-    const normalizedPhone = normalizePhoneToE164(phone);
+    const normalizedPhone = normalizePhoneToE164(phone, defaultCountryCode || undefined);
 
     const response = await fetch(`${supabaseUrl}/functions/v1/kliento-verify-otp`, {
       method: 'POST',

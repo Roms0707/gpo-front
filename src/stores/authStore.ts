@@ -83,8 +83,8 @@ interface AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
   checkSubscription: (login: string, projectConfigId: string) => Promise<CheckSubscriptionResult>;
-  sendOtp: (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null) => Promise<SendOtpResult>;
-  verifyOtp: (phone: string, otpCode: string, projectConfigId: string) => Promise<VerifyOtpResult>;
+  sendOtp: (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null, defaultCountryCode?: string | null) => Promise<SendOtpResult>;
+  verifyOtp: (phone: string, otpCode: string, projectConfigId: string, defaultCountryCode?: string | null) => Promise<VerifyOtpResult>;
   loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
   logout: () => Promise<void>;
@@ -145,8 +145,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return result;
   },
 
-  sendOtp: async (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null): Promise<SendOtpResult> => {
-    const result = await sendKlientoOtp(phone, projectConfigId, billingInfo);
+  sendOtp: async (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null, defaultCountryCode?: string | null): Promise<SendOtpResult> => {
+    const result = await sendKlientoOtp(phone, projectConfigId, billingInfo, defaultCountryCode);
     return {
       success: result.success,
       error: result.error,
@@ -154,10 +154,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     };
   },
 
-  verifyOtp: async (phone: string, otpCode: string, projectConfigId: string): Promise<VerifyOtpResult> => {
+  verifyOtp: async (phone: string, otpCode: string, projectConfigId: string, defaultCountryCode?: string | null): Promise<VerifyOtpResult> => {
     set({ isLoading: true, error: null });
 
-    const result = await verifyKlientoOtp(phone, otpCode, projectConfigId);
+    const result = await verifyKlientoOtp(phone, otpCode, projectConfigId, defaultCountryCode);
 
     if (result.user) {
       setKlientoSession(result.user);

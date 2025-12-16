@@ -10,6 +10,7 @@ const countryData = [
   { code: "CI", flag: "🇨🇮", phoneCode: "ci" },
   { code: "CM", flag: "🇨🇲", phoneCode: "cm" },
   { code: "EG", flag: "🇪🇬", phoneCode: "eg" },
+  { code: "FR", flag: "🇫🇷", phoneCode: "fr" },
   { code: "GA", flag: "🇬🇦", phoneCode: "ga" },
   { code: "GH", flag: "🇬🇭", phoneCode: "gh" },
   { code: "GN", flag: "🇬🇳", phoneCode: "gn" },

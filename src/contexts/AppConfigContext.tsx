@@ -29,6 +29,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     authMethod: 'email' as AuthMethod,
     klientoAuthType: null as KlientoAuthType | null,
     subscriptionRedirectUrl: null,
+    defaultPhoneCountryCode: null,
     tailwindPalette: null,
     legalVariables: {
       support_email: null,
@@ -92,6 +93,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       authMethod: (config.auth_method || 'email') as AuthMethod,
       klientoAuthType: (config.kliento_auth_type || null) as KlientoAuthType | null,
       subscriptionRedirectUrl: config.subscription_redirect_url || null,
+      defaultPhoneCountryCode: config.default_phone_country_code || null,
       tailwindPalette: palette,
       legalVariables,
       isLoading: false,

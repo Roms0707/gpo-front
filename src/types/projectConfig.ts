@@ -66,6 +66,7 @@ export interface ProjectConfiguration {
   kliento_auth_type?: KlientoAuthType | null;
   subscription_redirect_url?: string | null;
   kliento_otp_sms_template?: string | null;
+  default_phone_country_code?: string | null;
 }
 
 export interface AppConfigContextState {
@@ -84,6 +85,7 @@ export interface AppConfigContextState {
   authMethod: AuthMethod;
   klientoAuthType: KlientoAuthType | null;
   subscriptionRedirectUrl: string | null;
+  defaultPhoneCountryCode: string | null;
   tailwindPalette: TailwindColorPalette | null;
   legalVariables: LegalVariables;
   isLoading: boolean;
