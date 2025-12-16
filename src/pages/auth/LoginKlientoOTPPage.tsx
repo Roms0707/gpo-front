@@ -14,7 +14,7 @@ type OtpStep = 'username' | 'verify';
 const LoginKlientoOTPPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { configId, brandName, subscriptionRedirectUrl } = useAppConfig();
+  const { projectConfigUuid, brandName, subscriptionRedirectUrl } = useAppConfig();
   const { checkSubscription, sendOtp, verifyOtp } = useAuthStore();
 
   const [step, setStep] = useState<OtpStep>('username');
@@ -50,7 +50,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await checkSubscription(username.trim(), configId);
+      const result = await checkSubscription(username.trim(), projectConfigUuid);
 
       if (!result.success) {
         setError(result.error || t('loginPage.otp.checkError'));
@@ -78,7 +78,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setPhone(result.phoneNumber);
       setBillingInfo(result.billingInfo);
 
-      const otpResult = await sendOtp(result.phoneNumber, configId, result.billingInfo);
+      const otpResult = await sendOtp(result.phoneNumber, projectConfigUuid, result.billingInfo);
 
       if (!otpResult.success) {
         setError(otpResult.error || t('loginPage.otp.sendError'));
@@ -114,7 +114,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await sendOtp(phone, configId, billingInfo);
+      const result = await sendOtp(phone, projectConfigUuid, billingInfo);
 
       if (!result.success) {
         setError(result.error || t('loginPage.otp.sendError'));
@@ -183,7 +183,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await verifyOtp(phone, code, configId);
+      const result = await verifyOtp(phone, code, projectConfigUuid);
 
       if (result.error) {
         setError(result.error);

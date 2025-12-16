@@ -70,6 +70,7 @@ export interface ProjectConfiguration {
 
 export interface AppConfigContextState {
   configId: string;
+  projectConfigUuid: string;
   configName: string;
   brandName: string;
   logo: string;

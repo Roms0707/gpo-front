@@ -15,6 +15,7 @@ interface AppConfigProviderProps {
 export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }) => {
   const [state, setState] = useState<Omit<AppConfigContextState, 'refreshConfiguration'>>({
     configId: 'default',
+    projectConfigUuid: '',
     configName: 'Default Configuration',
     brandName: 'Orange Arena',
     logo: '/assets/logos/logo-default.svg',
@@ -77,6 +78,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
 
     setState({
       configId: config.config_id,
+      projectConfigUuid: config.id,
       configName: config.config_name,
       brandName: config.brand_name,
       logo: config.logo_path,
