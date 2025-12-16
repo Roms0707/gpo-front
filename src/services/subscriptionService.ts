@@ -52,14 +52,16 @@ export const checkKlientoSubscription = async (
   productId: string
 ): Promise<{ isSubscribed: boolean; isSuspended: boolean; error: string | null }> => {
   try {
-    const cached = getCachedSubscriptionStatus(klientoUserId);
-    if (cached) {
-      return {
-        isSubscribed: cached.isSubscribed,
-        isSuspended: cached.isSuspended,
-        error: null,
-      };
-    }
+    // TEMPORARILY DISABLED FOR TESTING - Remove this comment block to re-enable cache
+    // const cached = getCachedSubscriptionStatus(klientoUserId);
+    // if (cached) {
+    //   return {
+    //     isSubscribed: cached.isSubscribed,
+    //     isSuspended: cached.isSuspended,
+    //     error: null,
+    //   };
+    // }
+    console.log('[subscriptionService] Cache bypassed - making fresh API call');
 
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
