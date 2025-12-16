@@ -186,12 +186,16 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
   }, [userTeamId]);
 
   const getStatusColor = (status: string) => {
+    const openStatus = t('tournamentPage.registrationStatus.open');
+    const closedStatus = t('tournamentPage.registrationStatus.closed');
+    const openingSoonStatus = t('tournamentPage.registrationStatus.openingSoon');
+
     switch (status) {
-      case 'Ouvertes':
+      case openStatus:
         return 'bg-success-100 text-success-800 border-success-200';
-      case 'Fermées':
+      case closedStatus:
         return 'bg-error-100 text-error-800 border-error-200';
-      case 'Bientôt ouvertes':
+      case openingSoonStatus:
         return 'bg-warning-100 text-warning-800 border-warning-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -199,14 +203,14 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
   };
 
   const registrationStatusText = getRegistrationStatus();
-  const isCountdownActive = registrationStatusText === 'Bientôt ouvertes' && tournament?.registrationStartDate;
+  const isCountdownActive = registrationStatusText === t('tournamentPage.registrationStatus.openingSoon') && tournament?.registrationStartDate;
 
   // Check if user can register (including team invitation scenarios)
   const canUserRegister = () => {
     if (!tournament) return false;
     
     const regStatus = getRegistrationStatus();
-    if (regStatus !== 'Ouvertes') return false;
+    if (regStatus !== t('tournamentPage.registrationStatus.open')) return false;
     
     if (user && registrationStatus.registered) return false;
     
@@ -573,7 +577,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                       {!user
                         ? getUnauthenticatedMessage()
-                        : registrationStatusText === 'Fermées'
+                        : registrationStatusText === t('tournamentPage.registrationStatus.closed')
                           ? t('tournamentPage.sidebar.registrationsClosed')
                           : isCountdownActive
                             ? t('tournamentPage.sidebar.prepareForOpening')
