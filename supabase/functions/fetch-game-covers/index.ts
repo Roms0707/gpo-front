@@ -17,6 +17,104 @@ interface TwitchGamesResponse {
   data: TwitchGame[];
 }
 
+interface GameRecord {
+  id: string;
+  name: string;
+  twitch_cover_url: string | null;
+  twitch_game_id: string | null;
+  cover_last_updated: string | null;
+  twitch_search_name: string | null;
+}
+
+const TWITCH_GAME_NAME_MAPPINGS: Record<string, string[]> = {
+  "counter strike 2": ["Counter-Strike 2"],
+  "counter-strike 2": ["Counter-Strike 2"],
+  "cs2": ["Counter-Strike 2"],
+  "csgo": ["Counter-Strike 2", "Counter-Strike: Global Offensive"],
+  "cs": ["Counter-Strike 2"],
+  "fc26": ["EA Sports FC 25"],
+  "ea sports fc 26": ["EA Sports FC 25"],
+  "fc25": ["EA Sports FC 25"],
+  "ea sports fc 25": ["EA Sports FC 25"],
+  "fc24": ["EA Sports FC 24"],
+  "ea sports fc 24": ["EA Sports FC 24"],
+  "lol": ["League of Legends"],
+  "league": ["League of Legends"],
+  "valorant": ["VALORANT"],
+  "val": ["VALORANT"],
+  "apex": ["Apex Legends"],
+  "apex legends": ["Apex Legends"],
+  "fortnite": ["Fortnite"],
+  "fn": ["Fortnite"],
+  "dota": ["Dota 2"],
+  "dota2": ["Dota 2"],
+  "dota 2": ["Dota 2"],
+  "overwatch": ["Overwatch 2"],
+  "ow": ["Overwatch 2"],
+  "ow2": ["Overwatch 2"],
+  "overwatch 2": ["Overwatch 2"],
+  "rocket league": ["Rocket League"],
+  "rl": ["Rocket League"],
+  "rainbow six": ["Tom Clancy's Rainbow Six Siege"],
+  "rainbow six siege": ["Tom Clancy's Rainbow Six Siege"],
+  "r6": ["Tom Clancy's Rainbow Six Siege"],
+  "r6s": ["Tom Clancy's Rainbow Six Siege"],
+  "pubg": ["PUBG: BATTLEGROUNDS"],
+  "pubg mobile": ["PUBG MOBILE"],
+  "cod": ["Call of Duty"],
+  "warzone": ["Call of Duty: Warzone"],
+  "mw3": ["Call of Duty: Modern Warfare III"],
+  "mw2": ["Call of Duty: Modern Warfare II"],
+  "tekken": ["TEKKEN 8", "Tekken 7"],
+  "tekken 8": ["TEKKEN 8"],
+  "street fighter": ["Street Fighter 6", "Street Fighter V"],
+  "sf6": ["Street Fighter 6"],
+  "mortal kombat": ["Mortal Kombat 1"],
+  "mk1": ["Mortal Kombat 1"],
+  "tft": ["Teamfight Tactics"],
+  "teamfight tactics": ["Teamfight Tactics"],
+  "hearthstone": ["Hearthstone"],
+  "hs": ["Hearthstone"],
+  "wow": ["World of Warcraft"],
+  "world of warcraft": ["World of Warcraft"],
+  "gta": ["Grand Theft Auto V"],
+  "gta5": ["Grand Theft Auto V"],
+  "gta v": ["Grand Theft Auto V"],
+  "minecraft": ["Minecraft"],
+  "mc": ["Minecraft"],
+  "nba 2k": ["NBA 2K25", "NBA 2K24"],
+  "nba2k": ["NBA 2K25", "NBA 2K24"],
+  "nba 2k25": ["NBA 2K25"],
+  "nba 2k24": ["NBA 2K24"],
+  "fifa": ["EA Sports FC 25"],
+  "fifa 24": ["EA Sports FC 25"],
+  "fifa 23": ["FIFA 23"],
+};
+
+const normalizeGameName = (name: string): string => {
+  return name.toLowerCase().trim();
+};
+
+const getSearchVariants = (game: GameRecord): string[] => {
+  const variants: string[] = [];
+
+  if (game.twitch_search_name) {
+    variants.push(game.twitch_search_name);
+  }
+
+  const normalizedName = normalizeGameName(game.name);
+  const mappedNames = TWITCH_GAME_NAME_MAPPINGS[normalizedName];
+  if (mappedNames) {
+    variants.push(...mappedNames);
+  }
+
+  if (!variants.includes(game.name)) {
+    variants.push(game.name);
+  }
+
+  return variants;
+};
+
 let cachedAccessToken: string | null = null;
 let tokenExpiresAt = 0;
 
@@ -57,6 +155,63 @@ const getTwitchAccessToken = async (clientId: string, clientSecret: string): Pro
   return cachedAccessToken;
 };
 
+const fetchSingleGameCover = async (
+  searchName: string,
+  clientId: string,
+  accessToken: string
+): Promise<{ twitchId: string; coverUrl: string; matchedName: string } | null> => {
+  const gamesUrl = `https://api.twitch.tv/helix/games?name=${encodeURIComponent(searchName)}`;
+
+  const response = await fetch(gamesUrl, {
+    headers: {
+      "Client-ID": clientId,
+      "Authorization": `Bearer ${accessToken}`,
+    }
+  });
+
+  if (!response.ok) {
+    console.error(`[Twitch Games] API error for "${searchName}": ${response.status}`);
+    return null;
+  }
+
+  const data: TwitchGamesResponse = await response.json();
+
+  if (data.data && data.data.length > 0) {
+    const game = data.data[0];
+    const coverUrl = game.box_art_url
+      .replace("{width}", "600")
+      .replace("{height}", "800");
+
+    return {
+      twitchId: game.id,
+      coverUrl: coverUrl,
+      matchedName: game.name
+    };
+  }
+
+  return null;
+};
+
+const fetchGameCoverWithFallback = async (
+  game: GameRecord,
+  clientId: string,
+  accessToken: string
+): Promise<{ twitchId: string; coverUrl: string; matchedName: string } | null> => {
+  const variants = getSearchVariants(game);
+  console.log(`[Twitch Games] Trying ${variants.length} variants for "${game.name}": ${variants.join(", ")}`);
+
+  for (const variant of variants) {
+    const result = await fetchSingleGameCover(variant, clientId, accessToken);
+    if (result) {
+      console.log(`[Twitch Games] Found match for "${game.name}" using variant "${variant}" -> "${result.matchedName}"`);
+      return result;
+    }
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return null;
+};
+
 const fetchGameCovers = async (
   gameNames: string[],
   clientId: string,
@@ -93,7 +248,7 @@ const fetchGameCovers = async (
       const coverUrl = game.box_art_url
         .replace("{width}", "600")
         .replace("{height}", "800");
-      
+
       coverMap.set(game.name.toLowerCase(), {
         twitchId: game.id,
         coverUrl: coverUrl
@@ -159,7 +314,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: games, error: gamesError } = await supabase
       .from("games")
-      .select("id, name, twitch_cover_url, twitch_game_id, cover_last_updated");
+      .select("id, name, twitch_cover_url, twitch_game_id, cover_last_updated, twitch_search_name");
 
     if (gamesError) {
       console.error("[Twitch Games] Error fetching games:", gamesError.message);
@@ -177,7 +332,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const gamesToUpdate = games.filter(game => {
+    const gamesToUpdate: GameRecord[] = games.filter(game => {
       if (!game.twitch_cover_url) return true;
       if (!game.cover_last_updated) return true;
       return new Date(game.cover_last_updated) < sevenDaysAgo;
@@ -196,6 +351,8 @@ Deno.serve(async (req: Request) => {
     const coverMap = await fetchGameCovers(gameNames, client_id, accessToken);
 
     let updatedCount = 0;
+    const unmatchedGames: GameRecord[] = [];
+
     for (const game of gamesToUpdate) {
       const coverData = coverMap.get(game.name.toLowerCase());
       if (coverData) {
@@ -215,7 +372,35 @@ Deno.serve(async (req: Request) => {
           console.log(`[Twitch Games] Updated cover for ${game.name}`);
         }
       } else {
-        console.log(`[Twitch Games] No Twitch match found for ${game.name}`);
+        unmatchedGames.push(game);
+      }
+    }
+
+    if (unmatchedGames.length > 0) {
+      console.log(`[Twitch Games] Attempting fallback search for ${unmatchedGames.length} unmatched games`);
+
+      for (const game of unmatchedGames) {
+        const fallbackResult = await fetchGameCoverWithFallback(game, client_id, accessToken);
+
+        if (fallbackResult) {
+          const { error: updateError } = await supabase
+            .from("games")
+            .update({
+              twitch_cover_url: fallbackResult.coverUrl,
+              twitch_game_id: fallbackResult.twitchId,
+              cover_last_updated: new Date().toISOString()
+            })
+            .eq("id", game.id);
+
+          if (updateError) {
+            console.error(`[Twitch Games] Error updating game ${game.name}:`, updateError);
+          } else {
+            updatedCount++;
+            console.log(`[Twitch Games] Updated cover for ${game.name} via fallback`);
+          }
+        } else {
+          console.log(`[Twitch Games] No Twitch match found for ${game.name} (all variants tried)`);
+        }
       }
     }
 
