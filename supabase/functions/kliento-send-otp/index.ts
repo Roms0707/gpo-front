@@ -239,16 +239,38 @@ Deno.serve(async (req: Request) => {
     const smsTemplate = projectConfig.kliento_otp_sms_template || "Your OTP is {{OTP_CODE}}";
     const message = smsTemplate.replace("{{OTP_CODE}}", otpCode);
 
-    const senditoUrl = senditoConfig.api_url;
+    let senditoCredentials: { sesame_login: string; sesame_password: string };
+    try {
+      senditoCredentials = JSON.parse(senditoConfig.api_key);
+      if (!senditoCredentials.sesame_login || !senditoCredentials.sesame_password) {
+        throw new Error("Missing sesame_login or sesame_password in credentials");
+      }
+    } catch (parseError) {
+      console.error("[kliento-send-otp] Failed to parse Sendito credentials:", parseError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "SMS service configuration error",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const senditoUrl = new URL(senditoConfig.api_url);
+    senditoUrl.searchParams.set("sesame_login", senditoCredentials.sesame_login);
+    senditoUrl.searchParams.set("sesame_password", senditoCredentials.sesame_password);
 
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
-    console.log(`[kliento-send-otp] Sendito URL: ${senditoUrl}`);
+    console.log(`[kliento-send-otp] Sendito URL: ${senditoConfig.api_url} (with auth params)`);
 
     const formData = new FormData();
     formData.append("destination", phone_number);
     formData.append("message", message);
 
-    const smsResponse = await fetch(senditoUrl, {
+    const smsResponse = await fetch(senditoUrl.toString(), {
       method: "POST",
       body: formData,
     });
