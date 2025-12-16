@@ -11,9 +11,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+interface BillingInfo {
+  bizoffer_id: string;
+  billing_type: string;
+  billingchannel: string;
+  billingchannel_label: string;
+  product_id: string;
+  atom_product_id: string;
+  subscription_id: string;
+  offer_price: string;
+  offer_mccmnc: string;
+  evt_subscription_status: string;
+}
+
 interface SendOtpRequest {
   phone_number: string;
   project_config_id: string;
+  billing_info?: BillingInfo;
 }
 
 interface SendOtpResponse {
@@ -58,7 +72,7 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { phone_number, project_config_id }: SendOtpRequest = await req.json();
+    const { phone_number, project_config_id, billing_info }: SendOtpRequest = await req.json();
 
     if (!phone_number || !project_config_id) {
       return new Response(
@@ -72,6 +86,8 @@ Deno.serve(async (req: Request) => {
         }
       );
     }
+
+    console.log(`[kliento-send-otp] Billing info received: ${billing_info ? JSON.stringify(billing_info) : 'none'}`);
 
     if (TEST_MODE) {
       console.log("[kliento-send-otp] TEST MODE ENABLED - Skipping SMS send");
@@ -236,6 +252,16 @@ Deno.serve(async (req: Request) => {
     formData.append("sesame_password", sesamePassword);
     formData.append("to", phone_number);
     formData.append("message", message);
+
+    if (billing_info) {
+      formData.append("billingchannel", billing_info.billingchannel);
+      formData.append("bizoffer_id", billing_info.bizoffer_id);
+      formData.append("product_id", billing_info.product_id);
+      formData.append("atom_product_id", billing_info.atom_product_id);
+      formData.append("subscription_id", billing_info.subscription_id);
+      formData.append("offer_mccmnc", billing_info.offer_mccmnc);
+      console.log(`[kliento-send-otp] Added billing info to Sendito request: billingchannel=${billing_info.billingchannel}, bizoffer_id=${billing_info.bizoffer_id}`);
+    }
 
     const smsResponse = await fetch(senditoUrl, {
       method: "POST",

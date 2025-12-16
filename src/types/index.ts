@@ -79,6 +79,19 @@ export interface KlientoAccountInfo {
   status?: string;
 }
 
+export interface BillingInfo {
+  bizoffer_id: string;
+  billing_type: string;
+  billingchannel: string;
+  billingchannel_label: string;
+  product_id: string;
+  atom_product_id: string;
+  subscription_id: string;
+  offer_price: string;
+  offer_mccmnc: string;
+  evt_subscription_status: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;

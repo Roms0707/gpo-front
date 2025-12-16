@@ -2360,6 +2360,7 @@
       "usernameHint": "Enter your {{brandName}} account username or phone number",
       "continue": "Continue",
       "checking": "Checking...",
+      "verifyingAndSending": "Verifying subscription and sending code...",
       "invalidUsername": "Please enter a valid username (at least 3 characters)",
       "checkError": "Failed to verify account. Please try again.",
       "subscriptionRequired": "Active subscription required. Redirecting to subscription page...",

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import { User, KlientoLoginResponse, KlientoAccountInfo } from '../types';
+import { User, KlientoLoginResponse, KlientoAccountInfo, BillingInfo } from '../types';
 import { normalizePhoneToE164 } from '../utils/phoneValidation';
 
 interface KlientoAuthResult {
@@ -289,7 +289,8 @@ interface SendOtpResult {
 
 export const sendKlientoOtp = async (
   phone: string,
-  projectConfigId: string
+  projectConfigId: string,
+  billingInfo?: BillingInfo | null
 ): Promise<SendOtpResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -304,16 +305,26 @@ export const sendKlientoOtp = async (
 
     const normalizedPhone = normalizePhoneToE164(phone);
 
+    const requestBody: {
+      phone_number: string;
+      project_config_id: string;
+      billing_info?: BillingInfo;
+    } = {
+      phone_number: normalizedPhone,
+      project_config_id: projectConfigId,
+    };
+
+    if (billingInfo) {
+      requestBody.billing_info = billingInfo;
+    }
+
     const response = await fetch(`${supabaseUrl}/functions/v1/kliento-send-otp`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        phone_number: normalizedPhone,
-        project_config_id: projectConfigId,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const data: SendOtpResponse = await response.json();
@@ -351,6 +362,7 @@ interface CheckSubscriptionResponse {
   phoneNumber?: string;
   userId?: string;
   redirectUrl?: string;
+  billingInfo?: BillingInfo;
   error?: string;
 }
 
@@ -360,6 +372,7 @@ export interface CheckSubscriptionResult {
   phoneNumber: string | null;
   userId: string | null;
   redirectUrl: string | null;
+  billingInfo: BillingInfo | null;
   error: string | null;
 }
 
@@ -446,6 +459,7 @@ export const checkKlientoSubscription = async (
         phoneNumber: null,
         userId: null,
         redirectUrl: null,
+        billingInfo: null,
         error: 'Application configuration error',
       };
     }
@@ -471,6 +485,7 @@ export const checkKlientoSubscription = async (
         phoneNumber: null,
         userId: null,
         redirectUrl: data.redirectUrl || null,
+        billingInfo: null,
         error: data.error || 'Failed to check subscription',
       };
     }
@@ -481,6 +496,7 @@ export const checkKlientoSubscription = async (
       phoneNumber: data.phoneNumber || null,
       userId: data.userId || null,
       redirectUrl: data.redirectUrl || null,
+      billingInfo: data.billingInfo || null,
       error: data.isSubscribed ? null : (data.error || 'Subscription required'),
     };
   } catch (error) {
@@ -491,6 +507,7 @@ export const checkKlientoSubscription = async (
       phoneNumber: null,
       userId: null,
       redirectUrl: null,
+      billingInfo: null,
       error: error instanceof Error ? error.message : 'An unexpected error occurred',
     };
   }

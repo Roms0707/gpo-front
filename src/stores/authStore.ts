@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { User } from '../types';
+import { User, BillingInfo } from '../types';
 import { loginUser, signupUser, logoutUser, LoginCredentials, SignupData } from '../services/authService';
 import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
@@ -83,7 +83,7 @@ interface AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<void>;
   loginKliento: (phone: string, password: string, productId: string) => Promise<void>;
   checkSubscription: (login: string, projectConfigId: string) => Promise<CheckSubscriptionResult>;
-  sendOtp: (phone: string, projectConfigId: string) => Promise<SendOtpResult>;
+  sendOtp: (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null) => Promise<SendOtpResult>;
   verifyOtp: (phone: string, otpCode: string, projectConfigId: string) => Promise<VerifyOtpResult>;
   loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
@@ -145,8 +145,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return result;
   },
 
-  sendOtp: async (phone: string, projectConfigId: string): Promise<SendOtpResult> => {
-    const result = await sendKlientoOtp(phone, projectConfigId);
+  sendOtp: async (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null): Promise<SendOtpResult> => {
+    const result = await sendKlientoOtp(phone, projectConfigId, billingInfo);
     return {
       success: result.success,
       error: result.error,
