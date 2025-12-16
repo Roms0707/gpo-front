@@ -17,6 +17,13 @@ interface TwitchGamesResponse {
   data: TwitchGame[];
 }
 
+interface TwitchSearchResponse {
+  data: TwitchGame[];
+  pagination?: {
+    cursor?: string;
+  };
+}
+
 interface GameRecord {
   id: string;
   name: string;
@@ -160,9 +167,9 @@ const fetchSingleGameCover = async (
   clientId: string,
   accessToken: string
 ): Promise<{ twitchId: string; coverUrl: string; matchedName: string } | null> => {
-  const gamesUrl = `https://api.twitch.tv/helix/games?name=${encodeURIComponent(searchName)}`;
+  const searchUrl = `https://api.twitch.tv/helix/search/categories?query=${encodeURIComponent(searchName)}&first=5`;
 
-  const response = await fetch(gamesUrl, {
+  const response = await fetch(searchUrl, {
     headers: {
       "Client-ID": clientId,
       "Authorization": `Bearer ${accessToken}`,
@@ -170,25 +177,42 @@ const fetchSingleGameCover = async (
   });
 
   if (!response.ok) {
-    console.error(`[Twitch Games] API error for "${searchName}": ${response.status}`);
+    console.error(`[Twitch Games] Search API error for "${searchName}": ${response.status}`);
     return null;
   }
 
-  const data: TwitchGamesResponse = await response.json();
+  const data: TwitchSearchResponse = await response.json();
 
   if (data.data && data.data.length > 0) {
-    const game = data.data[0];
-    const coverUrl = game.box_art_url
+    const searchLower = searchName.toLowerCase().replace(/[-:]/g, " ").replace(/\s+/g, " ").trim();
+
+    let bestMatch = data.data[0];
+    for (const game of data.data) {
+      const gameLower = game.name.toLowerCase().replace(/[-:]/g, " ").replace(/\s+/g, " ").trim();
+      if (gameLower === searchLower) {
+        bestMatch = game;
+        break;
+      }
+      if (gameLower.includes(searchLower) || searchLower.includes(gameLower)) {
+        bestMatch = game;
+        break;
+      }
+    }
+
+    console.log(`[Twitch Games] Search for "${searchName}" found: ${data.data.map(g => g.name).join(", ")} -> selected "${bestMatch.name}"`);
+
+    const coverUrl = bestMatch.box_art_url
       .replace("{width}", "600")
       .replace("{height}", "800");
 
     return {
-      twitchId: game.id,
+      twitchId: bestMatch.id,
       coverUrl: coverUrl,
-      matchedName: game.name
+      matchedName: bestMatch.name
     };
   }
 
+  console.log(`[Twitch Games] Search for "${searchName}" returned no results`);
   return null;
 };
 
