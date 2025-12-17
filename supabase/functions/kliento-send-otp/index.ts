@@ -293,16 +293,11 @@ Deno.serve(async (req: Request) => {
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
     console.log(`[kliento-send-otp] Sendito URL: ${senditoConfig.api_url} (with auth params)`);
 
-    const countryData = JSON.stringify({
-      iso: projectConfig.default_phone_country_iso,
-      code: projectConfig.default_phone_country_code,
-    });
-
     const formData = new FormData();
     formData.append("destination", phone_number);
     formData.append("message", message);
     formData.append("type", "push");
-    formData.append("country", countryData);
+    formData.append("country", projectConfig.default_phone_country_iso);
 
     const smsResponse = await fetch(senditoUrl.toString(), {
       method: "POST",
