@@ -1,0 +1,146 @@
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ChevronRight } from 'lucide-react';
+import VoucherCard, { Voucher } from '../components/store/VoucherCard';
+
+const GENSHIN_IMAGE = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=800&auto=format&fit=crop&q=80';
+
+const genshinVouchers: Voucher[] = [
+  {
+    id: 'genshin-60',
+    game: 'Genshin Impact',
+    name: '60 GENESIS CRYSTALS',
+    price: 1.11,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-330',
+    game: 'Genshin Impact',
+    name: '300 + 30 GENESIS CRYSTALS',
+    price: 5.59,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-welkin',
+    game: 'Genshin Impact',
+    name: 'BLESSING OF THE WELKIN MOON',
+    price: 5.59,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-1090',
+    game: 'Genshin Impact',
+    name: '980 + 110 GENESIS CRYSTALS',
+    price: 16.79,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-2240',
+    game: 'Genshin Impact',
+    name: '1980 + 260 GENESIS CRYSTALS',
+    price: 33.59,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-3880',
+    game: 'Genshin Impact',
+    name: '3280 + 600 GENESIS CRYSTALS',
+    price: 56,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+  {
+    id: 'genshin-8080',
+    game: 'Genshin Impact',
+    name: '6480 + 1600 GENESIS CRYSTALS',
+    price: 112.01,
+    currency: '£',
+    imageUrl: GENSHIN_IMAGE,
+  },
+];
+
+const gameIcons = [
+  { id: 'apex', name: 'Apex Legends', color: 'bg-red-600', letter: 'A' },
+  { id: 'other', name: 'Game', color: 'bg-orange-500', letter: 'G' },
+  { id: 'genshin', name: 'Genshin Impact', color: 'bg-blue-500', letter: 'G', active: true },
+  { id: 'fortnite', name: 'Fortnite', color: 'bg-blue-600', letter: 'F' },
+  { id: 'lol', name: 'League of Legends', color: 'bg-yellow-600', letter: 'L' },
+  { id: 'overwatch', name: 'Overwatch', color: 'bg-orange-600', letter: 'O' },
+  { id: 'rocket', name: 'Rocket League', color: 'bg-blue-400', letter: 'R' },
+  { id: 'valorant', name: 'Valorant', color: 'bg-red-500', letter: 'V' },
+  { id: 'warzone', name: 'Call of Duty', color: 'bg-green-700', letter: 'W' },
+];
+
+const StorePage: React.FC = () => {
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-dark-300">
+      <div className="flex">
+        <aside className="hidden lg:flex flex-col w-16 bg-dark-200 border-r border-gray-800/50 min-h-screen pt-24 pb-8 px-2 gap-2 sticky top-0">
+          {gameIcons.map((game) => (
+            <button
+              key={game.id}
+              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 ${
+                game.active
+                  ? 'ring-2 ring-primary-500 ring-offset-2 ring-offset-dark-200'
+                  : 'hover:bg-dark-100'
+              } ${game.color}`}
+              title={game.name}
+            >
+              <span className="text-white font-bold text-lg">{game.letter}</span>
+            </button>
+          ))}
+        </aside>
+
+        <main className="flex-1 pt-24 pb-16 px-4 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <nav className="flex items-center gap-2 text-sm mb-8">
+              <span className="text-gray-400">{t('store.breadcrumbStore')}</span>
+              <ChevronRight className="w-4 h-4 text-gray-600" />
+              <span className="text-white font-medium">{t('store.breadcrumbVouchers')}</span>
+            </nav>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
+              {genshinVouchers.map((voucher) => (
+                <VoucherCard key={voucher.id} voucher={voucher} />
+              ))}
+            </div>
+
+            <div className="border-t border-gray-800/50 pt-12">
+              <h2 className="text-2xl font-bold text-white mb-8">
+                {t('store.ourVouchers')}
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+                  <span className="text-gray-500">Coming soon</span>
+                </div>
+                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+                  <span className="text-gray-500">Coming soon</span>
+                </div>
+                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+                  <span className="text-gray-500">Coming soon</span>
+                </div>
+                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+                  <span className="text-gray-500">Coming soon</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default StorePage;

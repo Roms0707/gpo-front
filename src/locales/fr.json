@@ -203,6 +203,7 @@
     "unreadMessages": "{{count}} non lus",
     "gamingStatsLabel": "Mes statistiques de jeu",
     "skipToContent": "Aller au contenu principal",
+    "store": "Boutique",
     "tournaments": "Tournois",
     "leaderboards": "Classements",
     "communities": "Communautés",
@@ -213,6 +214,18 @@
     "profile": "Profil",
     "lightMode": "Mode clair",
     "darkMode": "Mode sombre"
+  },
+  "store": {
+    "pageTitle": "Boutique",
+    "vouchers": "Vouchers",
+    "breadcrumbStore": "Boutique",
+    "breadcrumbVouchers": "Vouchers",
+    "available": "Disponible",
+    "ourVouchers": "NOS VOUCHERS",
+    "selectGame": "Sélectionnez un jeu",
+    "viewDetails": "Voir les détails",
+    "price": "Prix",
+    "currency": "£"
   },
   "footer": {
     "joinCompetition": "Rejoignez la compétition dès aujourd'hui !",

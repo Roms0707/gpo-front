@@ -203,6 +203,7 @@
     "unreadMessages": "{{count}} unread",
     "gamingStatsLabel": "My gaming stats",
     "skipToContent": "Skip to main content",
+    "store": "Store",
     "tournaments": "Tournaments",
     "leaderboards": "Leaderboards",
     "communities": "Communities",
@@ -213,6 +214,18 @@
     "profile": "Profile",
     "lightMode": "Light mode",
     "darkMode": "Dark mode"
+  },
+  "store": {
+    "pageTitle": "Store",
+    "vouchers": "Vouchers",
+    "breadcrumbStore": "Store",
+    "breadcrumbVouchers": "Vouchers",
+    "available": "Available",
+    "ourVouchers": "OUR VOUCHERS",
+    "selectGame": "Select a game",
+    "viewDetails": "View details",
+    "price": "Price",
+    "currency": "£"
   },
   "footer": {
     "joinCompetition": "Join the competition today!",
