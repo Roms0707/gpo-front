@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import VoucherCard, { Voucher } from '../components/store/VoucherCard';
-import GameSidebar from '../components/store/GameSidebar';
 
 const GENSHIN_IMAGE = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=800&auto=format&fit=crop&q=80';
 
@@ -73,46 +72,40 @@ const StorePage: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-dark-300">
-      <div className="flex">
-        <GameSidebar />
+    <div className="min-h-screen bg-dark-300 pt-24 pb-16">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <nav className="flex items-center gap-2 text-sm mb-6 md:mb-8">
+          <span className="text-gray-400">{t('store.breadcrumbStore')}</span>
+          <ChevronRight className="w-4 h-4 text-gray-600" />
+          <span className="text-white font-medium">{t('store.breadcrumbVouchers')}</span>
+        </nav>
 
-        <main className="flex-1 pt-24 pb-16 px-4 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <nav className="flex items-center gap-2 text-sm mb-8">
-              <span className="text-gray-400">{t('store.breadcrumbStore')}</span>
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-              <span className="text-white font-medium">{t('store.breadcrumbVouchers')}</span>
-            </nav>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-12 md:mb-16">
+          {genshinVouchers.map((voucher) => (
+            <VoucherCard key={voucher.id} voucher={voucher} />
+          ))}
+        </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-16">
-              {genshinVouchers.map((voucher) => (
-                <VoucherCard key={voucher.id} voucher={voucher} />
-              ))}
+        <div className="border-t border-gray-800/50 pt-8 md:pt-12">
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-6 md:mb-8">
+            {t('store.ourVouchers')}
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+              <span className="text-gray-500 text-sm">Coming soon</span>
             </div>
-
-            <div className="border-t border-gray-800/50 pt-12">
-              <h2 className="text-2xl font-bold text-white mb-8">
-                {t('store.ourVouchers')}
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
-                  <span className="text-gray-500">Coming soon</span>
-                </div>
-                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
-                  <span className="text-gray-500">Coming soon</span>
-                </div>
-                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
-                  <span className="text-gray-500">Coming soon</span>
-                </div>
-                <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
-                  <span className="text-gray-500">Coming soon</span>
-                </div>
-              </div>
+            <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+              <span className="text-gray-500 text-sm">Coming soon</span>
+            </div>
+            <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+              <span className="text-gray-500 text-sm">Coming soon</span>
+            </div>
+            <div className="bg-dark-200 rounded-xl aspect-video flex items-center justify-center border border-gray-800/50">
+              <span className="text-gray-500 text-sm">Coming soon</span>
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );
