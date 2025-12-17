@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Check, ChevronDown } from 'lucide-react';
 import PurchaseSuccessModal from '../components/store/PurchaseSuccessModal';
 
-const GENSHIN_COVER = '/assets/games/genshin-impact-cover.png';
+const GENSHIN_COVER = 'https://static-cdn.jtvnw.net/ttv-boxart/513181-600x800.jpg';
 const GENSHIN_LOGO = 'https://upload.wikimedia.org/wikipedia/en/5/5d/Genshin_Impact_logo.svg';
 
 interface VoucherOption {

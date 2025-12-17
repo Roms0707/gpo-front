@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import VoucherCard, { Voucher } from '../components/store/VoucherCard';
 
-const GENSHIN_COVER = '/assets/games/genshin-impact-cover.png';
+const GENSHIN_COVER = 'https://static-cdn.jtvnw.net/ttv-boxart/513181-600x800.jpg';
 
 const StorePage: React.FC = () => {
   const { t } = useTranslation();
