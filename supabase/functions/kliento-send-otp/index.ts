@@ -89,6 +89,50 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-send-otp] Billing info received: ${billing_info ? JSON.stringify(billing_info) : 'none'}`);
 
+    if (!TEST_MODE) {
+      if (!billing_info) {
+        console.error("[kliento-send-otp] Missing billing_info for production SMS");
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Billing information is required for SMS delivery",
+          } as SendOtpResponse),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (!billing_info.subscription_id) {
+        console.error("[kliento-send-otp] Missing subscription_id in billing_info");
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Missing subscription_id in billing information",
+          } as SendOtpResponse),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+
+      if (!billing_info.bizoffer_id) {
+        console.error("[kliento-send-otp] Missing bizoffer_id in billing_info");
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "Missing bizoffer_id in billing information",
+          } as SendOtpResponse),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
     if (TEST_MODE) {
       console.log("[kliento-send-otp] TEST MODE ENABLED - Skipping SMS send");
       console.log(`[kliento-send-otp] TEST MODE - OTP for ${phone_number.substring(0, 4)}***: 1234`);
@@ -292,12 +336,15 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
     console.log(`[kliento-send-otp] Sendito URL: ${senditoConfig.api_url} (with auth params)`);
+    console.log(`[kliento-send-otp] operation_id: ${billing_info!.subscription_id}, offer_id: ${billing_info!.bizoffer_id}`);
 
     const formData = new FormData();
     formData.append("destination", phone_number);
     formData.append("message", message);
     formData.append("type", "push");
     formData.append("country", projectConfig.default_phone_country_iso);
+    formData.append("operation_id", billing_info!.subscription_id);
+    formData.append("offer_id", billing_info!.bizoffer_id);
 
     const smsResponse = await fetch(senditoUrl.toString(), {
       method: "POST",
