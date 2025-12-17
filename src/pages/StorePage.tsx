@@ -1,75 +1,87 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import VoucherCard, { Voucher } from '../components/store/VoucherCard';
+import { fetchTwitchGameCover } from '../services/twitchCoverService';
 
-const GENSHIN_IMAGE = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=800&auto=format&fit=crop&q=80';
-
-const genshinVouchers: Voucher[] = [
-  {
-    id: 'genshin-60',
-    game: 'Genshin Impact',
-    name: '60 GENESIS CRYSTALS',
-    price: 1.11,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-330',
-    game: 'Genshin Impact',
-    name: '300 + 30 GENESIS CRYSTALS',
-    price: 5.59,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-welkin',
-    game: 'Genshin Impact',
-    name: 'BLESSING OF THE WELKIN MOON',
-    price: 5.59,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-1090',
-    game: 'Genshin Impact',
-    name: '980 + 110 GENESIS CRYSTALS',
-    price: 16.79,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-2240',
-    game: 'Genshin Impact',
-    name: '1980 + 260 GENESIS CRYSTALS',
-    price: 33.59,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-3880',
-    game: 'Genshin Impact',
-    name: '3280 + 600 GENESIS CRYSTALS',
-    price: 56,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-  {
-    id: 'genshin-8080',
-    game: 'Genshin Impact',
-    name: '6480 + 1600 GENESIS CRYSTALS',
-    price: 112.01,
-    currency: '£',
-    imageUrl: GENSHIN_IMAGE,
-  },
-];
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=800&auto=format&fit=crop&q=80';
 
 const StorePage: React.FC = () => {
   const { t } = useTranslation();
+  const [genshinCover, setGenshinCover] = useState<string>(FALLBACK_IMAGE);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const loadCover = async () => {
+      const cover = await fetchTwitchGameCover('Genshin Impact');
+      if (cover) {
+        setGenshinCover(cover);
+      }
+    };
+    loadCover();
+  }, []);
+
+  const genshinVouchers: Voucher[] = useMemo(() => [
+    {
+      id: 'genshin-60',
+      game: 'Genshin Impact',
+      name: '60 GENESIS CRYSTALS',
+      price: 1.11,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-330',
+      game: 'Genshin Impact',
+      name: '300 + 30 GENESIS CRYSTALS',
+      price: 5.59,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-welkin',
+      game: 'Genshin Impact',
+      name: 'BLESSING OF THE WELKIN MOON',
+      price: 5.59,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-1090',
+      game: 'Genshin Impact',
+      name: '980 + 110 GENESIS CRYSTALS',
+      price: 16.79,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-2240',
+      game: 'Genshin Impact',
+      name: '1980 + 260 GENESIS CRYSTALS',
+      price: 33.59,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-3880',
+      game: 'Genshin Impact',
+      name: '3280 + 600 GENESIS CRYSTALS',
+      price: 56,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+    {
+      id: 'genshin-8080',
+      game: 'Genshin Impact',
+      name: '6480 + 1600 GENESIS CRYSTALS',
+      price: 112.01,
+      currency: '£',
+      imageUrl: genshinCover,
+    },
+  ], [genshinCover]);
 
   return (
     <div className="min-h-screen bg-dark-300 pt-24 pb-16">

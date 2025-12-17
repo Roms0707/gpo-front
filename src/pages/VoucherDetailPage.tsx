@@ -3,8 +3,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, ChevronDown } from 'lucide-react';
 import PurchaseSuccessModal from '../components/store/PurchaseSuccessModal';
+import { fetchTwitchGameCover } from '../services/twitchCoverService';
 
-const GENSHIN_BANNER = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=1200&auto=format&fit=crop&q=80';
+const FALLBACK_BANNER = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=1200&auto=format&fit=crop&q=80';
 const GENSHIN_LOGO = 'https://upload.wikimedia.org/wikipedia/en/5/5d/Genshin_Impact_logo.svg';
 
 interface VoucherOption {
@@ -44,9 +45,20 @@ const VoucherDetailPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [bannerImage, setBannerImage] = useState(FALLBACK_BANNER);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    const loadCover = async () => {
+      const cover = await fetchTwitchGameCover('Genshin Impact');
+      if (cover) {
+        setBannerImage(cover);
+      }
+    };
+    loadCover();
   }, []);
 
   const voucher = voucherId ? voucherDataMap[voucherId] : null;
@@ -89,7 +101,7 @@ const VoucherDetailPage: React.FC = () => {
     <div className="min-h-screen bg-dark-300">
       <div className="relative h-40 sm:h-48 md:h-64 mt-16 overflow-hidden">
         <img
-          src={GENSHIN_BANNER}
+          src={bannerImage}
           alt="Genshin Impact"
           className="w-full h-full object-cover"
         />
