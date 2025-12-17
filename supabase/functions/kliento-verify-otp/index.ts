@@ -15,6 +15,7 @@ interface VerifyOtpRequest {
   phone_number: string;
   otp_code: string;
   project_config_id: string;
+  kliento_user_id?: string;
 }
 
 interface VerifyOtpResponse {
@@ -44,7 +45,7 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { phone_number, otp_code, project_config_id }: VerifyOtpRequest = await req.json();
+    const { phone_number, otp_code, project_config_id, kliento_user_id }: VerifyOtpRequest = await req.json();
 
     if (!phone_number || !otp_code || !project_config_id) {
       return new Response(
@@ -279,13 +280,43 @@ Deno.serve(async (req: Request) => {
       .eq("id", otpRecord.id);
 
     console.log(`[kliento-verify-otp] OTP verified for ${phone_number.substring(0, 4)}***`);
+    console.log(`[kliento-verify-otp] Kliento user ID provided: ${kliento_user_id || 'none'}`);
 
-    const { data: existingUser, error: findError } = await supabase
-      .from("users")
-      .select("*")
-      .eq("phone_number", phone_number)
-      .eq("auth_provider", "kliento")
-      .maybeSingle();
+    let existingUser = null;
+    let findError = null;
+
+    if (kliento_user_id) {
+      const result = await supabase
+        .from("users")
+        .select("*")
+        .eq("kliento_user_id", kliento_user_id)
+        .maybeSingle();
+
+      existingUser = result.data;
+      findError = result.error;
+
+      if (!existingUser && !findError) {
+        const phoneResult = await supabase
+          .from("users")
+          .select("*")
+          .eq("phone_number", phone_number)
+          .eq("auth_provider", "kliento")
+          .maybeSingle();
+
+        existingUser = phoneResult.data;
+        findError = phoneResult.error;
+      }
+    } else {
+      const result = await supabase
+        .from("users")
+        .select("*")
+        .eq("phone_number", phone_number)
+        .eq("auth_provider", "kliento")
+        .maybeSingle();
+
+      existingUser = result.data;
+      findError = result.error;
+    }
 
     if (findError) {
       console.error("[kliento-verify-otp] Error finding user:", findError);
@@ -304,9 +335,19 @@ Deno.serve(async (req: Request) => {
     if (existingUser) {
       console.log(`[kliento-verify-otp] Existing user found: ${existingUser.id}`);
 
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+        phone_number: phone_number,
+      };
+
+      if (kliento_user_id && !existingUser.kliento_user_id) {
+        updateData.kliento_user_id = kliento_user_id;
+        console.log(`[kliento-verify-otp] Setting kliento_user_id on existing user: ${kliento_user_id}`);
+      }
+
       await supabase
         .from("users")
-        .update({ updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq("id", existingUser.id);
 
       return new Response(
@@ -322,20 +363,31 @@ Deno.serve(async (req: Request) => {
     }
 
     const cleanPhone = phone_number.replace(/\D/g, "");
-    const username = `user_${cleanPhone.substring(cleanPhone.length - 8)}`;
-    const email = `${cleanPhone}@kliento-otp.local`;
+    const username = kliento_user_id
+      ? `user_${kliento_user_id.substring(0, 8)}`
+      : `user_${cleanPhone.substring(cleanPhone.length - 8)}`;
+    const email = kliento_user_id
+      ? `${kliento_user_id}@kliento-otp.local`
+      : `${cleanPhone}@kliento-otp.local`;
+
+    const insertData: Record<string, unknown> = {
+      username,
+      email,
+      type: "gamer",
+      phone_number,
+      auth_provider: "kliento",
+      is_profile_public: true,
+      is_profile_completed: false,
+    };
+
+    if (kliento_user_id) {
+      insertData.kliento_user_id = kliento_user_id;
+      console.log(`[kliento-verify-otp] Creating new user with kliento_user_id: ${kliento_user_id}`);
+    }
 
     const { data: newUser, error: createError } = await supabase
       .from("users")
-      .insert({
-        username,
-        email,
-        type: "gamer",
-        phone_number,
-        auth_provider: "kliento",
-        is_profile_public: true,
-        is_profile_completed: false,
-      })
+      .insert(insertData)
       .select()
       .single();
 

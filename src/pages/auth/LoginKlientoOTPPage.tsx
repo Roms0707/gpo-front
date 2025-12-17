@@ -20,6 +20,7 @@ const LoginKlientoOTPPage: React.FC = () => {
   const [step, setStep] = useState<OtpStep>('username');
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
+  const [klientoUserId, setKlientoUserId] = useState<string | null>(null);
   const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null);
   const [otpDigits, setOtpDigits] = useState(['', '', '', '']);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +77,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       }
 
       setPhone(result.phoneNumber);
+      setKlientoUserId(result.userId);
       setBillingInfo(result.billingInfo);
 
       const otpResult = await sendOtp(result.phoneNumber, projectConfigUuid, result.billingInfo, defaultPhoneCountryCode);
@@ -183,7 +185,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      const result = await verifyOtp(phone, code, projectConfigUuid, defaultPhoneCountryCode);
+      const result = await verifyOtp(phone, code, projectConfigUuid, defaultPhoneCountryCode, klientoUserId);
 
       if (result.error) {
         setError(result.error);
@@ -219,6 +221,7 @@ const LoginKlientoOTPPage: React.FC = () => {
       setStep('username');
       setOtpDigits(['', '', '', '']);
       setPhone('');
+      setKlientoUserId(null);
       setBillingInfo(null);
       setError(null);
       setCountdown(0);

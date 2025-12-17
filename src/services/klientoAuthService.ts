@@ -381,7 +381,8 @@ export const verifyKlientoOtp = async (
   phone: string,
   otpCode: string,
   projectConfigId: string,
-  defaultCountryCode?: string | null
+  defaultCountryCode?: string | null,
+  klientoUserId?: string | null
 ): Promise<VerifyOtpResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -396,17 +397,28 @@ export const verifyKlientoOtp = async (
 
     const normalizedPhone = normalizePhoneToE164(phone, defaultCountryCode || undefined);
 
+    const requestBody: {
+      phone_number: string;
+      otp_code: string;
+      project_config_id: string;
+      kliento_user_id?: string;
+    } = {
+      phone_number: normalizedPhone,
+      otp_code: otpCode,
+      project_config_id: projectConfigId,
+    };
+
+    if (klientoUserId) {
+      requestBody.kliento_user_id = klientoUserId;
+    }
+
     const response = await fetch(`${supabaseUrl}/functions/v1/kliento-verify-otp`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${supabaseAnonKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        phone_number: normalizedPhone,
-        otp_code: otpCode,
-        project_config_id: projectConfigId,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     const data: VerifyOtpResponse = await response.json();
