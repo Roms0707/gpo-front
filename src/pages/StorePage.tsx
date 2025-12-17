@@ -1,27 +1,15 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronRight } from 'lucide-react';
 import VoucherCard, { Voucher } from '../components/store/VoucherCard';
-import { fetchTwitchGameCover } from '../services/twitchCoverService';
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1636487658547-2f73f4117a7d?w=800&auto=format&fit=crop&q=80';
+const GENSHIN_COVER = '/assets/games/genshin-impact-cover.png';
 
 const StorePage: React.FC = () => {
   const { t } = useTranslation();
-  const [genshinCover, setGenshinCover] = useState<string>(FALLBACK_IMAGE);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const loadCover = async () => {
-      const cover = await fetchTwitchGameCover('Genshin Impact');
-      if (cover) {
-        setGenshinCover(cover);
-      }
-    };
-    loadCover();
   }, []);
 
   const genshinVouchers: Voucher[] = useMemo(() => [
@@ -31,7 +19,7 @@ const StorePage: React.FC = () => {
       name: '60 GENESIS CRYSTALS',
       price: 1.11,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-330',
@@ -39,7 +27,7 @@ const StorePage: React.FC = () => {
       name: '300 + 30 GENESIS CRYSTALS',
       price: 5.59,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-welkin',
@@ -47,7 +35,7 @@ const StorePage: React.FC = () => {
       name: 'BLESSING OF THE WELKIN MOON',
       price: 5.59,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-1090',
@@ -55,7 +43,7 @@ const StorePage: React.FC = () => {
       name: '980 + 110 GENESIS CRYSTALS',
       price: 16.79,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-2240',
@@ -63,7 +51,7 @@ const StorePage: React.FC = () => {
       name: '1980 + 260 GENESIS CRYSTALS',
       price: 33.59,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-3880',
@@ -71,7 +59,7 @@ const StorePage: React.FC = () => {
       name: '3280 + 600 GENESIS CRYSTALS',
       price: 56,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
     {
       id: 'genshin-8080',
@@ -79,9 +67,9 @@ const StorePage: React.FC = () => {
       name: '6480 + 1600 GENESIS CRYSTALS',
       price: 112.01,
       currency: '£',
-      imageUrl: genshinCover,
+      imageUrl: GENSHIN_COVER,
     },
-  ], [genshinCover]);
+  ], []);
 
   return (
     <div className="min-h-screen bg-dark-300 pt-24 pb-16">
