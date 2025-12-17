@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { crypto } from "jsr:@std/crypto";
 import { encodeHex } from "jsr:@std/encoding/hex";
 
-const TEST_MODE = true;
+const TEST_MODE = false;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
