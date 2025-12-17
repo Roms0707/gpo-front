@@ -129,7 +129,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: projectConfig, error: configError } = await supabase
       .from("project_configurations")
-      .select("id, kliento_auth_type, kliento_otp_sms_template, default_phone_country_code")
+      .select("id, kliento_auth_type, kliento_otp_sms_template, default_phone_country_code, default_phone_country_iso")
       .eq("id", project_config_id)
       .eq("is_active", true)
       .maybeSingle();
@@ -167,6 +167,20 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({
           success: false,
           error: "Phone country code is not configured for this project",
+        } as SendOtpResponse),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!projectConfig.default_phone_country_iso) {
+      console.error("[kliento-send-otp] Missing default_phone_country_iso in project configuration");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Phone country ISO code is not configured for this project",
         } as SendOtpResponse),
         {
           status: 500,
@@ -279,11 +293,16 @@ Deno.serve(async (req: Request) => {
     console.log(`[kliento-send-otp] Sending SMS to ${phone_number.substring(0, 4)}*** via Sendito`);
     console.log(`[kliento-send-otp] Sendito URL: ${senditoConfig.api_url} (with auth params)`);
 
+    const countryData = JSON.stringify({
+      iso: projectConfig.default_phone_country_iso,
+      code: projectConfig.default_phone_country_code,
+    });
+
     const formData = new FormData();
     formData.append("destination", phone_number);
     formData.append("message", message);
     formData.append("type", "push");
-    formData.append("country", "FR");
+    formData.append("country", countryData);
 
     const smsResponse = await fetch(senditoUrl.toString(), {
       method: "POST",
