@@ -167,7 +167,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-36 h-52 md:w-48 md:h-64 bg-dark-300 rounded-xl mb-4"></div>
           <div className="w-28 md:w-36 h-5 bg-dark-300 rounded"></div>
@@ -178,7 +178,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-dark-100 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
@@ -195,7 +195,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] overflow-hidden"
+      className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
