@@ -1,22 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Brain,
   Link2,
-  TrendingUp,
-  Target,
-  Shield,
   Lock,
   Sparkles,
   BarChart3,
   ChevronRight,
-  Trophy,
-  Zap
+  Target,
+  Zap,
+  History,
+  X
 } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
+import AICoachChat from '../../coaching/AICoachChat';
+import CoachingSessionsSidebar from '../../coaching/CoachingSessionsSidebar';
+import PerformanceContextCard from '../../coaching/PerformanceContextCard';
+import { useAICoachingSession } from '../../../hooks/useAICoachingSession';
+import { useLoLCoachingAnalysis } from '../../../hooks/useLoLCoachingAnalysis';
 
 interface GameHubCoachingTabProps {
   gameId: string;
@@ -42,12 +46,30 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [connectionName, setConnectionName] = useState<string | null>(null);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const isCoachingSupported = SUPPORTED_COACHING_GAMES.some(
     g => gameName.toLowerCase().includes(g.toLowerCase())
   );
 
-  useEffect(() => {
+  const {
+    sessionId,
+    messages,
+    videoRecommendations,
+    isSending,
+    sessions,
+    sendMessage,
+    loadSession,
+    startNewSession
+  } = useAICoachingSession(gameId, gameName);
+
+  const {
+    context: performanceContext,
+    isLoading: isContextLoading,
+    refresh: refreshContext
+  } = useLoLCoachingAnalysis(gameId);
+
+  React.useEffect(() => {
     const checkConnection = async () => {
       if (!user) {
         setIsConnected(false);
@@ -95,29 +117,15 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
     checkConnection();
   }, [user, gameId]);
 
-  const coachingTips = [
-    {
-      icon: Target,
-      title: t('gameHub.coaching.tip1Title'),
-      description: t('gameHub.coaching.tip1Desc'),
-    },
-    {
-      icon: TrendingUp,
-      title: t('gameHub.coaching.tip2Title'),
-      description: t('gameHub.coaching.tip2Desc'),
-    },
-    {
-      icon: Shield,
-      title: t('gameHub.coaching.tip3Title'),
-      description: t('gameHub.coaching.tip3Desc'),
-    },
-  ];
-
   const previewInsights = [
     { label: t('gameHub.coaching.winRate'), value: '67%', trend: '+5%' },
     { label: t('gameHub.coaching.avgKDA'), value: '3.2', trend: '+0.4' },
     { label: t('gameHub.coaching.gamesPlayed'), value: '142', trend: null },
   ];
+
+  const handleVideoClick = (contentId: string) => {
+    navigate(`/video/${contentId}`);
+  };
 
   if (isLoading) {
     return (
@@ -188,10 +196,10 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-3">
-                {t('gameHub.coaching.unlockTitle')}
+                {t('coaching.unlockAICoaching')}
               </h3>
               <p className="text-gray-400 mb-6 max-w-lg">
-                {t('gameHub.coaching.unlockDesc', { gameName })}
+                {t('coaching.unlockDesc', { gameName })}
               </p>
 
               <button
@@ -252,24 +260,24 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
               </div>
 
               <h3 className="text-2xl font-bold text-white mb-3">
-                {t('gameHub.coaching.connectToUnlock')}
+                {t('coaching.connectForAI')}
               </h3>
               <p className="text-gray-400 mb-6 max-w-lg">
-                {t('gameHub.coaching.connectDesc', { gameName })}
+                {t('coaching.connectDesc', { gameName })}
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Brain className="w-4 h-4" style={{ color: theme.colors.primary }} />
+                  {t('coaching.feature.aiAnalysis')}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-400">
                   <BarChart3 className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                  {t('gameHub.coaching.feature1')}
+                  {t('coaching.feature.personalizedTips')}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <TrendingUp className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                  {t('gameHub.coaching.feature2')}
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Trophy className="w-4 h-4" style={{ color: theme.colors.primary }} />
-                  {t('gameHub.coaching.feature3')}
+                  <Sparkles className="w-4 h-4" style={{ color: theme.colors.primary }} />
+                  {t('coaching.feature.videoRecommendations')}
                 </div>
               </div>
 
@@ -313,53 +321,95 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 p-4 bg-success-500/10 border border-success-500/30 rounded-xl">
-        <div className="p-2 rounded-full bg-success-500/20">
-          <Link2 className="w-5 h-5 text-success-400" />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3 p-3 bg-success-500/10 border border-success-500/30 rounded-xl">
+          <div className="p-2 rounded-full bg-success-500/20">
+            <Link2 className="w-4 h-4 text-success-400" />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-success-400">
+              {t('gameHub.coaching.connectedAs')}
+            </p>
+            <p className="text-white font-bold text-sm">{connectionName}</p>
+          </div>
         </div>
-        <div>
-          <p className="text-sm font-medium text-success-400">
-            {t('gameHub.coaching.connectedAs')}
-          </p>
-          <p className="text-white font-bold">{connectionName}</p>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowSidebar(!showSidebar)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-dark-300"
+            style={{ color: theme.colors.primary }}
+          >
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('coaching.sessionHistory')}</span>
+          </button>
+          <button
+            onClick={() => navigate('/profile/gaming-stats')}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: `${theme.colors.primary}20`,
+              color: theme.colors.primary,
+            }}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('gameHub.coaching.viewDetailedStats')}</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {coachingTips.map((tip, index) => {
-          const TipIcon = tip.icon;
-          return (
-            <div
-              key={index}
-              className="group bg-dark-200/50 border border-gray-800 rounded-xl p-5 transition-all duration-300 hover:border-gray-700 hover:shadow-lg"
+      <div className="flex gap-4 h-[600px]">
+        {showSidebar && (
+          <div className="w-72 flex-shrink-0 relative">
+            <button
+              onClick={() => setShowSidebar(false)}
+              className="absolute -right-2 -top-2 z-10 p-1 bg-dark-300 rounded-full border border-gray-700 lg:hidden"
             >
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
-                style={{ backgroundColor: `${theme.colors.primary}20` }}
-              >
-                <TipIcon className="w-6 h-6" style={{ color: theme.colors.primary }} />
-              </div>
-              <h4 className="font-bold text-white mb-2">{tip.title}</h4>
-              <p className="text-sm text-gray-400">{tip.description}</p>
-            </div>
-          );
-        })}
-      </div>
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+            <CoachingSessionsSidebar
+              sessions={sessions}
+              currentSessionId={sessionId}
+              theme={theme}
+              onSessionClick={(id) => {
+                loadSession(id);
+                if (window.innerWidth < 1024) setShowSidebar(false);
+              }}
+              onNewSession={() => {
+                startNewSession();
+                if (window.innerWidth < 1024) setShowSidebar(false);
+              }}
+            />
+          </div>
+        )}
 
-      <button
-        onClick={() => navigate('/profile/gaming-stats')}
-        className="w-full flex items-center justify-center gap-2 py-4 px-4 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02]"
-        style={{
-          backgroundColor: `${theme.colors.primary}20`,
-          color: theme.colors.primary,
-          border: `1px solid ${theme.colors.primary}40`,
-        }}
-      >
-        <BarChart3 className="w-5 h-5" />
-        {t('gameHub.coaching.viewDetailedStats')}
-        <ChevronRight className="w-5 h-5" />
-      </button>
+        <div className="flex-1 min-w-0">
+          <AICoachChat
+            gameId={gameId}
+            gameName={gameName}
+            theme={theme}
+            sessionId={sessionId}
+            messages={messages}
+            isLoading={isSending}
+            videoRecommendations={videoRecommendations}
+            onSendMessage={sendMessage}
+            onVideoClick={handleVideoClick}
+          />
+        </div>
+
+        <div className="w-72 flex-shrink-0 hidden xl:block space-y-4">
+          {performanceContext?.stats && (
+            <PerformanceContextCard
+              stats={performanceContext.stats}
+              riotId={performanceContext.riotId}
+              theme={theme}
+              onRefresh={refreshContext}
+              isRefreshing={isContextLoading}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

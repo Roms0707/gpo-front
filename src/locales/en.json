@@ -1974,6 +1974,46 @@
     "playoff": "Playoff",
     "qualifier": "Qualifier"
   },
+  "coaching": {
+    "aiCoach": "AI Coach",
+    "specialist": "Specialist",
+    "welcomeTitle": "Welcome to AI Coaching",
+    "welcomeDesc": "Ask me anything about {{gameName}}! I can analyze your performance, provide tips, and recommend training content.",
+    "thinking": "Thinking...",
+    "askPlaceholder": "Ask your AI coach...",
+    "recommendedVideos": "Recommended Videos",
+    "sessionHistory": "Session History",
+    "newSession": "New Session",
+    "noSessions": "No previous sessions",
+    "untitledSession": "Untitled Session",
+    "yesterday": "Yesterday",
+    "unlockAICoaching": "Unlock AI Coaching",
+    "unlockDesc": "Log in and connect your {{gameName}} account to get personalized coaching powered by AI.",
+    "connectForAI": "Connect for AI Coaching",
+    "connectDesc": "Link your {{gameName}} account to receive AI-powered coaching, match analysis, and personalized improvement tips.",
+    "performanceOverview": "Performance Overview",
+    "playingAs": "Playing as",
+    "winRate": "Win Rate",
+    "avgKDA": "Avg KDA",
+    "csPerMin": "CS/min",
+    "last10Games": "Last 10 Games",
+    "mostPlayed": "Most Played",
+    "trendImproving": "Improving",
+    "trendStable": "Stable",
+    "trendDeclining": "Needs work",
+    "feature": {
+      "aiAnalysis": "AI Match Analysis",
+      "personalizedTips": "Personalized Tips",
+      "videoRecommendations": "Video Recommendations"
+    },
+    "quickAction": {
+      "analyzeGames": "Analyze my recent games",
+      "improveCS": "How can I improve my CS?",
+      "reviewMatch": "Review my last match",
+      "championTips": "Champion recommendations",
+      "whatWrong": "What am I doing wrong?"
+    }
+  },
   "tournamentTabsPage": {
     "home": "Home",
     "rules": "Rules",

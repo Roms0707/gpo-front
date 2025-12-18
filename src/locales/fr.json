@@ -1974,6 +1974,46 @@
     "playoff": "Playoff",
     "qualifier": "Qualifier"
   },
+  "coaching": {
+    "aiCoach": "Coach IA",
+    "specialist": "Specialiste",
+    "welcomeTitle": "Bienvenue au Coaching IA",
+    "welcomeDesc": "Posez-moi n'importe quelle question sur {{gameName}} ! Je peux analyser vos performances, vous donner des conseils et recommander du contenu d'entrainement.",
+    "thinking": "Reflexion en cours...",
+    "askPlaceholder": "Posez une question a votre coach IA...",
+    "recommendedVideos": "Videos Recommandees",
+    "sessionHistory": "Historique des Sessions",
+    "newSession": "Nouvelle Session",
+    "noSessions": "Aucune session precedente",
+    "untitledSession": "Session sans titre",
+    "yesterday": "Hier",
+    "unlockAICoaching": "Debloquer le Coaching IA",
+    "unlockDesc": "Connectez-vous et liez votre compte {{gameName}} pour obtenir un coaching personnalise propulse par l'IA.",
+    "connectForAI": "Connecter pour le Coaching IA",
+    "connectDesc": "Liez votre compte {{gameName}} pour recevoir du coaching IA, l'analyse de matchs et des conseils d'amelioration personnalises.",
+    "performanceOverview": "Apercu des Performances",
+    "playingAs": "Joue en tant que",
+    "winRate": "Taux de Victoire",
+    "avgKDA": "KDA Moyen",
+    "csPerMin": "CS/min",
+    "last10Games": "10 Derniers Matchs",
+    "mostPlayed": "Plus Joues",
+    "trendImproving": "En amelioration",
+    "trendStable": "Stable",
+    "trendDeclining": "A travailler",
+    "feature": {
+      "aiAnalysis": "Analyse IA des Matchs",
+      "personalizedTips": "Conseils Personnalises",
+      "videoRecommendations": "Recommandations Video"
+    },
+    "quickAction": {
+      "analyzeGames": "Analyser mes matchs recents",
+      "improveCS": "Comment ameliorer mon CS ?",
+      "reviewMatch": "Analyser mon dernier match",
+      "championTips": "Recommandations de champions",
+      "whatWrong": "Qu'est-ce que je fais mal ?"
+    }
+  },
   "tournamentTabsPage": {
     "home": "Accueil",
     "rules": "Règles",
