@@ -38,10 +38,20 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [gameStats] = useState<Record<string, GameStats>>({});
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const slideInterval = useRef<NodeJS.Timeout | null>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const loadGames = async () => {
@@ -157,10 +167,10 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-48 h-64 bg-dark-300 rounded-xl mb-4"></div>
-          <div className="w-36 h-5 bg-dark-300 rounded"></div>
+          <div className="w-36 h-52 md:w-48 md:h-64 bg-dark-300 rounded-xl mb-4"></div>
+          <div className="w-28 md:w-36 h-5 bg-dark-300 rounded"></div>
         </div>
       </div>
     );
@@ -168,7 +178,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] bg-dark-100 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
@@ -185,7 +195,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] overflow-hidden"
+      className="relative min-h-[40vh] sm:min-h-[45vh] md:min-h-[60vh] lg:min-h-[65vh] xl:min-h-[70vh] 2xl:min-h-[75vh] overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
@@ -219,14 +229,19 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ paddingTop: '80px', paddingBottom: '60px' }}>
-        <div className="flex items-center gap-4 md:gap-8 lg:gap-12 px-4">
+      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ paddingTop: isMobile ? '60px' : '80px', paddingBottom: isMobile ? '50px' : '60px' }}>
+        <div className="flex items-center gap-2 md:gap-8 lg:gap-12 px-2 md:px-4">
           {games.map((game, index) => {
             const offset = index - currentIndex;
             const isActive = index === currentIndex;
-            const isVisible = Math.abs(offset) <= 2;
+            const isVisible = Math.abs(offset) <= (isMobile ? 1 : 2);
             const gameTheme = getGameTheme(game.name);
             const stats = gameStats[game.id] || { tournaments: 0, players: 0 };
+
+            const activeWidth = isMobile ? 140 : 200;
+            const activeHeight = isMobile ? 200 : 280;
+            const inactiveWidth = isMobile ? 90 : 140;
+            const inactiveHeight = isMobile ? 130 : 200;
 
             if (!isVisible) return null;
 
@@ -247,8 +262,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                     isActive ? 'shadow-2xl ring-2' : 'shadow-lg'
                   }`}
                   style={{
-                    width: isActive ? '200px' : '140px',
-                    height: isActive ? '280px' : '200px',
+                    width: isActive ? `${activeWidth}px` : `${inactiveWidth}px`,
+                    height: isActive ? `${activeHeight}px` : `${inactiveHeight}px`,
                     ringColor: isActive ? gameTheme.colors.primary : 'transparent',
                     boxShadow: isActive
                       ? `0 20px 40px -12px ${gameTheme.colors.glow}, 0 0 25px ${gameTheme.colors.glow}`
@@ -269,25 +284,25 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   />
 
                   {isActive && (
-                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                      <h3 className="text-base md:text-lg font-bold mb-0.5 drop-shadow-lg truncate">
+                    <div className={`absolute bottom-0 left-0 right-0 text-white ${isMobile ? 'p-2' : 'p-3'}`}>
+                      <h3 className={`font-bold mb-0.5 drop-shadow-lg truncate ${isMobile ? 'text-sm' : 'text-base md:text-lg'}`}>
                         {game.name}
                       </h3>
-                      <p className="text-xs text-white/80 mb-2 truncate">{game.publisher}</p>
+                      <p className={`text-white/80 truncate ${isMobile ? 'text-[10px] mb-1' : 'text-xs mb-2'}`}>{game.publisher}</p>
 
-                      <div className="flex items-center gap-3 text-xs">
+                      <div className={`flex items-center gap-2 ${isMobile ? 'text-[10px]' : 'text-xs'}`}>
                         <div className="flex items-center gap-1">
-                          <Trophy className="w-3 h-3" style={{ color: gameTheme.colors.secondary }} />
+                          <Trophy className={isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} style={{ color: gameTheme.colors.secondary }} />
                           <span>{stats.tournaments || 0}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3" style={{ color: gameTheme.colors.secondary }} />
+                          <Users className={isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'} style={{ color: gameTheme.colors.secondary }} />
                           <span>{stats.players || 0}</span>
                         </div>
                       </div>
 
                       <button
-                        className="mt-2.5 w-full py-2 px-3 rounded-lg font-semibold text-xs transition-all duration-300 hover:scale-105"
+                        className={`w-full rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${isMobile ? 'mt-1.5 py-1.5 px-2 text-[10px]' : 'mt-2.5 py-2 px-3 text-xs'}`}
                         style={{
                           backgroundColor: gameTheme.colors.primary,
                           color: gameTheme.colors.text,
@@ -308,7 +323,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-3">
+      <div className="absolute bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 md:gap-3">
         <div className="flex items-center">
           {games.map((game, index) => {
             const gameTheme = getGameTheme(game.name);
@@ -318,7 +333,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
             const isRightOfActive = index > currentIndex;
 
             const clusterMargin = isActive
-              ? 'mx-3'
+              ? (isMobile ? 'mx-2' : 'mx-3')
               : isLeftOfActive
                 ? 'mr-1 ml-0.5'
                 : isRightOfActive
@@ -326,12 +341,14 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   : 'mx-1';
 
             const diamondScale = isActive ? 1 : distanceFromActive === 1 ? 0.75 : 0.6;
+            const activeDiamondSize = isMobile ? 10 : 14;
+            const inactiveDiamondSize = isMobile ? 7 : 10;
 
             return (
               <button
                 key={game.id}
                 onClick={() => goToSlide(index)}
-                className={`group focus:outline-none p-1.5 ${clusterMargin} transition-all duration-300 relative`}
+                className={`group focus:outline-none ${isMobile ? 'p-1' : 'p-1.5'} ${clusterMargin} transition-all duration-300 relative`}
                 aria-label={`${t('gameHub.goToGame')} ${game.name}`}
                 style={{
                   '--glow-color': gameTheme.colors.glow,
@@ -343,13 +360,13 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                 <div
                   className={`transition-all duration-300 ${isActive ? 'diamond-pulse' : ''}`}
                   style={{
-                    width: isActive ? '14px' : '10px',
-                    height: isActive ? '14px' : '10px',
+                    width: isActive ? `${activeDiamondSize}px` : `${inactiveDiamondSize}px`,
+                    height: isActive ? `${activeDiamondSize}px` : `${inactiveDiamondSize}px`,
                     transform: `rotate(45deg) scale(${diamondScale})`,
                     backgroundColor: isActive ? gameTheme.colors.primary : 'transparent',
-                    border: isActive ? 'none' : '2px solid rgba(156, 163, 175, 0.6)',
+                    border: isActive ? 'none' : `${isMobile ? '1.5px' : '2px'} solid rgba(156, 163, 175, 0.6)`,
                     boxShadow: isActive
-                      ? `0 0 12px ${gameTheme.colors.glow}, 0 0 20px ${gameTheme.colors.glow}66`
+                      ? `0 0 ${isMobile ? '8px' : '12px'} ${gameTheme.colors.glow}, 0 0 ${isMobile ? '14px' : '20px'} ${gameTheme.colors.glow}66`
                       : 'none',
                   }}
                 />
@@ -357,8 +374,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   <div
                     className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{
-                      width: '10px',
-                      height: '10px',
+                      width: `${inactiveDiamondSize}px`,
+                      height: `${inactiveDiamondSize}px`,
                       transform: `translate(-50%, -50%) rotate(45deg) scale(${diamondScale})`,
                       backgroundColor: `${gameTheme.colors.primary}40`,
                     }}
