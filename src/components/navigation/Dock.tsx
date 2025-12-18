@@ -148,7 +148,7 @@ const Dock: React.FC<DockProps> = ({ items, className = '' }) => {
         stiffness: 260,
         damping: 20,
       }}
-      className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-50 md:hidden ${className}`}
+      className={`fixed bottom-4 left-0 right-0 flex justify-center z-50 md:hidden ${className}`}
     >
       <motion.div
         onMouseMove={(e) => mouseX.set(e.pageX)}
