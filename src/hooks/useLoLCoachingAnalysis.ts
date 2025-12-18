@@ -154,6 +154,8 @@ export function useLoLCoachingAnalysis(gameId: string): UseLoLCoachingAnalysisRe
         .eq('user_id', user.id)
         .eq('game_id', gameId)
         .eq('is_validated', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (accountError) {
