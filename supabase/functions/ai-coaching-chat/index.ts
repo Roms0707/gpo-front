@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.39.7";
-import Anthropic from "npm:@anthropic-ai/sdk@0.26.1";
+import OpenAI from "npm:openai@4.52.0";
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -35,25 +35,25 @@ const corsHeaders = {
 
 const buildLoLSystemPrompt = (performanceContext: any, gameName: string): string => {
   let contextSection = '';
-  
+
   if (performanceContext?.matches && performanceContext.matches.length > 0) {
     const matches = performanceContext.matches;
     const wins = matches.filter((m: any) => m.stats?.win).length;
     const losses = matches.length - wins;
     const winRate = ((wins / matches.length) * 100).toFixed(1);
-    
+
     const totalKills = matches.reduce((sum: number, m: any) => sum + (m.stats?.kills || 0), 0);
     const totalDeaths = matches.reduce((sum: number, m: any) => sum + (m.stats?.deaths || 0), 0);
     const totalAssists = matches.reduce((sum: number, m: any) => sum + (m.stats?.assists || 0), 0);
     const avgKDA = totalDeaths > 0 ? ((totalKills + totalAssists) / totalDeaths).toFixed(2) : 'Perfect';
-    
+
     const totalCS = matches.reduce((sum: number, m: any) => sum + (m.stats?.creepScore || 0), 0);
     const totalDuration = matches.reduce((sum: number, m: any) => sum + (m.gameDuration || 0), 0);
     const avgCSPerMin = totalDuration > 0 ? ((totalCS / (totalDuration / 60))).toFixed(1) : '0';
-    
+
     const champions = matches.map((m: any) => m.champion?.name).filter(Boolean);
     const uniqueChampions = [...new Set(champions)];
-    
+
     contextSection = `
 ## Player's Recent Performance (Last ${matches.length} Games)
 - Win Rate: ${winRate}% (${wins}W - ${losses}L)
@@ -68,7 +68,7 @@ ${matches.slice(0, 5).map((m: any, i: number) => {
 }).join('\n')}
 `;
   }
-  
+
   if (performanceContext?.rank) {
     contextSection += `\n## Current Rank: ${performanceContext.rank}\n`;
   }
@@ -158,19 +158,19 @@ Deno.serve(async (req: Request) => {
     const { data: apiConfig, error: configError } = await supabase
       .from('platform_api_integrations')
       .select('api_key')
-      .eq('api_name', 'Anthropic API')
+      .eq('api_name', 'OpenAI API')
       .eq('is_active', true)
       .maybeSingle();
 
     if (configError || !apiConfig?.api_key) {
-      console.error('[AI Coach] Anthropic API key not configured:', configError?.message);
+      console.error('[AI Coach] OpenAI API key not configured:', configError?.message);
       return new Response(
         JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const anthropic = new Anthropic({ apiKey: apiConfig.api_key });
+    const openai = new OpenAI({ apiKey: apiConfig.api_key });
 
     let currentSession: any = null;
     let conversationHistory: ChatMessage[] = [];
@@ -227,23 +227,24 @@ Deno.serve(async (req: Request) => {
       game_name || 'League of Legends'
     );
 
-    const claudeMessages = conversationHistory.slice(-20).map(msg => ({
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content
-    }));
+    const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory.slice(-20).map(msg => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content
+      }))
+    ];
 
-    console.log(`[AI Coach] Sending request to Claude with ${claudeMessages.length} messages`);
+    console.log(`[AI Coach] Sending request to OpenAI with ${openaiMessages.length - 1} conversation messages`);
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 1024,
-      system: systemPrompt,
-      messages: claudeMessages
+      messages: openaiMessages
     });
 
-    const assistantContent = response.content[0].type === 'text' 
-      ? response.content[0].text 
-      : 'I apologize, but I encountered an issue generating a response.';
+    const assistantContent = response.choices[0]?.message?.content
+      || 'I apologize, but I encountered an issue generating a response.';
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
@@ -266,7 +267,7 @@ Deno.serve(async (req: Request) => {
 
     let videoRecommendations: ContentRecommendation[] = [];
     const contentKeywords = ['watch', 'tutorial', 'video', 'guide', 'learn'];
-    const shouldRecommendContent = contentKeywords.some(keyword => 
+    const shouldRecommendContent = contentKeywords.some(keyword =>
       assistantContent.toLowerCase().includes(keyword)
     );
 
@@ -286,7 +287,6 @@ Deno.serve(async (req: Request) => {
       }
 
       if (topicKeywords.length > 0) {
-        const searchPattern = topicKeywords.join('|');
         const { data: videos } = await supabase
           .from('game_contents')
           .select('id, title, description')
@@ -323,7 +323,7 @@ Deno.serve(async (req: Request) => {
         session_id: currentSession.id,
         message: assistantContent,
         video_recommendations: videoRecommendations,
-        tokens_used: response.usage?.output_tokens || 0
+        tokens_used: response.usage?.completion_tokens || 0
       }),
       {
         status: 200,
