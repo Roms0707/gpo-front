@@ -294,17 +294,6 @@ const Header: React.FC = () => {
     });
   }
 
-  dockItems.push({
-    label: isDark ? t('header.lightMode') : t('header.darkMode'),
-    href: '#theme',
-    icon: isDark ? (
-      <Sun className="w-full h-full" />
-    ) : (
-      <Moon className="w-full h-full" />
-    ),
-    onClick: toggleTheme,
-  });
-
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${getHeaderStyling()}`}
