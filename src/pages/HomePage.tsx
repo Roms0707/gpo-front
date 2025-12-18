@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchTournaments, fetchGames, extractTwitchChannelName } from '../services/api';
 import { Tournament } from '../types';
@@ -38,6 +38,7 @@ const HomePage: React.FC = () => {
 
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   
   // Check if we're on mobile
@@ -283,13 +284,10 @@ const HomePage: React.FC = () => {
     return liveTournaments.slice(startIndex, startIndex + slidesPerView);
   };
 
-  // Scroll to tournaments section (mobile only)
   const scrollToTournaments = () => {
-    if (!isMobile) return;
-
     const tournamentsSection = document.getElementById('tournaments');
     if (tournamentsSection) {
-      const headerOffset = 80; // Account for fixed header
+      const headerOffset = 80;
       const elementPosition = tournamentsSection.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -298,6 +296,26 @@ const HomePage: React.FC = () => {
         behavior: 'smooth'
       });
     }
+  };
+
+  const scrollToLiveTournaments = () => {
+    const liveSection = document.getElementById('live-tournaments');
+    if (liveSection) {
+      const headerOffset = 80;
+      const elementPosition = liveSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    } else {
+      scrollToTournaments();
+    }
+  };
+
+  const navigateToGameHub = () => {
+    navigate('/hub');
   };
   
   return (
@@ -322,7 +340,9 @@ const HomePage: React.FC = () => {
             return eligibleCountries.includes(user.country) && now <= endDate;
           }).length}
           isMobile={isMobile}
-          onScrollToTournaments={scrollToTournaments}
+          onViewTournaments={scrollToTournaments}
+          onBrowseGames={navigateToGameHub}
+          onWatchLive={scrollToLiveTournaments}
         />
         
         {/* Mobile Game Slider - Only show on mobile */}
@@ -360,7 +380,7 @@ const HomePage: React.FC = () => {
         
         {/* Live Tournaments Section - Only show when there are live tournaments */}
         {liveTournaments.length > 0 && (
-          <section className="py-6 sm:py-8 md:py-10 bg-gradient-to-r from-red-900/20 to-purple-900/20 overflow-hidden">
+          <section id="live-tournaments" className="py-6 sm:py-8 md:py-10 bg-gradient-to-r from-red-900/20 to-dark-200/20 overflow-hidden">
             <div className="container mx-auto px-4 max-w-full">
               <div
                 className="flex items-center justify-between mb-4 sm:mb-6 cursor-pointer"

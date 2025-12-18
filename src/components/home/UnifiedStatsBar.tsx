@@ -11,20 +11,25 @@ interface StatConfig {
   icon: ReactNode;
   color: string;
   isLive?: boolean;
+  onClick: () => void;
 }
 
 interface UnifiedStatsBarProps {
   activeTournamentsCount: number;
   gamesCount: number;
   liveTournamentsCount: number;
-  onScrollToTournaments: () => void;
+  onViewTournaments: () => void;
+  onBrowseGames: () => void;
+  onWatchLive: () => void;
 }
 
 export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
   activeTournamentsCount,
   gamesCount,
   liveTournamentsCount,
-  onScrollToTournaments,
+  onViewTournaments,
+  onBrowseGames,
+  onWatchLive,
 }) => {
   const { t } = useTranslation();
   const { primaryColor } = useAppConfig();
@@ -46,6 +51,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
       backLabelKey: 'home.statsBar.viewTournaments',
       icon: <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: goldColor,
+      onClick: onViewTournaments,
     },
     {
       value: gamesCount,
@@ -53,6 +59,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
       backLabelKey: 'home.statsBar.browseGames',
       icon: <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: primaryColor,
+      onClick: onBrowseGames,
     },
     {
       value: liveTournamentsCount,
@@ -61,6 +68,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
       icon: <Radio className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />,
       color: liveColor,
       isLive: true,
+      onClick: onWatchLive,
     },
   ];
 
@@ -114,7 +122,7 @@ export const UnifiedStatsBar: React.FC<UnifiedStatsBarProps> = ({
                 accentColor={stat.color}
                 isLive={stat.isLive}
                 delay={600 + index * 150}
-                onClick={onScrollToTournaments}
+                onClick={stat.onClick}
               />
             ))}
           </div>

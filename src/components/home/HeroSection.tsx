@@ -7,18 +7,22 @@ interface HeroSectionProps {
   gamesCount: number;
   liveTournamentsCount: number;
   isMobile: boolean;
-  onScrollToTournaments: () => void;
+  onViewTournaments: () => void;
+  onBrowseGames: () => void;
+  onWatchLive: () => void;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   activeTournamentsCount,
   gamesCount,
   liveTournamentsCount,
-  onScrollToTournaments,
+  onViewTournaments,
+  onBrowseGames,
+  onWatchLive,
 }) => {
   return (
     <section className="relative overflow-hidden bg-black">
-      <HeroCarousel onScrollToTournaments={onScrollToTournaments} />
+      <HeroCarousel onScrollToTournaments={onViewTournaments} />
 
       <div className="absolute bottom-0 left-0 right-0 z-20 pb-8 sm:pb-12 md:pb-16 lg:pb-20">
         <div className="container mx-auto px-2 sm:px-4">
@@ -27,7 +31,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               activeTournamentsCount={activeTournamentsCount}
               gamesCount={gamesCount}
               liveTournamentsCount={liveTournamentsCount}
-              onScrollToTournaments={onScrollToTournaments}
+              onViewTournaments={onViewTournaments}
+              onBrowseGames={onBrowseGames}
+              onWatchLive={onWatchLive}
             />
           </div>
         </div>
