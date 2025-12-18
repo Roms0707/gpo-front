@@ -11,7 +11,8 @@ import {
   Target,
   Zap,
   History,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -47,6 +48,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [connectionName, setConnectionName] = useState<string | null>(null);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isCoachingSupported = SUPPORTED_COACHING_GAMES.some(
     g => gameName.toLowerCase().includes(g.toLowerCase())
@@ -125,6 +127,16 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
 
   const handleVideoClick = (contentId: string) => {
     navigate(`/video/${contentId}`);
+  };
+
+  const handleRefreshAccount = async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await refreshContext();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   if (isLoading) {
@@ -336,6 +348,16 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefreshAccount}
+            disabled={isRefreshing}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-dark-300 disabled:opacity-50"
+            style={{ color: theme.colors.primary }}
+            title={t('gameHub.coaching.refreshAccount')}
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">{t('gameHub.coaching.refreshAccount')}</span>
+          </button>
           <button
             onClick={() => setShowSidebar(!showSidebar)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-dark-300"

@@ -1879,7 +1879,8 @@
       "tip2Desc": "Apprenez les positions ennemies courantes et le timing pour anticiper les actions.",
       "tip3Title": "Gestion de l'Economie",
       "tip3Desc": "Equilibrez vos depenses pour maintenir des performances constantes sur tous les rounds.",
-      "viewDetailedStats": "Voir les Stats Detaillees"
+      "viewDetailedStats": "Voir les Stats Detaillees",
+      "refreshAccount": "Actualiser"
     },
     "tabs": {
       "overview": "Apercu",

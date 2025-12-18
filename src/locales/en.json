@@ -1879,7 +1879,8 @@
       "tip2Desc": "Learn common enemy positions and timing to anticipate plays.",
       "tip3Title": "Economy Management",
       "tip3Desc": "Balance your spending to maintain consistent performance across rounds.",
-      "viewDetailedStats": "View Detailed Stats"
+      "viewDetailedStats": "View Detailed Stats",
+      "refreshAccount": "Refresh"
     },
     "tabs": {
       "overview": "Overview",
