@@ -68,7 +68,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
               title: trailer.title || trailer.tournament?.title || '',
               gameName: trailer.game?.name,
               ctaText: t('heroCarousel.registerNow'),
-              ctaLink: `/tournament/${tournamentId}`,
+              ctaLink: `/tournaments/${tournamentId}`,
               isDefault: false,
             });
           }
