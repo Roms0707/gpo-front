@@ -229,7 +229,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
         }}
       />
 
-      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ paddingBottom: isMobile ? '40px' : '50px' }}>
+      <div className="absolute inset-0 flex items-center justify-center z-20" style={{ top: isMobile ? '64px' : '80px', paddingBottom: isMobile ? '30px' : '40px' }}>
         <div className="flex items-center gap-2 md:gap-8 lg:gap-12 px-2 md:px-4">
           {games.map((game, index) => {
             const offset = index - currentIndex;
