@@ -24,7 +24,7 @@ const GameCarousel: React.FC = () => {
   const touchEndX = useRef<number | null>(null);
   
   // Number of games to show at once
-  const gamesPerView = isMobile ? 2 : 4;
+  const gamesPerView = isMobile ? 3 : 4;
   
   // Only show navigation if we have more games than can fit in view
   const showNavigation = games.length > gamesPerView;
@@ -132,22 +132,22 @@ const GameCarousel: React.FC = () => {
 
   return (
     <div className="relative">
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows - Hidden on mobile */}
       {showNavigation && (
         <>
           <button
             onClick={goToPrev}
             disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-dark-100 hover:bg-gray-100 dark:hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-gray-700 rounded-full p-2 shadow-lg transition-all duration-200"
+            className="hidden md:block absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-dark-100 hover:bg-gray-100 dark:hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-gray-700 rounded-full p-2 shadow-lg transition-all duration-200"
             aria-label={t('gaming.previousGames')}
           >
             <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
-          
+
           <button
             onClick={goToNext}
             disabled={currentIndex >= maxIndex}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-dark-100 hover:bg-gray-100 dark:hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-gray-700 rounded-full p-2 shadow-lg transition-all duration-200"
+            className="hidden md:block absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white dark:bg-dark-100 hover:bg-gray-100 dark:hover:bg-dark-200 disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300 dark:border-gray-700 rounded-full p-2 shadow-lg transition-all duration-200"
             aria-label={t('gaming.nextGames')}
           >
             <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -156,9 +156,9 @@ const GameCarousel: React.FC = () => {
       )}
       
       {/* Carousel Container */}
-      <div 
+      <div
         ref={carouselRef}
-        className="overflow-hidden mx-8"
+        className="overflow-hidden mx-1 md:mx-8"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -170,9 +170,9 @@ const GameCarousel: React.FC = () => {
           }}
         >
           {games.map((game) => (
-            <div 
+            <div
               key={game.id}
-              className="flex-shrink-0 px-2 text-center"
+              className="flex-shrink-0 px-0.5 md:px-2 text-center"
               style={{ width: `${100 / gamesPerView}%` }}
             >
               <div
@@ -206,21 +206,43 @@ const GameCarousel: React.FC = () => {
         </div>
       </div>
       
-      {/* Dots Indicator */}
+      {/* Power Bar Pagination */}
       {showNavigation && (
-        <div className="flex justify-center mt-4 space-x-2">
-          {Array.from({ length: maxIndex + 1 }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentIndex(index)}
-              className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                currentIndex === index
-                  ? 'bg-primary-500'
-                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-              }`}
-              aria-label={t('gaming.goToSlide', { number: index + 1 })}
-            />
-          ))}
+        <div className="flex justify-center mt-4">
+          <div className="flex items-center gap-0.5 bg-dark-300/50 dark:bg-dark-300/80 p-1 rounded-sm"
+            style={{
+              clipPath: 'polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)'
+            }}
+          >
+            {Array.from({ length: maxIndex + 1 }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`relative h-2 transition-all duration-300 ${
+                  currentIndex === index
+                    ? 'w-6 bg-primary-500'
+                    : 'w-4 bg-dark-200 dark:bg-dark-100 hover:bg-dark-100 dark:hover:bg-dark-50'
+                }`}
+                style={{
+                  clipPath: 'polygon(2px 0, 100% 0, calc(100% - 2px) 100%, 0 100%)',
+                  boxShadow: currentIndex === index
+                    ? '0 0 8px rgba(255, 121, 0, 0.6), 0 0 12px rgba(255, 121, 0, 0.3)'
+                    : 'none'
+                }}
+                aria-label={t('gaming.goToSlide', { number: index + 1 })}
+              >
+                {currentIndex === index && (
+                  <span
+                    className="absolute inset-0 bg-primary-400 animate-pulse"
+                    style={{
+                      clipPath: 'polygon(2px 0, 100% 0, calc(100% - 2px) 100%, 0 100%)',
+                      opacity: 0.4
+                    }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
