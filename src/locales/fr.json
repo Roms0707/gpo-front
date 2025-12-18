@@ -301,6 +301,7 @@
     "whitelistMessage": "Vous pouvez voir et vous inscrire à tous les tournois disponibles sur la plateforme, sans restriction géographique.",
     "countryFilter": "Affichage des tournois disponibles pour votre pays ({{country}})",
     "regionFilter": "Affichage des tournois disponibles dans votre région ({{country}})",
+    "brandFilter": "Affichage des tournois pour {{brandName}}",
     "detectingCountry": "Détection de votre région...",
     "slideNavigation": {
       "previousSlide": "Diapositive précédente",

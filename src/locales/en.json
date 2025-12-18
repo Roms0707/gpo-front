@@ -301,6 +301,7 @@
     "whitelistMessage": "You can view and register for all tournaments available on the platform, without geographical restrictions.",
     "countryFilter": "Showing tournaments available for your country ({{country}})",
     "regionFilter": "Showing tournaments available in your region ({{country}})",
+    "brandFilter": "Showing tournaments for {{brandName}}",
     "detectingCountry": "Detecting your region...",
     "slideNavigation": {
       "previousSlide": "Previous slide",

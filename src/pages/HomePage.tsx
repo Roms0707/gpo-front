@@ -9,6 +9,7 @@ import GameLibrarySidebar from '../components/games/GameLibrarySidebar';
 import { HeroSection } from '../components/home/HeroSection';
 import { X, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAppConfig } from '../contexts/AppConfigContext';
 import { calculateTournamentStatus } from '../utils/tournamentUtils';
 import WhitelistBadge from '../components/ui/WhitelistBadge';
 
@@ -37,6 +38,7 @@ const HomePage: React.FC = () => {
   const totalSlides = Math.ceil(liveTournaments.length / slidesPerView);
 
   const { user } = useAuth();
+  const { configId, brandName } = useAppConfig();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -552,6 +554,10 @@ const HomePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            ) : configId !== 'default' ? (
+              <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-gray-400 px-2">
+                <span>{t('home.brandFilter', { brandName })}</span>
               </div>
             ) : (user?.country || visitorCountry) ? (
               <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-gray-400 px-2">
