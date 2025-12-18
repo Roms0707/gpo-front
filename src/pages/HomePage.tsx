@@ -362,10 +362,7 @@ const HomePage: React.FC = () => {
                 )}
               </div>
               
-              <GameCarousel 
-                onGameSelect={handleGameSelect} 
-                selectedGameId={selectedGameId}
-              />
+              <GameCarousel />
               
               {selectedGameId && gameFilterName && (
                 <div className="mt-4 text-center">

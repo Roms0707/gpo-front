@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { fetchGames } from '../../services/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -8,15 +9,12 @@ interface Game {
   name: string;
   publisher: string;
   image_url: string;
+  slug: string;
 }
 
-interface GameCarouselProps {
-  onGameSelect?: (gameId: string | null) => void;
-  selectedGameId?: string | null;
-}
-
-const GameCarousel: React.FC<GameCarouselProps> = ({ onGameSelect, selectedGameId }) => {
+const GameCarousel: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -62,12 +60,9 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ onGameSelect, selectedGameI
     loadGames();
   }, []);
 
-  const handleGameClick = (gameId: string) => {
-    // If the game is already selected, deselect it (toggle functionality)
-    if (selectedGameId === gameId && onGameSelect) {
-      onGameSelect(null);
-    } else if (onGameSelect) {
-      onGameSelect(gameId);
+  const handleGameClick = (game: Game) => {
+    if (game.slug) {
+      navigate(`/hub/${game.slug}`);
     }
   };
   
@@ -181,44 +176,24 @@ const GameCarousel: React.FC<GameCarouselProps> = ({ onGameSelect, selectedGameI
               style={{ width: `${100 / gamesPerView}%` }}
             >
               <div
-                className={`group cursor-pointer transition-all duration-300 transform hover:scale-105 ${
-                  selectedGameId === game.id 
-                    ? 'ring-2 ring-primary-500 shadow-lg scale-105' 
-                    : 'hover:ring-2 hover:ring-primary-400/50'
-                } rounded-lg overflow-hidden`}
-                onClick={() => handleGameClick(game.id)}
+                className="group cursor-pointer transition-all duration-300 transform hover:scale-105 hover:ring-2 hover:ring-primary-400/50 rounded-lg overflow-hidden"
+                onClick={() => handleGameClick(game)}
                 title={`${game.name} - ${game.publisher}`}
               >
-                {/* Game Logo */}
                 <div className="relative w-16 h-16 mx-auto rounded-lg overflow-hidden bg-gray-200 dark:bg-dark-300">
-                  <img 
-                    src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} 
-                    alt={game.name} 
+                  <img
+                    src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                    alt={game.name}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
-                  
-                  {/* Selected indicator */}
-                  {selectedGameId === game.id && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary-500 rounded-full border-2 border-white dark:border-dark-100 flex items-center justify-center">
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
-                    </div>
-                  )}
-                  
-                  {/* Hover overlay */}
                   <div className="absolute inset-0 bg-primary-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <div className="text-white text-xs font-medium bg-primary-600/80 px-1.5 py-0.5 rounded">
-                      {selectedGameId === game.id ? t('gaming.selected') : t('gaming.select')}
+                      {t('gaming.viewHub')}
                     </div>
                   </div>
                 </div>
-                
-                {/* Game Info */}
                 <div className="mt-2 text-center">
-                  <h3 className={`font-medium text-sm truncate transition-colors duration-200 ${
-                    selectedGameId === game.id 
-                      ? 'text-primary-600 dark:text-primary-400' 
-                      : 'text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400'
-                  }`}>
+                  <h3 className="font-medium text-sm truncate transition-colors duration-200 text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
                     {game.name}
                   </h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
