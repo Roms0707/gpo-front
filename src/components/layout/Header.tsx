@@ -15,7 +15,6 @@ import {
   LogOut,
   Sun,
   Moon,
-  Store,
 } from 'lucide-react';
 import NotificationsModal from './NotificationsModal';
 import MyGamingStatsModal from '../ui/MyGamingStatsModal';
@@ -201,7 +200,6 @@ const Header: React.FC = () => {
   };
 
   const navItems: PillNavItem[] = [
-    { label: t('header.store'), href: '/store' },
     { label: t('header.tournaments'), href: '/' },
     { label: t('header.leaderboards'), href: '/leaderboards' },
     { label: t('header.communities'), href: '/communities' },
@@ -249,11 +247,6 @@ const Header: React.FC = () => {
   }
 
   const dockItems: DockItem[] = [
-    {
-      label: t('header.store'),
-      href: '/store',
-      icon: <Store className="w-full h-full" />,
-    },
     {
       label: t('header.tournaments'),
       href: '/',

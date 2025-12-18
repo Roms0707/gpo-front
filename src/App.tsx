@@ -36,8 +36,9 @@ const CommunitiesPage = React.lazy(() => import('./pages/CommunitiesPage'));
 const VideoPlayerPage = React.lazy(() => import('./pages/VideoPlayerPage'));
 const TransactionWaitingPage = React.lazy(() => import('./pages/TransactionWaitingPage'));
 const GameHubPage = React.lazy(() => import('./pages/GameHubPage'));
-const StorePage = React.lazy(() => import('./pages/StorePage'));
-const VoucherDetailPage = React.lazy(() => import('./pages/VoucherDetailPage'));
+// Store pages - hidden for future use
+// const StorePage = React.lazy(() => import('./pages/StorePage'));
+// const VoucherDetailPage = React.lazy(() => import('./pages/VoucherDetailPage'));
 
 // Loading fallback component
 const PageLoadingFallback = () => {
@@ -140,7 +141,7 @@ const AppContent = () => {
             </Suspense>
           } />
 
-          {/* Store */}
+          {/* Store - hidden for future use
           <Route path="store" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <StorePage />
@@ -151,6 +152,7 @@ const AppContent = () => {
               <VoucherDetailPage />
             </Suspense>
           } />
+          */}
 
           <Route element={<ProtectedRoute />}>
             <Route path="tournaments/:id/register" element={
