@@ -146,7 +146,7 @@ export function useLoLCoachingAnalysis(gameId: string): UseLoLCoachingAnalysisRe
           id,
           value,
           is_validated,
-          extra_data,
+          validation_data,
           game_publisher_ids (
             games (id, name)
           )
@@ -169,8 +169,8 @@ export function useLoLCoachingAnalysis(gameId: string): UseLoLCoachingAnalysisRe
         return;
       }
 
-      const puuid = accountData.extra_data?.puuid;
-      const region = accountData.extra_data?.region || 'euw1';
+      const puuid = accountData.validation_data?.puuid;
+      const region = accountData.validation_data?.region || 'euw1';
       const riotId = accountData.value;
 
       if (!puuid) {
