@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shield } from 'lucide-react';
+import { useAppConfig } from '../../contexts/AppConfigContext';
 
 interface ProfileVisibilityControlProps {
   isProfilePublic: boolean;
@@ -14,6 +15,7 @@ const ProfileVisibilityControl: React.FC<ProfileVisibilityControlProps> = ({
   onToggle
 }) => {
   const { t } = useTranslation();
+  const { infoSectionTextColor } = useAppConfig();
 
   return (
     <div className="mb-8">
@@ -62,8 +64,14 @@ const ProfileVisibilityControl: React.FC<ProfileVisibilityControlProps> = ({
 
         <div className="mt-4 p-3 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
           <div className="flex items-start">
-            <Shield className="h-4 w-4 text-accent-600 dark:text-accent-500 mr-2 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-accent-800 dark:text-accent-200">
+            <Shield
+              className={`h-4 w-4 mr-2 flex-shrink-0 mt-0.5 ${!infoSectionTextColor ? 'text-accent-600 dark:text-accent-500' : ''}`}
+              style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
+            />
+            <div
+              className={`text-sm ${!infoSectionTextColor ? 'text-accent-800 dark:text-accent-200' : ''}`}
+              style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
+            >
               <p className="font-medium mb-1">{t('profile.aboutProfileVisibility')}</p>
               <ul className="text-xs space-y-1">
                 <li>• <strong>{t('profile.publicProfile')} :</strong> {t('profile.publicVisibilityDescription')}</li>

@@ -30,6 +30,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
     klientoAuthType: null as KlientoAuthType | null,
     subscriptionRedirectUrl: null,
     defaultPhoneCountryCode: null,
+    infoSectionTextColor: null,
     tailwindPalette: null,
     legalVariables: {
       support_email: null,
@@ -66,6 +67,12 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
 
     tailwindColorService.applyTailwindColors(palette);
 
+    if (config.info_section_text_color) {
+      document.documentElement.style.setProperty('--color-info-section-text', config.info_section_text_color);
+    } else {
+      document.documentElement.style.removeProperty('--color-info-section-text');
+    }
+
     const legalVariables: LegalVariables = {
       support_email: config.support_email || null,
       legal_email: config.legal_email || null,
@@ -94,6 +101,7 @@ export const AppConfigProvider: React.FC<AppConfigProviderProps> = ({ children }
       klientoAuthType: (config.kliento_auth_type || null) as KlientoAuthType | null,
       subscriptionRedirectUrl: config.subscription_redirect_url || null,
       defaultPhoneCountryCode: config.default_phone_country_code || null,
+      infoSectionTextColor: config.info_section_text_color || null,
       tailwindPalette: palette,
       legalVariables,
       isLoading: false,
