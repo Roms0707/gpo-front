@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAppConfig } from '../../contexts/AppConfigContext';
 
 interface DiscordConnectionRequiredProps {
   variant?: 'banner' | 'modal';
@@ -18,6 +19,8 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { config } = useAppConfig();
+  const infoSectionTextColor = config?.info_section_text_color;
 
   const handleGoToProfile = () => {
     navigate('/profile/edit');
@@ -84,12 +87,21 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
   return (
     <div className="bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg p-4">
       <div className="flex items-start gap-3">
-        <AlertCircle className="w-5 h-5 text-accent-600 dark:text-accent-500 flex-shrink-0 mt-0.5" />
+        <AlertCircle
+          className={`w-5 h-5 flex-shrink-0 mt-0.5 ${!infoSectionTextColor ? 'text-accent-600 dark:text-accent-500' : ''}`}
+          style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
+        />
         <div className="flex-1">
-          <h4 className="font-semibold text-accent-900 dark:text-accent-100 mb-1">
+          <h4
+            className={`font-semibold mb-1 ${!infoSectionTextColor ? 'text-accent-900 dark:text-accent-100' : ''}`}
+            style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
+          >
             {t('discord.required.title')}
           </h4>
-          <p className="text-sm text-accent-800 dark:text-accent-200 mb-3">
+          <p
+            className={`text-sm mb-3 ${!infoSectionTextColor ? 'text-accent-800 dark:text-accent-200' : ''}`}
+            style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
+          >
             {t('discord.required.description')}
           </p>
           <button
