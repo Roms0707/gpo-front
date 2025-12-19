@@ -19,8 +19,7 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { config } = useAppConfig();
-  const infoSectionTextColor = config?.info_section_text_color;
+  const { infoSectionTextColor } = useAppConfig();
 
   const handleGoToProfile = () => {
     navigate('/profile/edit');
