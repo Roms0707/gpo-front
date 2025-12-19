@@ -27,13 +27,152 @@ interface ContentRecommendation {
   reason: string;
 }
 
+interface TopicDetectionResult {
+  topics: string[];
+  primaryCategory: string;
+}
+
+interface AIConfig {
+  emphasisAreas: string[];
+  topicPriorities: string[];
+  customPromptSections: string[];
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const buildLoLSystemPrompt = (performanceContext: any, gameName: string): string => {
+const TOPIC_KEYWORDS: Record<string, string[]> = {
+  farming: ['cs', 'farm', 'minion', 'last hit', 'gold', 'creep', 'wave clear'],
+  vision: ['ward', 'vision', 'pink', 'control ward', 'sweeper', 'oracle', 'fog of war', 'map awareness'],
+  teamfighting: ['teamfight', 'team fight', 'group', 'engage', 'disengage', 'frontline', 'backline', 'peel', 'focus'],
+  laning: ['lane', 'trading', 'poke', 'harass', 'freeze', 'slow push', 'fast push', 'recall timing', 'back timing'],
+  macro: ['macro', 'rotation', 'objective', 'dragon', 'baron', 'herald', 'tower', 'split push', 'pressure'],
+  builds: ['build', 'item', 'rune', 'mythic', 'legendary', 'boots', 'component', 'power spike'],
+  champions: ['champion', 'counter', 'matchup', 'ability', 'combo', 'mechanics', 'skill order'],
+  mental: ['tilt', 'mental', 'toxic', 'troll', 'feed', 'lose streak', 'win streak', 'attitude', 'mindset', 'focus']
+};
+
+const detectTopics = (message: string): TopicDetectionResult => {
+  const lowerMessage = message.toLowerCase();
+  const detectedTopics: string[] = [];
+  const topicScores: Record<string, number> = {};
+
+  for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+    let score = 0;
+    for (const keyword of keywords) {
+      if (lowerMessage.includes(keyword)) {
+        score++;
+        if (!detectedTopics.includes(topic)) {
+          detectedTopics.push(topic);
+        }
+      }
+    }
+    if (score > 0) {
+      topicScores[topic] = score;
+    }
+  }
+
+  let primaryCategory = 'general';
+  if (Object.keys(topicScores).length > 0) {
+    primaryCategory = Object.entries(topicScores)
+      .sort((a, b) => b[1] - a[1])[0][0];
+  }
+
+  return {
+    topics: detectedTopics,
+    primaryCategory
+  };
+};
+
+const loadAIConfig = async (supabase: any, gameId: string): Promise<AIConfig> => {
+  const defaultConfig: AIConfig = {
+    emphasisAreas: [],
+    topicPriorities: ['farming', 'vision', 'teamfighting', 'laning', 'macro', 'builds', 'champions', 'mental'],
+    customPromptSections: []
+  };
+
+  try {
+    const { data: configs, error } = await supabase
+      .from('coaching_ai_config')
+      .select('config_key, config_value')
+      .or(`game_id.eq.${gameId},game_id.is.null`)
+      .eq('is_active', true);
+
+    if (error || !configs) {
+      console.log('[AI Coach] No custom config found, using defaults');
+      return defaultConfig;
+    }
+
+    for (const config of configs) {
+      try {
+        const value = JSON.parse(config.config_value);
+        switch (config.config_key) {
+          case 'emphasis_areas':
+            defaultConfig.emphasisAreas = value;
+            break;
+          case 'topic_priorities':
+            defaultConfig.topicPriorities = value;
+            break;
+          case 'custom_prompt_section':
+            if (value && typeof value === 'string') {
+              defaultConfig.customPromptSections.push(value);
+            } else if (Array.isArray(value)) {
+              defaultConfig.customPromptSections.push(...value);
+            }
+            break;
+        }
+      } catch {
+        if (config.config_key === 'custom_prompt_section') {
+          defaultConfig.customPromptSections.push(config.config_value);
+        }
+      }
+    }
+
+    return defaultConfig;
+  } catch (err) {
+    console.error('[AI Coach] Error loading AI config:', err);
+    return defaultConfig;
+  }
+};
+
+const trackQuestionAnalytics = async (
+  supabase: any,
+  userId: string,
+  gameId: string,
+  sessionId: string,
+  questionText: string,
+  detectionResult: TopicDetectionResult
+): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('coaching_question_analytics')
+      .insert({
+        user_id: userId,
+        game_id: gameId,
+        session_id: sessionId,
+        question_text: questionText,
+        detected_topics: detectionResult.topics,
+        category: detectionResult.primaryCategory
+      });
+
+    if (error) {
+      console.error('[AI Coach] Error tracking question analytics:', error.message);
+    } else {
+      console.log(`[AI Coach] Question tracked: category=${detectionResult.primaryCategory}, topics=${detectionResult.topics.join(',')}`);
+    }
+  } catch (err) {
+    console.error('[AI Coach] Failed to track question:', err);
+  }
+};
+
+const buildLoLSystemPrompt = (
+  performanceContext: any,
+  gameName: string,
+  aiConfig: AIConfig
+): string => {
   let contextSection = '';
 
   if (performanceContext?.matches && performanceContext.matches.length > 0) {
@@ -73,6 +212,21 @@ ${matches.slice(0, 5).map((m: any, i: number) => {
     contextSection += `\n## Current Rank: ${performanceContext.rank}\n`;
   }
 
+  let emphasisSection = '';
+  if (aiConfig.emphasisAreas.length > 0) {
+    emphasisSection = `
+## Current Coaching Focus Areas (Prioritize these topics):
+${aiConfig.emphasisAreas.map(area => `- ${area}`).join('\n')}
+
+When players ask questions related to these areas, provide extra detailed advice and actionable steps.
+`;
+  }
+
+  let customSections = '';
+  if (aiConfig.customPromptSections.length > 0) {
+    customSections = '\n' + aiConfig.customPromptSections.join('\n\n') + '\n';
+  }
+
   return `You are an expert ${gameName} coach with deep knowledge of the game's mechanics, meta, strategies, and improvement techniques. Your role is to help players improve their gameplay through personalized coaching.
 
 ## Your Coaching Style:
@@ -92,8 +246,7 @@ ${matches.slice(0, 5).map((m: any, i: number) => {
 - Mental game and tilt management
 - Champion pool recommendations
 - Build and rune optimization
-
-${contextSection}
+${emphasisSection}${customSections}${contextSection}
 
 ## Response Formatting Rules:
 You MUST format your responses using markdown for better readability:
@@ -176,22 +329,28 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[AI Coach] Processing request for user ${user.id}, game: ${game_name}`);
 
-    const { data: apiConfig, error: configError } = await supabase
-      .from('platform_api_integrations')
-      .select('api_key')
-      .eq('api_name', 'OpenAI API')
-      .eq('is_active', true)
-      .maybeSingle();
+    const topicDetection = detectTopics(message);
+    console.log(`[AI Coach] Detected topics: ${topicDetection.topics.join(', ')} | Primary: ${topicDetection.primaryCategory}`);
 
-    if (configError || !apiConfig?.api_key) {
-      console.error('[AI Coach] OpenAI API key not configured:', configError?.message);
+    const [apiConfigResult, aiConfig] = await Promise.all([
+      supabase
+        .from('platform_api_integrations')
+        .select('api_key')
+        .eq('api_name', 'OpenAI API')
+        .eq('is_active', true)
+        .maybeSingle(),
+      loadAIConfig(supabase, game_id)
+    ]);
+
+    if (apiConfigResult.error || !apiConfigResult.data?.api_key) {
+      console.error('[AI Coach] OpenAI API key not configured:', apiConfigResult.error?.message);
       return new Response(
         JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const openai = new OpenAI({ apiKey: apiConfig.api_key });
+    const openai = new OpenAI({ apiKey: apiConfigResult.data.api_key });
 
     let currentSession: any = null;
     let conversationHistory: ChatMessage[] = [];
@@ -236,6 +395,15 @@ Deno.serve(async (req: Request) => {
       currentSession = newSession;
     }
 
+    trackQuestionAnalytics(
+      supabase,
+      user.id,
+      game_id,
+      currentSession.id,
+      message,
+      topicDetection
+    );
+
     const userMessage: ChatMessage = {
       role: 'user',
       content: message,
@@ -245,7 +413,8 @@ Deno.serve(async (req: Request) => {
 
     const systemPrompt = buildLoLSystemPrompt(
       currentSession.performance_context || performance_context,
-      game_name || 'League of Legends'
+      game_name || 'League of Legends',
+      aiConfig
     );
 
     const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
@@ -344,7 +513,9 @@ Deno.serve(async (req: Request) => {
         session_id: currentSession.id,
         message: assistantContent,
         video_recommendations: videoRecommendations,
-        tokens_used: response.usage?.completion_tokens || 0
+        tokens_used: response.usage?.completion_tokens || 0,
+        detected_topics: topicDetection.topics,
+        category: topicDetection.primaryCategory
       }),
       {
         status: 200,
