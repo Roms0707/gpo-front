@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MousePointerClick } from 'lucide-react';
 import { OnboardingStep } from '../../constants/onboardingSteps';
 import {
   getViewportRect,
@@ -34,6 +35,42 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
   const [visibleRect, setVisibleRect] = useState<ViewportRelativeRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [isProcessingClick, setIsProcessingClick] = useState(false);
+  const clickProcessedRef = useRef(false);
+
+  const handleSpotlightClick = useCallback(async () => {
+    if (isProcessingClick || clickProcessedRef.current) return;
+
+    setIsProcessingClick(true);
+    clickProcessedRef.current = true;
+
+    const targetId = isUsingFallback ? step.fallbackTabId : step.targetElementId;
+    if (!targetId) {
+      setIsProcessingClick(false);
+      clickProcessedRef.current = false;
+      return;
+    }
+
+    const element = document.getElementById(targetId);
+    if (element) {
+      const clickableElement = element.querySelector('button, a, [role="button"], [tabindex]') as HTMLElement || element;
+      clickableElement.click();
+
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    onNext();
+
+    setTimeout(() => {
+      setIsProcessingClick(false);
+      clickProcessedRef.current = false;
+    }, 100);
+  }, [step.targetElementId, step.fallbackTabId, isUsingFallback, isProcessingClick, onNext]);
+
+  useEffect(() => {
+    clickProcessedRef.current = false;
+    setIsProcessingClick(false);
+  }, [step.id]);
 
   const updatePositions = useCallback(() => {
     if (!step.targetElementId) return;
@@ -170,6 +207,53 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
                 border: `2px solid ${GOLD_COLOR}50`,
               }}
             />
+
+            <motion.div
+              onClick={handleSpotlightClick}
+              className="fixed cursor-pointer group"
+              style={{
+                top: viewportRect.top - SPOTLIGHT_PADDING,
+                left: viewportRect.left - SPOTLIGHT_PADDING,
+                width: viewportRect.width + SPOTLIGHT_PADDING * 2,
+                height: viewportRect.height + SPOTLIGHT_PADDING * 2,
+                borderRadius: 12,
+                zIndex: 9999,
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute inset-0 flex items-center justify-center"
+                style={{
+                  background: `${GOLD_COLOR}08`,
+                  borderRadius: 12,
+                }}
+              >
+                <motion.div
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    opacity: [0.6, 1, 0.6],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, ${GOLD_COLOR}90 0%, ${GOLD_COLOR}70 100%)`,
+                    color: '#0f0f1a',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  <MousePointerClick className="w-3.5 h-3.5" />
+                  <span>Click</span>
+                </motion.div>
+              </motion.div>
+            </motion.div>
           </>
         )}
 

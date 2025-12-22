@@ -47,7 +47,11 @@ const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme
             return (
               <button
                 key={tab.id}
-                id={tab.id === 'coaching' ? 'walkthrough-tab-coaching' : undefined}
+                id={
+                  tab.id === 'coaching' ? 'walkthrough-tab-coaching' :
+                  tab.id === 'training' ? 'walkthrough-tab-training' :
+                  undefined
+                }
                 onClick={() => onTabChange(tab.id)}
                 className={`
                   relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium

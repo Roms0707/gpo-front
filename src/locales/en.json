@@ -3414,7 +3414,8 @@
       },
       "training": {
         "title": "Training Videos",
-        "description": "Watch professional tutorials and gameplay guides to learn new strategies and techniques."
+        "description": "Watch professional tutorials and gameplay guides to learn new strategies and techniques.",
+        "clickTab": "Click on the Training tab to continue the tour and see the training videos."
       }
     },
     "tournament": {

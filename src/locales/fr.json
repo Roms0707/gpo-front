@@ -3437,7 +3437,8 @@
       },
       "training": {
         "title": "Videos d'Entrainement",
-        "description": "Regardez des tutoriels professionnels et des guides de gameplay pour apprendre de nouvelles strategies."
+        "description": "Regardez des tutoriels professionnels et des guides de gameplay pour apprendre de nouvelles strategies.",
+        "clickTab": "Cliquez sur l'onglet Entrainement pour continuer la visite et voir les videos d'entrainement."
       }
     },
     "tournament": {

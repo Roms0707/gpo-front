@@ -116,6 +116,8 @@ export const GAME_HUB_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.gameHub.training.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tab-training',
+    fallbackMessageKey: 'onboarding.gameHub.training.clickTab',
   },
 ];
 
