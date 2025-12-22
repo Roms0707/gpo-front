@@ -33,18 +33,27 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
   const [viewportRect, setViewportRect] = useState<DOMRect | null>(null);
   const [visibleRect, setVisibleRect] = useState<ViewportRelativeRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
 
   const updatePositions = useCallback(() => {
     if (!step.targetElementId) return;
 
-    const vpRect = getViewportRect(step.targetElementId);
-    const visRect = getVisiblePortionRect(step.targetElementId);
+    let vpRect = getViewportRect(step.targetElementId);
+    let visRect = getVisiblePortionRect(step.targetElementId);
+    let usingFallback = false;
+
+    if (!vpRect && step.fallbackTabId) {
+      vpRect = getViewportRect(step.fallbackTabId);
+      visRect = getVisiblePortionRect(step.fallbackTabId);
+      usingFallback = true;
+    }
 
     setViewportRect(vpRect);
     setVisibleRect(visRect);
+    setIsUsingFallback(usingFallback);
 
     if (visRect) {
-      const position = calculateTooltipPosition(visRect, step.position);
+      const position = calculateTooltipPosition(visRect, usingFallback ? 'bottom' : step.position);
       setTooltipPosition(position);
     } else if (vpRect) {
       const fallbackRect: ViewportRelativeRect = {
@@ -55,10 +64,10 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
         bottom: vpRect.bottom,
         right: vpRect.right,
       };
-      const position = calculateTooltipPosition(fallbackRect, step.position);
+      const position = calculateTooltipPosition(fallbackRect, usingFallback ? 'bottom' : step.position);
       setTooltipPosition(position);
     }
-  }, [step.targetElementId, step.position]);
+  }, [step.targetElementId, step.position, step.fallbackTabId]);
 
   useEffect(() => {
     updatePositions();
@@ -173,6 +182,7 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
             onNext={onNext}
             onPrevious={onPrevious}
             onSkip={onSkip}
+            isUsingFallback={isUsingFallback}
           />
         )}
       </motion.div>

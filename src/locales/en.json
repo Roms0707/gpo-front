@@ -3409,7 +3409,8 @@
       },
       "coaching": {
         "title": "AI Coaching",
-        "description": "Get personalized tips from our AI coach. It analyzes your gameplay and provides targeted advice to improve."
+        "description": "Get personalized tips from our AI coach. It analyzes your gameplay and provides targeted advice to improve.",
+        "clickTab": "Click on the Coaching tab to continue the tour and see AI coaching features."
       },
       "training": {
         "title": "Training Videos",
@@ -3433,7 +3434,8 @@
       },
       "rewards": {
         "title": "Prizes & Rewards",
-        "description": "Check out what you can win! Prizes include cash rewards, gaming gear, and exclusive digital items."
+        "description": "Check out what you can win! Prizes include cash rewards, gaming gear, and exclusive digital items.",
+        "clickTab": "Click on the Rewards tab to continue the tour and see the available prizes."
       }
     },
     "gamingStats": {
@@ -3453,7 +3455,8 @@
       },
       "aimTrainer": {
         "title": "Aim Trainer",
-        "description": "Practice your aim and improve your accuracy. Track your progress and compete for high scores."
+        "description": "Practice your aim and improve your accuracy. Track your progress and compete for high scores.",
+        "clickTab": "Click on the Aim Trainer tab to continue the tour and access the aim training tools."
       },
       "performance": {
         "title": "Performance Tips",

@@ -14,6 +14,8 @@ export interface OnboardingStep {
   descriptionKey: string;
   position?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   scrollBehavior?: ScrollBehavior;
+  fallbackTabId?: string;
+  fallbackMessageKey?: string;
 }
 
 export const HOME_STEPS: OnboardingStep[] = [
@@ -101,6 +103,8 @@ export const GAME_HUB_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.gameHub.coaching.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tab-coaching',
+    fallbackMessageKey: 'onboarding.gameHub.coaching.clickTab',
   },
   {
     id: 'gamehub-training',
@@ -167,6 +171,8 @@ export const TOURNAMENT_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.tournament.rewards.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tab-rewards',
+    fallbackMessageKey: 'onboarding.tournament.rewards.clickTab',
   },
 ];
 
@@ -222,6 +228,8 @@ export const GAMING_STATS_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.gamingStats.aimTrainer.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tab-aim-trainer',
+    fallbackMessageKey: 'onboarding.gamingStats.aimTrainer.clickTab',
   },
   {
     id: 'stats-performance',

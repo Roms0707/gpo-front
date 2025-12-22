@@ -13,6 +13,7 @@ interface WalkthroughTooltipProps {
   onNext: () => void;
   onPrevious: () => void;
   onSkip: () => void;
+  isUsingFallback?: boolean;
 }
 
 const GOLD_COLOR = '#C8AA6E';
@@ -31,11 +32,16 @@ const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
   onNext,
   onPrevious,
   onSkip,
+  isUsingFallback = false,
 }) => {
   const { t } = useTranslation();
   const Icon = step.icon;
   const isLastStep = currentStep === totalSteps - 1;
   const isFirstFeatureStep = currentStep === 1;
+
+  const displayDescription = isUsingFallback && step.fallbackMessageKey
+    ? t(step.fallbackMessageKey)
+    : t(step.descriptionKey);
 
   const clampedPosition = useMemo(() => {
     const viewportWidth = window.innerWidth;
@@ -236,7 +242,7 @@ const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
                 className="text-sm leading-relaxed"
                 style={{ color: '#a0a0b0' }}
               >
-                {t(step.descriptionKey)}
+                {displayDescription}
               </p>
             </div>
           </div>

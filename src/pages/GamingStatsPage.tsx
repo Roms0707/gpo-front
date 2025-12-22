@@ -725,6 +725,7 @@ const GamingStatsPage: React.FC = () => {
               )}
               
               <button
+                id="walkthrough-tab-aim-trainer"
                 onClick={() => setActiveTab('aim-trainer')}
                 className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
                   activeTab === 'aim-trainer'

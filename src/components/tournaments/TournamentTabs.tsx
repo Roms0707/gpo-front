@@ -100,7 +100,7 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
                 role="tab"
                 aria-selected={activeTab === id}
                 aria-controls={`${id}-panel`}
-                id={`${id}-tab`}
+                id={id === 'rewards' ? 'walkthrough-tab-rewards' : `${id}-tab`}
                 style={{ minHeight: '44px' }}
               >
                 <Icon className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" aria-hidden="true" />

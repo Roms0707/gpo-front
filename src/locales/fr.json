@@ -3403,25 +3403,100 @@
     "previous": "Retour",
     "finish": "Commencer",
     "defaultUser": "Champion",
+    "home": {
+      "welcome": "Bienvenue, {{username}} !",
+      "welcomeMessage": "Laissez-nous vous faire decouvrir la plateforme et vous aider a tirer le meilleur de votre experience gaming.",
+      "gameHub": {
+        "title": "Explorez les Game Hubs",
+        "description": "Plongez dans vos jeux preferes. Chaque hub regroupe tournois, classements, coaching et bien plus encore."
+      },
+      "tournaments": {
+        "title": "Participez aux Tournois",
+        "description": "Rejoignez des tournois passionnants, affrontez d'autres joueurs et remportez des prix incroyables. Inscrivez-vous en solo ou en equipe."
+      },
+      "gamingStats": {
+        "title": "Suivez vos Statistiques",
+        "description": "Connectez vos comptes de jeu pour voir votre historique de matchs, taux de victoire et tendances de performance."
+      }
+    },
     "gameHub": {
-      "title": "Explorez les Game Hubs",
-      "description": "Plongez dans vos jeux preferes. Chaque hub regroupe tournois, classements, coaching et bien plus encore."
+      "welcome": "Bienvenue dans le Game Hub !",
+      "welcomeMessage": "C'est votre centre pour tout ce qui concerne vos jeux preferes. Explorons ce qui est disponible.",
+      "carousel": {
+        "title": "Parcourir les Jeux",
+        "description": "Faites defiler le carrousel pour explorer differents jeux. Cliquez sur une couverture pour acceder a son hub dedie."
+      },
+      "tabs": {
+        "title": "Onglets de Navigation",
+        "description": "Utilisez ces onglets pour basculer entre Apercu, Tournois, Classement, Entrainement, Skill Lab et Coaching."
+      },
+      "coaching": {
+        "title": "Coaching IA",
+        "description": "Recevez des conseils personnalises de notre coach IA. Il analyse votre gameplay et vous donne des recommandations ciblees.",
+        "clickTab": "Cliquez sur l'onglet Coaching pour continuer la visite et voir les fonctionnalites de coaching IA."
+      },
+      "training": {
+        "title": "Videos d'Entrainement",
+        "description": "Regardez des tutoriels professionnels et des guides de gameplay pour apprendre de nouvelles strategies."
+      }
     },
-    "tournaments": {
-      "title": "Participez aux Tournois",
-      "description": "Rejoignez des tournois passionnants, affrontez d'autres joueurs et remportez des prix incroyables. Inscrivez-vous en solo ou en equipe."
-    },
-    "coaching": {
-      "title": "Coaching IA Personnalise",
-      "description": "Recevez des conseils personnalises pour ameliorer votre jeu. Notre coach IA analyse vos performances et vous donne des recommandations ciblees."
+    "tournament": {
+      "welcome": "Details du Tournoi",
+      "welcomeMessage": "Ici vous trouverez tout sur ce tournoi. Parcourons les fonctionnalites principales.",
+      "info": {
+        "title": "Infos Tournoi",
+        "description": "Cette section affiche la banniere du tournoi, le jeu, les dates, le prize pool et le nombre de participants."
+      },
+      "tabs": {
+        "title": "Onglets du Tournoi",
+        "description": "Basculez entre Accueil, Recompenses, Bracket, Classement, Entrainement et Regles pour explorer tous les details."
+      },
+      "register": {
+        "title": "Inscription",
+        "description": "Utilisez la barre laterale pour vous inscrire au tournoi. Rejoignez en solo ou creez/rejoignez une equipe selon le format."
+      },
+      "rewards": {
+        "title": "Prix et Recompenses",
+        "description": "Decouvrez ce que vous pouvez gagner ! Des recompenses en cash, du materiel gaming et des objets digitaux exclusifs.",
+        "clickTab": "Cliquez sur l'onglet Recompenses pour continuer la visite et voir les prix disponibles."
+      }
     },
     "gamingStats": {
-      "title": "Suivez vos Statistiques",
-      "description": "Connectez vos comptes de jeu pour voir votre historique de matchs, taux de victoire et tendances de performance en un seul endroit."
+      "welcome": "Vos Stats Gaming",
+      "welcomeMessage": "Suivez vos performances sur tous vos comptes de jeu connectes. Voyons les informations disponibles.",
+      "overview": {
+        "title": "Apercu des Stats",
+        "description": "Voyez un resume de vos performances gaming incluant victoires en tournoi, classement general et activite recente."
+      },
+      "accounts": {
+        "title": "Comptes Connectes",
+        "description": "Visualisez tous vos comptes gaming lies. Connectez plus de comptes pour avoir une vue complete de vos stats."
+      },
+      "tabs": {
+        "title": "Onglets de Jeux",
+        "description": "Basculez entre differents jeux pour voir les stats detaillees, l'historique des matchs et les performances de chacun."
+      },
+      "aimTrainer": {
+        "title": "Entrainement Visee",
+        "description": "Pratiquez votre visee et ameliorez votre precision. Suivez votre progression et rivalisez pour les meilleurs scores.",
+        "clickTab": "Cliquez sur l'onglet Entrainement Visee pour continuer la visite et acceder aux outils d'entrainement."
+      },
+      "performance": {
+        "title": "Conseils Performance",
+        "description": "Obtenez des analyses IA de votre gameplay avec des suggestions pour ameliorer vos performances."
+      }
     },
-    "training": {
-      "title": "Entrainez vos Reflexes",
-      "description": "Aiguisez vos competences avec des jeux d'entrainement de visee et de temps de reaction. C'est en forgeant qu'on devient forgeron !"
+    "guidedTours": {
+      "title": "Visites Guidees",
+      "description": "Rejouez la visite guidee pour n'importe quelle section de la plateforme.",
+      "home": "Visite Page d'Accueil",
+      "gameHub": "Visite Game Hub",
+      "tournament": "Visite Tournoi",
+      "gamingStats": "Visite Stats Gaming",
+      "replayTour": "Rejouer la Visite",
+      "completed": "Terminee",
+      "notStarted": "Non Commencee",
+      "resetAll": "Reinitialiser Toutes"
     }
   }
 }
