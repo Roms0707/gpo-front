@@ -55,7 +55,7 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
       if (!heroRef.current) return;
 
       const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-      const shouldBeSticky = heroBottom < 80;
+      const shouldBeSticky = heroBottom < 100;
 
       setIsSticky(shouldBeSticky);
 
@@ -187,7 +187,7 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
   return (
     <div
       ref={barRef}
-      className={`fixed top-16 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-20 left-0 right-0 z-40 transition-all duration-300 ${
         isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
     >

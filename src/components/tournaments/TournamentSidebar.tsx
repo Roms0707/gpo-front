@@ -29,7 +29,7 @@ interface TournamentSidebarProps {
   isCancelling: boolean;
   canRegister: () => boolean;
   getRegistrationStatus: () => string;
-  isTournamentStartedOrFinished: boolean;
+  isTournamentStartedOrFinished: () => boolean;
 }
 
 const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
