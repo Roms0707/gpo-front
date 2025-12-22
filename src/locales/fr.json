@@ -353,7 +353,10 @@
     "physicalRewards": "+ Récompenses physiques",
     "checking": "Vérification...",
     "waitlist": "Liste d'attente",
-    "ariaLabel": "Tournoi {{title}} - {{game}} - {{date}} - {{status}}"
+    "ariaLabel": "Tournoi {{title}} - {{game}}",
+    "startsIn": "Commence dans",
+    "team": "Équipe",
+    "registered": "Inscrit"
   },
   "tournamentHero": {
     "backToTournaments": "Retour aux tournois",

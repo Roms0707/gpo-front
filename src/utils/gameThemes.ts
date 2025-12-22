@@ -433,3 +433,53 @@ export const getContentSkew = (shape: ButtonShape): React.CSSProperties => {
   }
   return {};
 };
+
+export const getCardClipPath = (shape: ButtonShape): string => {
+  switch (shape) {
+    case 'hexagon':
+      return 'polygon(16px 0%, calc(100% - 16px) 0%, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 16px 100%, 0% calc(100% - 16px), 0% 16px)';
+    case 'tactical':
+      return 'polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px)';
+    case 'military':
+      return 'polygon(12px 0%, calc(100% - 12px) 0%, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0% calc(100% - 12px), 0% 12px)';
+    case 'angled':
+      return 'polygon(0% 0%, 100% 0%, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0% 100%)';
+    case 'boost':
+      return 'polygon(0% 12px, 12px 0%, 100% 0%, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0% 100%)';
+    case 'stadium':
+    case 'rounded':
+    default:
+      return 'none';
+  }
+};
+
+export const getCardBorderRadius = (shape: ButtonShape): string => {
+  switch (shape) {
+    case 'hexagon':
+    case 'tactical':
+    case 'military':
+    case 'angled':
+    case 'boost':
+      return '0';
+    case 'stadium':
+      return '16px';
+    case 'rounded':
+    default:
+      return '12px';
+  }
+};
+
+export const getCardCornerAccent = (shape: ButtonShape): { topLeft: boolean; topRight: boolean; bottomLeft: boolean; bottomRight: boolean } => {
+  switch (shape) {
+    case 'tactical':
+      return { topLeft: true, topRight: false, bottomLeft: false, bottomRight: true };
+    case 'military':
+      return { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true };
+    case 'hexagon':
+      return { topLeft: true, topRight: true, bottomLeft: true, bottomRight: true };
+    case 'angled':
+      return { topLeft: false, topRight: false, bottomLeft: false, bottomRight: true };
+    default:
+      return { topLeft: false, topRight: false, bottomLeft: false, bottomRight: false };
+  }
+};

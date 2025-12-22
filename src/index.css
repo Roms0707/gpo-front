@@ -1428,3 +1428,77 @@ a:focus, button:focus, [tabindex="0"]:focus {
     transform: none;
   }
 }
+
+/* Esports Tournament Card Styles */
+.esports-card {
+  position: relative;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+@keyframes esports-border-pulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.esports-card-border-pulse {
+  animation: esports-border-pulse 2s ease-in-out infinite;
+}
+
+@keyframes esports-live-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+
+.esports-card-live {
+  animation: esports-live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes esports-shimmer {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.esports-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transform: translateX(-100%) skewX(-15deg);
+}
+
+.group:hover .esports-shimmer::after {
+  animation: esports-shimmer 0.75s ease-out;
+}
+
+/* Reduced motion for esports card */
+@media (prefers-reduced-motion: reduce) {
+  .esports-card-border-pulse,
+  .esports-card-live {
+    animation: none;
+  }
+
+  .group:hover .esports-shimmer::after {
+    animation: none;
+  }
+}

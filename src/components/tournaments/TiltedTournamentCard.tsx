@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import TiltedCard from '../ui/TiltedCard';
 import TournamentCard from './TournamentCard';
 import { Tournament } from '../../types';
+import { getGameTheme } from '../../utils/gameThemes';
 
 interface TiltedTournamentCardProps {
   tournament: Tournament & {
@@ -13,39 +14,39 @@ interface TiltedTournamentCardProps {
   };
 }
 
-const getTiltConfig = (status: string | undefined, isLive: boolean) => {
+const getTiltConfig = (status: string | undefined, isLive: boolean, gameGlow: string) => {
   switch (status) {
     case 'ongoing':
       return {
-        maxTilt: isLive ? 6 : 5,
-        scale: 1.025,
-        shineIntensity: isLive ? 0.18 : 0.15,
-        glowIntensity: isLive ? 1.5 : 1,
-        glowColor: isLive ? 'rgba(239, 68, 68, 0.5)' : 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.4)'
+        maxTilt: isLive ? 8 : 6,
+        scale: 1.02,
+        shineIntensity: isLive ? 0.2 : 0.15,
+        glowIntensity: isLive ? 1.8 : 1.2,
+        glowColor: isLive ? 'rgba(239, 68, 68, 0.6)' : gameGlow
       };
     case 'upcoming':
       return {
-        maxTilt: 4,
-        scale: 1.02,
+        maxTilt: 5,
+        scale: 1.015,
         shineIntensity: 0.12,
-        glowIntensity: 0.5,
-        glowColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.3)'
+        glowIntensity: 0.8,
+        glowColor: gameGlow
       };
     case 'completed':
       return {
-        maxTilt: 2,
+        maxTilt: 3,
         scale: 1.01,
-        shineIntensity: 0.08,
-        glowIntensity: 0,
-        glowColor: 'transparent'
+        shineIntensity: 0.06,
+        glowIntensity: 0.2,
+        glowColor: 'rgba(100, 100, 100, 0.3)'
       };
     default:
       return {
-        maxTilt: 3,
+        maxTilt: 4,
         scale: 1.015,
         shineIntensity: 0.1,
-        glowIntensity: 0.3,
-        glowColor: 'rgba(var(--color-primary-rgb, 59, 130, 246), 0.25)'
+        glowIntensity: 0.5,
+        glowColor: gameGlow
       };
   }
 };
@@ -53,7 +54,12 @@ const getTiltConfig = (status: string | undefined, isLive: boolean) => {
 const TiltedTournamentCard: React.FC<TiltedTournamentCardProps> = ({ tournament }) => {
   const status = tournament.calculatedStatus;
   const isLive = status === 'ongoing' && tournament.is_twitch_live;
-  const config = getTiltConfig(status, isLive);
+
+  const gameTheme = useMemo(() => getGameTheme(tournament.game), [tournament.game]);
+  const config = useMemo(
+    () => getTiltConfig(status, isLive, gameTheme.colors.glow),
+    [status, isLive, gameTheme.colors.glow]
+  );
 
   const isOngoing = status === 'ongoing';
 
@@ -65,7 +71,7 @@ const TiltedTournamentCard: React.FC<TiltedTournamentCardProps> = ({ tournament 
         shineIntensity={config.shineIntensity}
         glowIntensity={config.glowIntensity}
         glowColor={config.glowColor}
-        transitionDuration={250}
+        transitionDuration={300}
         className="tournament-tilt-wrapper"
       >
         <TournamentCard tournament={tournament} />
