@@ -37,7 +37,9 @@
     "now": "now",
     "tournament": "Tournament",
     "team": "Team",
-    "solo": "Solo"
+    "solo": "Solo",
+    "add": "Add",
+    "saving": "Saving..."
   },
   "countries": {
     "BF": "Burkina Faso",
@@ -2064,7 +2066,28 @@
     "questAbandoned": "Quest abandoned",
     "questUpdateError": "Error updating quest",
     "externalStats": "External Stats",
-    "viewOnPlatform": "View on {{platform}}"
+    "viewOnPlatform": "View on {{platform}}",
+    "fieldLabel": {
+      "champions": "Main Champions",
+      "agents": "Main Agents",
+      "legends": "Main Legends/Characters",
+      "fighters": "Main Fighters",
+      "formations": "Preferred Formations & Playstyle",
+      "cars": "Main Cars/Classes",
+      "decks": "Main Decks/Compositions",
+      "default": "Main Specialties"
+    },
+    "fieldPlaceholder": {
+      "champions": "e.g., Jinx, Ahri, Thresh",
+      "agents": "e.g., Jett, Reyna, Omen",
+      "legends": "e.g., Wraith, Octane, Bangalore",
+      "fighters": "e.g., Ryu, Ken, Akuma",
+      "formations": "e.g., 4-3-3, Possession, Counter-Attack",
+      "cars": "e.g., S1 Class, Hypercars, GT3",
+      "decks": "e.g., Aggro, Control, Reroll",
+      "default": "e.g., Your main picks or strategies"
+    },
+    "customRank": "Enter custom rank..."
   },
   "tournamentTabsPage": {
     "home": "Home",

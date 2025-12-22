@@ -37,7 +37,9 @@
     "now": "maintenant",
     "tournament": "Tournoi",
     "team": "Team",
-    "solo": "Solo"
+    "solo": "Solo",
+    "add": "Ajouter",
+    "saving": "Enregistrement..."
   },
   "countries": {
     "BF": "Burkina Faso",
@@ -2087,7 +2089,28 @@
       "advanced": "Avance",
       "expert": "Expert",
       "professional": "Professionnel"
-    }
+    },
+    "fieldLabel": {
+      "champions": "Champions Principaux",
+      "agents": "Agents Principaux",
+      "legends": "Legendes/Personnages Principaux",
+      "fighters": "Combattants Principaux",
+      "formations": "Formations & Style de Jeu Preferes",
+      "cars": "Voitures/Classes Principales",
+      "decks": "Decks/Compositions Principaux",
+      "default": "Specialites Principales"
+    },
+    "fieldPlaceholder": {
+      "champions": "ex: Jinx, Ahri, Thresh",
+      "agents": "ex: Jett, Reyna, Omen",
+      "legends": "ex: Wraith, Octane, Bangalore",
+      "fighters": "ex: Ryu, Ken, Akuma",
+      "formations": "ex: 4-3-3, Possession, Contre-Attaque",
+      "cars": "ex: Classe S1, Hypercars, GT3",
+      "decks": "ex: Aggro, Controle, Reroll",
+      "default": "ex: Vos choix ou strategies principales"
+    },
+    "customRank": "Entrer un rang personnalise..."
   },
   "tournamentTabsPage": {
     "home": "Accueil",

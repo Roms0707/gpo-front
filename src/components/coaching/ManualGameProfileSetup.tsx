@@ -9,7 +9,10 @@ import {
   X,
   HelpCircle,
   ChevronDown,
-  Check
+  Check,
+  Gamepad2,
+  Car,
+  Layers
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
 import { supabase } from '../../lib/supabase';
@@ -46,20 +49,84 @@ const RANK_OPTIONS: Record<string, string[]> = {
 
 const STATS_PLATFORMS = [
   { id: 'op.gg', name: 'OP.GG', games: ['league of legends', 'lol', 'valorant', 'tft'] },
-  { id: 'tracker.gg', name: 'Tracker.gg', games: ['valorant', 'fortnite', 'apex legends', 'rocket league', 'cs2', 'overwatch'] },
+  { id: 'tracker.gg', name: 'Tracker.gg', games: ['valorant', 'fortnite', 'apex legends', 'apex', 'rocket league', 'cs2', 'overwatch', 'fc 24', 'fc 25', 'fc24', 'fc25', 'fc 26', 'fc26', 'ea fc', 'fifa', 'pubg', 'halo'] },
   { id: 'blitz.gg', name: 'Blitz.gg', games: ['league of legends', 'lol', 'valorant', 'tft'] },
   { id: 'u.gg', name: 'U.GG', games: ['league of legends', 'lol'] },
-  { id: 'leetify', name: 'Leetify', games: ['cs2', 'counter-strike'] },
+  { id: 'leetify', name: 'Leetify', games: ['cs2', 'counter-strike', 'csgo'] },
+  { id: 'dotabuff', name: 'Dotabuff', games: ['dota 2', 'dota'] },
   { id: 'other', name: 'Other', games: [] },
 ];
 
-const detectGameCategory = (gameName: string): string => {
+type GameCategory = 'moba' | 'fps' | 'battle_royale' | 'fighting' | 'sports' | 'racing' | 'card' | 'default';
+
+interface GameFieldConfig {
+  labelKey: string;
+  placeholderKey: string;
+  icon: 'sword' | 'gamepad' | 'car' | 'cards';
+}
+
+const GAME_FIELD_CONFIG: Record<GameCategory, GameFieldConfig> = {
+  moba: {
+    labelKey: 'coaching.fieldLabel.champions',
+    placeholderKey: 'coaching.fieldPlaceholder.champions',
+    icon: 'sword',
+  },
+  fps: {
+    labelKey: 'coaching.fieldLabel.agents',
+    placeholderKey: 'coaching.fieldPlaceholder.agents',
+    icon: 'sword',
+  },
+  battle_royale: {
+    labelKey: 'coaching.fieldLabel.legends',
+    placeholderKey: 'coaching.fieldPlaceholder.legends',
+    icon: 'sword',
+  },
+  fighting: {
+    labelKey: 'coaching.fieldLabel.fighters',
+    placeholderKey: 'coaching.fieldPlaceholder.fighters',
+    icon: 'sword',
+  },
+  sports: {
+    labelKey: 'coaching.fieldLabel.formations',
+    placeholderKey: 'coaching.fieldPlaceholder.formations',
+    icon: 'gamepad',
+  },
+  racing: {
+    labelKey: 'coaching.fieldLabel.cars',
+    placeholderKey: 'coaching.fieldPlaceholder.cars',
+    icon: 'car',
+  },
+  card: {
+    labelKey: 'coaching.fieldLabel.decks',
+    placeholderKey: 'coaching.fieldPlaceholder.decks',
+    icon: 'cards',
+  },
+  default: {
+    labelKey: 'coaching.fieldLabel.default',
+    placeholderKey: 'coaching.fieldPlaceholder.default',
+    icon: 'sword',
+  },
+};
+
+const detectGameCategory = (gameName: string): GameCategory => {
   const lowerName = gameName.toLowerCase();
-  if (lowerName.includes('league') || lowerName.includes('dota')) return 'moba';
-  if (lowerName.includes('valorant') || lowerName.includes('cs') || lowerName.includes('counter-strike')) return 'fps';
-  if (lowerName.includes('fortnite') || lowerName.includes('apex') || lowerName.includes('pubg')) return 'battle_royale';
-  if (lowerName.includes('street fighter') || lowerName.includes('tekken') || lowerName.includes('mortal')) return 'fighting';
+  if (lowerName.includes('league') || lowerName.includes('dota') || lowerName.includes('lol')) return 'moba';
+  if (lowerName.includes('valorant') || lowerName.includes('cs') || lowerName.includes('counter-strike') || lowerName.includes('overwatch')) return 'fps';
+  if (lowerName.includes('fortnite') || lowerName.includes('apex') || lowerName.includes('pubg') || lowerName.includes('warzone')) return 'battle_royale';
+  if (lowerName.includes('street fighter') || lowerName.includes('tekken') || lowerName.includes('mortal') || lowerName.includes('guilty gear') || lowerName.includes('smash')) return 'fighting';
+  if (lowerName.includes('fc') || lowerName.includes('fifa') || lowerName.includes('nba') || lowerName.includes('madden') || lowerName.includes('pes') || lowerName.includes('efootball')) return 'sports';
+  if (lowerName.includes('forza') || lowerName.includes('gran turismo') || lowerName.includes('f1') || lowerName.includes('need for speed')) return 'racing';
+  if (lowerName.includes('hearthstone') || lowerName.includes('tft') || lowerName.includes('teamfight') || lowerName.includes('legends of runeterra') || lowerName.includes('marvel snap')) return 'card';
   return 'default';
+};
+
+const getFieldIcon = (iconType: string) => {
+  switch (iconType) {
+    case 'gamepad': return Gamepad2;
+    case 'car': return Car;
+    case 'cards': return Layers;
+    default: return Sword;
+  }
 };
 
 const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
@@ -89,6 +156,8 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
 
   const gameCategory = detectGameCategory(gameName);
   const rankOptions = RANK_OPTIONS[gameCategory] || RANK_OPTIONS.default;
+  const fieldConfig = GAME_FIELD_CONFIG[gameCategory] || GAME_FIELD_CONFIG.default;
+  const FieldIcon = getFieldIcon(fieldConfig.icon);
 
   const relevantPlatforms = STATS_PLATFORMS.filter(
     p => p.games.length === 0 || p.games.some(g => gameName.toLowerCase().includes(g))
@@ -285,7 +354,7 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            {t('coaching.mainCharacters')}
+            {t(fieldConfig.labelKey)}
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
             {profile.main_characters.map(char => (
@@ -306,7 +375,7 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
           </div>
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Sword className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <FieldIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="text"
                 value={characterInput}
@@ -317,7 +386,7 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
                     handleAddCharacter();
                   }
                 }}
-                placeholder={t('coaching.addCharacter')}
+                placeholder={t(fieldConfig.placeholderKey)}
                 className="w-full pl-10 pr-4 py-2 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
               />
             </div>

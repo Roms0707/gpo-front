@@ -24,7 +24,7 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
     id: 'op.gg',
     name: 'OP.GG',
     url: 'https://op.gg',
-    games: ['league of legends', 'lol', 'valorant', 'tft'],
+    games: ['league of legends', 'lol', 'valorant', 'tft', 'teamfight tactics'],
     steps: [
       'Go to op.gg and select your game',
       'Search for your username in the search bar',
@@ -36,20 +36,20 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
     id: 'tracker.gg',
     name: 'Tracker.gg',
     url: 'https://tracker.gg',
-    games: ['valorant', 'fortnite', 'apex legends', 'rocket league', 'cs2', 'overwatch'],
+    games: ['valorant', 'fortnite', 'apex legends', 'apex', 'rocket league', 'cs2', 'counter-strike', 'overwatch', 'fc 24', 'fc 25', 'fc24', 'fc25', 'fc 26', 'fc26', 'ea fc', 'fifa', 'the finals', 'splitgate', 'halo infinite', 'halo', 'pubg', 'fall guys'],
     steps: [
       'Go to tracker.gg and select your game',
       'Click "Search Profile" and enter your username',
       'For Riot games, use format: Name#TAG',
       'Once on your profile page, copy the full URL',
     ],
-    exampleUrl: 'https://tracker.gg/valorant/profile/riot/YourName%23TAG/overview'
+    exampleUrl: 'https://tracker.gg/fc/profile/origin/YourName/overview'
   },
   {
     id: 'blitz.gg',
     name: 'Blitz.gg',
     url: 'https://blitz.gg',
-    games: ['league of legends', 'lol', 'valorant', 'tft'],
+    games: ['league of legends', 'lol', 'valorant', 'tft', 'teamfight tactics'],
     steps: [
       'Go to blitz.gg',
       'Use the search bar to find your profile',
@@ -76,7 +76,7 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
     id: 'leetify',
     name: 'Leetify',
     url: 'https://leetify.com',
-    games: ['cs2', 'counter-strike'],
+    games: ['cs2', 'counter-strike', 'csgo'],
     steps: [
       'Go to leetify.com and sign in with Steam',
       'Your profile will be created automatically',
@@ -85,7 +85,70 @@ const PLATFORM_GUIDES: PlatformGuide[] = [
     ],
     exampleUrl: 'https://leetify.com/app/profile/76561198xxxxxxxxx'
   },
+  {
+    id: 'wotlabs',
+    name: 'WoTLabs',
+    url: 'https://wotlabs.net',
+    games: ['world of tanks', 'wot'],
+    steps: [
+      'Go to wotlabs.net',
+      'Select your server region',
+      'Search for your player name',
+      'Copy the profile URL from your browser',
+    ],
+    exampleUrl: 'https://wotlabs.net/eu/player/YourName'
+  },
+  {
+    id: 'dotabuff',
+    name: 'Dotabuff',
+    url: 'https://www.dotabuff.com',
+    games: ['dota 2', 'dota'],
+    steps: [
+      'Go to dotabuff.com',
+      'Search for your Steam name or ID',
+      'Once on your profile page, copy the URL',
+    ],
+    exampleUrl: 'https://www.dotabuff.com/players/123456789'
+  },
+  {
+    id: 'stratz',
+    name: 'STRATZ',
+    url: 'https://stratz.com',
+    games: ['dota 2', 'dota'],
+    steps: [
+      'Go to stratz.com',
+      'Click "Search" and enter your Steam ID',
+      'View your profile and copy the URL',
+    ],
+    exampleUrl: 'https://stratz.com/players/123456789'
+  },
 ];
+
+const normalizeGameName = (name: string): string[] => {
+  const lower = name.toLowerCase();
+  const terms = [lower];
+
+  if (lower.includes('fc') || lower.includes('fifa') || lower.includes('ea sports')) {
+    terms.push('fc 24', 'fc 25', 'fc24', 'fc25', 'fc 26', 'fc26', 'ea fc', 'fifa');
+  }
+  if (lower.includes('league') || lower.includes('lol')) {
+    terms.push('league of legends', 'lol');
+  }
+  if (lower.includes('counter') || lower.includes('cs2') || lower.includes('csgo')) {
+    terms.push('cs2', 'counter-strike', 'csgo');
+  }
+  if (lower.includes('dota')) {
+    terms.push('dota 2', 'dota');
+  }
+  if (lower.includes('apex')) {
+    terms.push('apex legends', 'apex');
+  }
+  if (lower.includes('tft') || lower.includes('teamfight')) {
+    terms.push('tft', 'teamfight tactics');
+  }
+
+  return terms;
+};
 
 const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
   gameName,
@@ -95,11 +158,13 @@ const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
   const { t } = useTranslation();
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
+  const gameTerms = normalizeGameName(gameName);
+
   const relevantPlatforms = PLATFORM_GUIDES.filter(
-    p => p.games.some(g => gameName.toLowerCase().includes(g)) || p.games.length === 0
+    p => p.games.some(g => gameTerms.some(term => term.includes(g) || g.includes(term)))
   );
 
-  const allPlatforms = relevantPlatforms.length > 0 ? relevantPlatforms : PLATFORM_GUIDES;
+  const platformsToShow = relevantPlatforms.length > 0 ? relevantPlatforms : PLATFORM_GUIDES;
 
   const handleCopyExample = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -108,7 +173,7 @@ const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div className="bg-dark-200 border border-gray-800 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -150,7 +215,7 @@ const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
               </div>
             </div>
 
-            {allPlatforms.map((platform) => (
+            {platformsToShow.map((platform) => (
               <div
                 key={platform.id}
                 className="bg-dark-300/30 border border-gray-800 rounded-xl overflow-hidden"
