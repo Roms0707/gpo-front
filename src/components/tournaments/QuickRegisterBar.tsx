@@ -143,7 +143,7 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
       );
     }
 
-    if (isFull) {
+    if (isFull && tournament.backup && tournament.backup > 0) {
       return (
         <button
           onClick={onRegister}
