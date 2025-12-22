@@ -46,7 +46,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ tournament, gameName }) => {
             style={{
               ...containerStyles,
               borderColor: `${accentColor}40`,
-              background: `linear-gradient(135deg, ${accentColor}12 0%, ${accentColor}06 40%, rgba(255, 255, 255, 0.6) 100%)`,
+              background: `linear-gradient(135deg, ${accentColor}15 0%, ${accentColor}08 50%, transparent 100%)`,
             }}
           >
             <div
@@ -90,7 +90,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ tournament, gameName }) => {
             style={{
               ...containerStyles,
               borderColor: `${accentColor}40`,
-              background: `linear-gradient(145deg, ${accentColor}10 0%, ${accentColor}05 35%, rgba(255, 255, 255, 0.65) 100%)`,
+              background: `linear-gradient(145deg, ${accentColor}15 0%, ${accentColor}08 50%, transparent 100%)`,
             }}
           >
             <h4
@@ -132,7 +132,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ tournament, gameName }) => {
             style={{
               ...containerStyles,
               borderColor: `${accentColor}40`,
-              background: `linear-gradient(215deg, ${accentColor}10 0%, ${accentColor}05 35%, rgba(255, 255, 255, 0.65) 100%)`,
+              background: `linear-gradient(215deg, ${accentColor}15 0%, ${accentColor}08 50%, transparent 100%)`,
             }}
           >
             <h4
@@ -184,7 +184,7 @@ const HomeTab: React.FC<HomeTabProps> = ({ tournament, gameName }) => {
             style={{
               ...containerStyles,
               borderColor: `${accentColor}40`,
-              background: `linear-gradient(45deg, ${accentColor}10 0%, ${accentColor}04 40%, rgba(255, 255, 255, 0.65) 100%)`,
+              background: `linear-gradient(45deg, ${accentColor}15 0%, ${accentColor}08 50%, transparent 100%)`,
             }}
           >
             <h4
