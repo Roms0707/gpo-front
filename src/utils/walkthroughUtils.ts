@@ -143,6 +143,13 @@ export function scrollToElement(elementId: string, offset: number = 100): void {
   });
 }
 
+export function scrollToTop(): void {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+}
+
 export function isElementInViewport(elementId: string): boolean {
   const element = document.getElementById(elementId);
   if (!element) return false;

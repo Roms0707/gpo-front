@@ -13,6 +13,7 @@ import GamingAccountsSection from '../components/profile/GamingAccountsSection';
 import GamingStatsPreview from '../components/profile/GamingStatsPreview';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import GuidedToursSection from '../components/profile/GuidedToursSection';
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -105,6 +106,8 @@ const ProfilePage: React.FC = () => {
                   <LanguageSwitcher />
                 </div>
               </div>
+
+              <GuidedToursSection />
 
               <ProfileInformation user={user} />
 

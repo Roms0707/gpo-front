@@ -37,7 +37,7 @@ const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme
   const { t } = useTranslation();
 
   return (
-    <div className="relative">
+    <div id="walkthrough-gamehub-tabs" className="relative">
       <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <div className="flex items-center gap-1 min-w-max px-4 sm:px-6 lg:px-8 py-3 bg-dark-200/80 backdrop-blur-sm border-b border-gray-800">
           {tabs.map((tab) => {

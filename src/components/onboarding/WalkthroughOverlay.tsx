@@ -20,6 +20,7 @@ interface WalkthroughOverlayProps {
 }
 
 const SPOTLIGHT_PADDING = 12;
+const GOLD_COLOR = '#C8AA6E';
 
 const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
   step,
@@ -109,28 +110,47 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
         className="fixed inset-0 z-[9998]"
       >
         <div
-          className="absolute inset-0 bg-black/75 transition-all duration-300"
+          className="absolute inset-0 transition-all duration-300"
           style={{
+            background: 'rgba(0, 0, 0, 0.8)',
             clipPath: viewportRect ? getSpotlightClipPath() : 'none',
           }}
           onClick={onSkip}
         />
 
         {viewportRect && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.2 }}
-            className="fixed pointer-events-none"
-            style={{
-              top: viewportRect.top - SPOTLIGHT_PADDING,
-              left: viewportRect.left - SPOTLIGHT_PADDING,
-              width: viewportRect.width + SPOTLIGHT_PADDING * 2,
-              height: viewportRect.height + SPOTLIGHT_PADDING * 2,
-              borderRadius: 12,
-              boxShadow: '0 0 0 4px rgba(var(--color-primary-500), 0.5), 0 0 20px rgba(var(--color-primary-500), 0.3)',
-            }}
-          />
+          <>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              className="fixed pointer-events-none"
+              style={{
+                top: viewportRect.top - SPOTLIGHT_PADDING,
+                left: viewportRect.left - SPOTLIGHT_PADDING,
+                width: viewportRect.width + SPOTLIGHT_PADDING * 2,
+                height: viewportRect.height + SPOTLIGHT_PADDING * 2,
+                borderRadius: 12,
+                border: `2px solid ${GOLD_COLOR}`,
+                boxShadow: `0 0 0 4px ${GOLD_COLOR}30, 0 0 30px ${GOLD_COLOR}40, inset 0 0 20px ${GOLD_COLOR}10`,
+              }}
+            />
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0.3, 0.6, 0.3] }}
+              transition={{ delay: 0.2, duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="fixed pointer-events-none"
+              style={{
+                top: viewportRect.top - SPOTLIGHT_PADDING - 4,
+                left: viewportRect.left - SPOTLIGHT_PADDING - 4,
+                width: viewportRect.width + SPOTLIGHT_PADDING * 2 + 8,
+                height: viewportRect.height + SPOTLIGHT_PADDING * 2 + 8,
+                borderRadius: 14,
+                border: `2px solid ${GOLD_COLOR}50`,
+              }}
+            />
+          </>
         )}
 
         {tooltipPosition && (

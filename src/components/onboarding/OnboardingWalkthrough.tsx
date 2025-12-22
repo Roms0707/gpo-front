@@ -1,14 +1,15 @@
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
 import { useOnboardingWalkthrough } from '../../hooks/useOnboardingWalkthrough';
+import { OnboardingPage } from '../../constants/onboardingSteps';
 import WelcomeStep from './WelcomeStep';
 import WalkthroughOverlay from './WalkthroughOverlay';
 
-const EXCLUDED_PATHS = ['/login', '/signup', '/register'];
+interface OnboardingWalkthroughProps {
+  pageName?: OnboardingPage;
+}
 
-const OnboardingWalkthrough: React.FC = () => {
-  const location = useLocation();
+const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ pageName = 'home' }) => {
   const {
     isActive,
     currentStep,
@@ -18,13 +19,9 @@ const OnboardingWalkthrough: React.FC = () => {
     nextStep,
     previousStep,
     skipWalkthrough,
-  } = useOnboardingWalkthrough();
+  } = useOnboardingWalkthrough(pageName);
 
-  const isExcludedPath = EXCLUDED_PATHS.some(path =>
-    location.pathname.startsWith(path)
-  );
-
-  if (!isActive || isExcludedPath || !currentStepData) {
+  if (!isActive || !currentStepData) {
     return null;
   }
 
@@ -35,10 +32,11 @@ const OnboardingWalkthrough: React.FC = () => {
           key="welcome"
           onStart={nextStep}
           onSkip={skipWalkthrough}
+          pageName={pageName}
         />
       ) : (
         <WalkthroughOverlay
-          key={`step-${currentStep}`}
+          key={currentStepData.id}
           step={currentStepData}
           currentStep={currentStep}
           totalSteps={totalSteps}

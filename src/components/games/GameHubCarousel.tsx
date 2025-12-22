@@ -194,6 +194,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   return (
     <div
+      id="walkthrough-gamehub-carousel"
       ref={containerRef}
       className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}

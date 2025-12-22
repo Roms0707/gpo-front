@@ -12,6 +12,7 @@ import GameHubTrainingTab from '../components/games/tabs/GameHubTrainingTab';
 import GameHubSkillLabTab from '../components/games/tabs/GameHubSkillLabTab';
 import GameHubCoachingTab from '../components/games/tabs/GameHubCoachingTab';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
 interface Game {
   id: string;
@@ -202,6 +203,8 @@ const GameHubPage: React.FC = () => {
           </>
         )}
       </div>
+
+      <OnboardingWalkthrough pageName="gameHub" />
     </div>
   );
 };

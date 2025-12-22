@@ -12,6 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAppConfig } from '../contexts/AppConfigContext';
 import { calculateTournamentStatus } from '../utils/tournamentUtils';
 import WhitelistBadge from '../components/ui/WhitelistBadge';
+import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
 const HomePage: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -531,7 +532,7 @@ const HomePage: React.FC = () => {
         )}
         
         {/* Tournament listing section */}
-        <section id="tournaments" data-walkthrough="walkthrough-tournaments" className="py-8 sm:py-12 md:py-16 overflow-hidden">
+        <section id="walkthrough-tournaments" className="py-8 sm:py-12 md:py-16 overflow-hidden">
           <div className="container mx-auto px-4 max-w-full">
             {error && (
               <div className="bg-error-500/20 border border-error-600 text-white px-4 py-3 rounded mb-6">
@@ -590,6 +591,8 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       </div>
+
+      <OnboardingWalkthrough pageName="home" />
     </div>
   );
 };

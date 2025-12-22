@@ -3380,25 +3380,97 @@
     "previous": "Back",
     "finish": "Get Started",
     "defaultUser": "Champion",
+    "home": {
+      "welcome": "Welcome, {{username}}!",
+      "welcomeMessage": "Let us show you around and help you get the most out of your gaming experience.",
+      "gameHub": {
+        "title": "Explore Game Hubs",
+        "description": "Dive deep into your favorite games. Each hub has tournaments, leaderboards, coaching, and more all in one place."
+      },
+      "tournaments": {
+        "title": "Compete in Tournaments",
+        "description": "Join exciting tournaments, battle other players, and win amazing prizes. Register solo or with your team."
+      },
+      "gamingStats": {
+        "title": "Track Your Stats",
+        "description": "Connect your gaming accounts to see detailed match history, win rates, and performance trends."
+      }
+    },
     "gameHub": {
-      "title": "Explore Game Hubs",
-      "description": "Dive deep into your favorite games. Each hub has tournaments, leaderboards, coaching, and more all in one place."
+      "welcome": "Welcome to Game Hub!",
+      "welcomeMessage": "This is your central hub for everything related to your favorite games. Let's explore what's available.",
+      "carousel": {
+        "title": "Browse Games",
+        "description": "Swipe through the carousel to explore different games. Click on any game cover to dive into its dedicated hub."
+      },
+      "tabs": {
+        "title": "Navigation Tabs",
+        "description": "Use these tabs to switch between Overview, Tournaments, Leaderboard, Training, Skill Lab, and Coaching sections."
+      },
+      "coaching": {
+        "title": "AI Coaching",
+        "description": "Get personalized tips from our AI coach. It analyzes your gameplay and provides targeted advice to improve."
+      },
+      "training": {
+        "title": "Training Videos",
+        "description": "Watch professional tutorials and gameplay guides to learn new strategies and techniques."
+      }
     },
-    "tournaments": {
-      "title": "Compete in Tournaments",
-      "description": "Join exciting tournaments, battle other players, and win amazing prizes. Register solo or with your team."
-    },
-    "coaching": {
-      "title": "AI-Powered Coaching",
-      "description": "Get personalized tips to level up your gameplay. Our AI coach analyzes your performance and gives you targeted advice."
+    "tournament": {
+      "welcome": "Tournament Details",
+      "welcomeMessage": "Here you'll find everything about this tournament. Let's walk through the key features.",
+      "info": {
+        "title": "Tournament Info",
+        "description": "This section shows the tournament banner, game, dates, prize pool, and how many participants have joined."
+      },
+      "tabs": {
+        "title": "Tournament Tabs",
+        "description": "Switch between Home, Rewards, Bracket, Rankings, Training, and Rules to explore all tournament details."
+      },
+      "register": {
+        "title": "Registration",
+        "description": "Use the sidebar to register for the tournament. You can join solo or create/join a team depending on the format."
+      },
+      "rewards": {
+        "title": "Prizes & Rewards",
+        "description": "Check out what you can win! Prizes include cash rewards, gaming gear, and exclusive digital items."
+      }
     },
     "gamingStats": {
-      "title": "Track Your Stats",
-      "description": "Connect your gaming accounts to see detailed match history, win rates, and performance trends all in one place."
+      "welcome": "Your Gaming Stats",
+      "welcomeMessage": "Track your performance across all your connected gaming accounts. Let's see what insights are available.",
+      "overview": {
+        "title": "Stats Overview",
+        "description": "See a summary of your gaming performance including tournament wins, overall ranking, and recent activity."
+      },
+      "accounts": {
+        "title": "Connected Accounts",
+        "description": "View all your linked gaming accounts. Connect more accounts to get a complete picture of your stats."
+      },
+      "tabs": {
+        "title": "Game Tabs",
+        "description": "Switch between different games to see detailed stats, match history, and performance for each one."
+      },
+      "aimTrainer": {
+        "title": "Aim Trainer",
+        "description": "Practice your aim and improve your accuracy. Track your progress and compete for high scores."
+      },
+      "performance": {
+        "title": "Performance Tips",
+        "description": "Get AI-powered insights about your gameplay with suggestions on how to improve your performance."
+      }
     },
-    "training": {
-      "title": "Train Your Reflexes",
-      "description": "Sharpen your skills with aim trainers and reaction time games. Practice makes perfect!"
+    "guidedTours": {
+      "title": "Guided Tours",
+      "description": "Replay the guided walkthrough for any section of the platform.",
+      "home": "Home Page Tour",
+      "gameHub": "Game Hub Tour",
+      "tournament": "Tournament Tour",
+      "gamingStats": "Gaming Stats Tour",
+      "replayTour": "Replay Tour",
+      "completed": "Completed",
+      "notStarted": "Not Started",
+      "resetAll": "Reset All Tours"
     }
   }
 }
