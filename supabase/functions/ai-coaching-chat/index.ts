@@ -21,6 +21,47 @@ interface CoachingRequest {
   };
 }
 
+interface TournamentStats {
+  totalMatches: number;
+  wins: number;
+  losses: number;
+  winRate: number;
+  recentForm: string[];
+}
+
+interface ManualProfile {
+  self_reported_rank: string | null;
+  external_stats_url: string | null;
+  external_stats_platform: string | null;
+  main_characters: string[];
+  playstyle_notes: string | null;
+  hours_played_estimate: number | null;
+}
+
+interface UniversalPerformanceContext {
+  tournamentStats: TournamentStats | null;
+  manualProfile: ManualProfile | null;
+  apiData: any | null;
+  gameCategory: string;
+}
+
+const GAME_CATEGORIES: Record<string, { category: string; topics: string[] }> = {
+  'league of legends': { category: 'moba', topics: ['laning', 'farming', 'vision', 'teamfighting', 'macro', 'builds', 'champions'] },
+  'dota 2': { category: 'moba', topics: ['laning', 'farming', 'vision', 'teamfighting', 'macro', 'items', 'heroes'] },
+  'valorant': { category: 'fps', topics: ['aim', 'positioning', 'utility', 'economy', 'communication', 'agents', 'maps'] },
+  'counter-strike': { category: 'fps', topics: ['aim', 'positioning', 'utility', 'economy', 'communication', 'maps'] },
+  'cs2': { category: 'fps', topics: ['aim', 'positioning', 'utility', 'economy', 'communication', 'maps'] },
+  'fortnite': { category: 'battle_royale', topics: ['building', 'aim', 'positioning', 'looting', 'rotations', 'endgame'] },
+  'apex legends': { category: 'battle_royale', topics: ['movement', 'aim', 'positioning', 'looting', 'rotations', 'legends'] },
+  'rocket league': { category: 'sports', topics: ['mechanics', 'positioning', 'rotation', 'aerials', 'teamplay'] },
+  'fifa': { category: 'sports', topics: ['dribbling', 'passing', 'defending', 'tactics', 'skill moves'] },
+  'fc 24': { category: 'sports', topics: ['dribbling', 'passing', 'defending', 'tactics', 'skill moves'] },
+  'street fighter': { category: 'fighting', topics: ['combos', 'neutral', 'matchups', 'execution', 'mindgames'] },
+  'tekken': { category: 'fighting', topics: ['combos', 'movement', 'matchups', 'punishment', 'okizeme'] },
+  'teamfight tactics': { category: 'autobattler', topics: ['economy', 'positioning', 'compositions', 'augments', 'items'] },
+  'tft': { category: 'autobattler', topics: ['economy', 'positioning', 'compositions', 'augments', 'items'] },
+};
+
 interface ContentRecommendation {
   content_id: string;
   title: string;
@@ -85,6 +126,142 @@ const detectTopics = (message: string): TopicDetectionResult => {
     topics: detectedTopics,
     primaryCategory
   };
+};
+
+const fetchTournamentStats = async (supabase: any, userId: string, gameId: string): Promise<TournamentStats | null> => {
+  try {
+    const { data: tournaments, error: tournamentError } = await supabase
+      .from('tournaments')
+      .select('id')
+      .eq('game_id', gameId);
+
+    if (tournamentError || !tournaments || tournaments.length === 0) {
+      console.log('[AI Coach] No tournaments found for this game');
+      return null;
+    }
+
+    const tournamentIds = tournaments.map((t: any) => t.id);
+
+    const { data: matches, error: matchError } = await supabase
+      .from('tournament_matches')
+      .select('winner_id, player1_id, player2_id, created_at')
+      .in('tournament_id', tournamentIds)
+      .or(`player1_id.eq.${userId},player2_id.eq.${userId}`)
+      .not('winner_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (matchError || !matches || matches.length === 0) {
+      console.log('[AI Coach] No tournament matches found for user');
+      return null;
+    }
+
+    const wins = matches.filter((m: any) => m.winner_id === userId).length;
+    const totalMatches = matches.length;
+    const losses = totalMatches - wins;
+    const winRate = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+
+    const recentForm = matches.slice(0, 5).map((m: any) =>
+      m.winner_id === userId ? 'W' : 'L'
+    );
+
+    console.log(`[AI Coach] Tournament stats: ${wins}W-${losses}L (${winRate}%)`);
+
+    return {
+      totalMatches,
+      wins,
+      losses,
+      winRate,
+      recentForm
+    };
+  } catch (err) {
+    console.error('[AI Coach] Error fetching tournament stats:', err);
+    return null;
+  }
+};
+
+const fetchManualProfile = async (supabase: any, userId: string, gameId: string): Promise<ManualProfile | null> => {
+  try {
+    const { data: profile, error } = await supabase
+      .from('user_game_manual_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('game_id', gameId)
+      .maybeSingle();
+
+    if (error || !profile) {
+      console.log('[AI Coach] No manual profile found for this game');
+      return null;
+    }
+
+    console.log(`[AI Coach] Manual profile found: rank=${profile.self_reported_rank}`);
+
+    return {
+      self_reported_rank: profile.self_reported_rank,
+      external_stats_url: profile.external_stats_url,
+      external_stats_platform: profile.external_stats_platform,
+      main_characters: profile.main_characters || [],
+      playstyle_notes: profile.playstyle_notes,
+      hours_played_estimate: profile.hours_played_estimate
+    };
+  } catch (err) {
+    console.error('[AI Coach] Error fetching manual profile:', err);
+    return null;
+  }
+};
+
+const detectGameCategory = (gameName: string): string => {
+  const lowerName = gameName.toLowerCase();
+
+  for (const [game, config] of Object.entries(GAME_CATEGORIES)) {
+    if (lowerName.includes(game)) {
+      return config.category;
+    }
+  }
+
+  return 'competitive';
+};
+
+const getEloTierGuidance = (rank: string | null | undefined): string => {
+  if (!rank) return '';
+
+  const lowerRank = rank.toLowerCase();
+
+  if (lowerRank.includes('iron') || lowerRank.includes('bronze') || lowerRank.includes('silver') ||
+      lowerRank.includes('beginner') || lowerRank.includes('rookie') || lowerRank.includes('copper')) {
+    return `
+## Player Skill Level: Beginner/Intermediate
+- Focus on fundamentals and basic mechanics
+- Explain concepts clearly without assuming prior knowledge
+- Prioritize consistency over flashy plays
+- Encourage good habits early (communication, positioning basics)
+- Celebrate small improvements to build confidence`;
+  }
+
+  if (lowerRank.includes('gold') || lowerRank.includes('platinum') || lowerRank.includes('plat') ||
+      lowerRank.includes('intermediate') || lowerRank.includes('adept')) {
+    return `
+## Player Skill Level: Intermediate/Advanced
+- Player has solid fundamentals, focus on decision-making
+- Discuss game sense and reading opponents
+- Work on consistency and reducing mistakes
+- Introduce more advanced concepts and timings
+- Focus on efficiency and optimization`;
+  }
+
+  if (lowerRank.includes('diamond') || lowerRank.includes('master') || lowerRank.includes('grandmaster') ||
+      lowerRank.includes('challenger') || lowerRank.includes('immortal') || lowerRank.includes('radiant') ||
+      lowerRank.includes('champion') || lowerRank.includes('elite') || lowerRank.includes('legend')) {
+    return `
+## Player Skill Level: Advanced/Expert
+- Player has strong mechanics, focus on micro-optimizations
+- Discuss high-level meta and adaptation strategies
+- Analyze edge cases and situational decisions
+- Focus on mental game and consistency under pressure
+- Discuss team coordination and leadership`;
+  }
+
+  return '';
 };
 
 const loadAIConfig = async (supabase: any, gameId: string): Promise<AIConfig> => {
@@ -275,6 +452,190 @@ Example format:
 - If the player asks about a specific champion or role not shown in their recent games, still provide helpful advice
 - Be supportive - gaming improvement is a journey
 - If you recommend watching tutorial content, mention it naturally (e.g., "You might benefit from watching some wave management tutorials")
+
+Remember: You're talking to a real player who wants to improve. Be their coach, not a textbook.`;
+};
+
+const buildUniversalSystemPrompt = (
+  universalContext: UniversalPerformanceContext,
+  gameName: string,
+  aiConfig: AIConfig
+): string => {
+  const category = universalContext.gameCategory;
+  let contextSection = '';
+  let rankSection = '';
+
+  if (universalContext.tournamentStats) {
+    const stats = universalContext.tournamentStats;
+    contextSection += `
+## Platform Tournament Performance
+- Total Matches: ${stats.totalMatches}
+- Win Rate: ${stats.winRate}% (${stats.wins}W - ${stats.losses}L)
+- Recent Form: ${stats.recentForm.join(' ')}
+${stats.winRate >= 60 ? '- Strong performance! Focus on maintaining consistency.' : ''}
+${stats.winRate < 40 ? '- Room for improvement. Let\'s work on fundamentals.' : ''}
+`;
+  }
+
+  if (universalContext.manualProfile) {
+    const profile = universalContext.manualProfile;
+
+    if (profile.self_reported_rank) {
+      rankSection = getEloTierGuidance(profile.self_reported_rank);
+      contextSection += `\n## Self-Reported Rank: ${profile.self_reported_rank}\n`;
+    }
+
+    if (profile.main_characters && profile.main_characters.length > 0) {
+      contextSection += `## Main Characters/Agents: ${profile.main_characters.join(', ')}\n`;
+    }
+
+    if (profile.playstyle_notes) {
+      contextSection += `## Playstyle Notes: ${profile.playstyle_notes}\n`;
+    }
+
+    if (profile.hours_played_estimate) {
+      contextSection += `## Experience: ~${profile.hours_played_estimate} hours played\n`;
+    }
+
+    if (profile.external_stats_url) {
+      contextSection += `## External Stats: Available at ${profile.external_stats_platform || 'external site'}\n`;
+    }
+  }
+
+  if (universalContext.apiData?.rank) {
+    rankSection = getEloTierGuidance(universalContext.apiData.rank);
+    contextSection += `\n## Verified Rank: ${universalContext.apiData.rank}\n`;
+  }
+
+  let categoryGuidance = '';
+  switch (category) {
+    case 'moba':
+      categoryGuidance = `
+## MOBA Coaching Focus Areas:
+- Laning phase fundamentals (CS, trading, wave management)
+- Map awareness and vision control
+- Objective priorities and timing
+- Team fighting positioning and target selection
+- Champion/hero matchups and counters
+- Build paths and itemization`;
+      break;
+    case 'fps':
+      categoryGuidance = `
+## FPS Coaching Focus Areas:
+- Aim training and crosshair placement
+- Map knowledge and callouts
+- Utility usage and lineups
+- Economy management (if applicable)
+- Team communication and coordination
+- Positioning and angle holding
+- Movement mechanics`;
+      break;
+    case 'battle_royale':
+      categoryGuidance = `
+## Battle Royale Coaching Focus Areas:
+- Drop locations and early game strategy
+- Looting efficiency and inventory management
+- Rotations and zone awareness
+- Engagement decisions (when to fight vs. avoid)
+- Endgame positioning and placement
+- Building/movement mechanics (game-specific)`;
+      break;
+    case 'fighting':
+      categoryGuidance = `
+## Fighting Game Coaching Focus Areas:
+- Combo execution and optimization
+- Neutral game and footsies
+- Character matchup knowledge
+- Frame data fundamentals
+- Mental game and adaptation
+- Punishment and whiff punishing`;
+      break;
+    case 'sports':
+      categoryGuidance = `
+## Sports Game Coaching Focus Areas:
+- Core mechanics and controls
+- Tactical formations and strategies
+- Player/team management
+- Set pieces and special situations
+- Reading opponent patterns
+- Online meta and common strategies`;
+      break;
+    case 'autobattler':
+      categoryGuidance = `
+## Auto-battler Coaching Focus Areas:
+- Economy management (interest, spending)
+- Composition building and pivoting
+- Positioning on the board
+- Item combinations and priorities
+- Meta compositions and flex picks
+- Scouting and adaptation`;
+      break;
+    default:
+      categoryGuidance = `
+## Competitive Gaming Focus Areas:
+- Core mechanics and fundamentals
+- Strategic decision-making
+- Consistent practice routines
+- Mental game and tilt prevention
+- Analyzing and learning from mistakes`;
+  }
+
+  let emphasisSection = '';
+  if (aiConfig.emphasisAreas.length > 0) {
+    emphasisSection = `
+## Current Coaching Focus Areas (Prioritize these topics):
+${aiConfig.emphasisAreas.map(area => `- ${area}`).join('\n')}
+
+When players ask questions related to these areas, provide extra detailed advice and actionable steps.
+`;
+  }
+
+  let customSections = '';
+  if (aiConfig.customPromptSections.length > 0) {
+    customSections = '\n' + aiConfig.customPromptSections.join('\n\n') + '\n';
+  }
+
+  return `You are an expert ${gameName} coach with deep knowledge of competitive gaming, strategies, and improvement techniques. Your role is to help players improve their gameplay through personalized coaching.
+
+## Your Coaching Style:
+- Be encouraging but honest about areas needing improvement
+- Provide specific, actionable advice based on available performance data
+- Use game-specific terminology appropriately
+- Focus on fundamentals before advanced techniques
+- Identify patterns that indicate strengths and weaknesses
+- Recommend specific drills or practice methods when appropriate
+- Adapt your advice to the player's skill level
+${categoryGuidance}${rankSection}${emphasisSection}${customSections}${contextSection}
+
+## Response Formatting Rules:
+You MUST format your responses using markdown for better readability:
+
+1. **Use headers** (## or ###) to organize different sections of your advice
+2. **Bold key terms** and important concepts using **double asterisks**
+3. Use bullet points (-) for lists of tips or items
+4. Use numbered lists (1. 2. 3.) for step-by-step instructions or priority actions
+5. Use \`code formatting\` for in-game terms, abilities, or key bindings
+
+## IMPORTANT - Key Takeaways Section:
+At the END of every response, you MUST include a "## Key Takeaways" section with 2-4 actionable bullet points summarizing the most important advice. Each takeaway should be:
+- Specific and actionable (start with action verbs like "Focus on", "Practice", "Try", "Remember")
+- Directly relevant to what the player asked
+- Something they can immediately work on in their next game
+
+## Quest Suggestions:
+When you identify a specific area the player should work on, you may suggest a "Coaching Quest" - a focused practice goal. Format quests like this:
+
+**Suggested Quest:** [Quest Title]
+- Goal: [What to achieve, e.g., "Play 5 games focusing only on X"]
+- Why: [Brief explanation of why this will help]
+
+Only suggest quests when there's a clear, specific skill to practice.
+
+## Important Guidelines:
+- Keep responses clear and well-structured
+- Reference any available performance data when giving advice
+- Be supportive - gaming improvement is a journey
+- If you recommend external resources, mention them naturally
 
 Remember: You're talking to a real player who wants to improve. Be their coach, not a textbook.`;
 };
@@ -504,6 +865,25 @@ Deno.serve(async (req: Request) => {
       topicDetection
     );
 
+    console.log('[AI Coach] --- Building Universal Performance Context ---');
+    const [tournamentStats, manualProfile] = await Promise.all([
+      fetchTournamentStats(supabase, user.id, game_id),
+      fetchManualProfile(supabase, user.id, game_id)
+    ]);
+
+    const gameCategory = detectGameCategory(game_name || '');
+    console.log(`[AI Coach] Game category detected: ${gameCategory}`);
+
+    const universalContext: UniversalPerformanceContext = {
+      tournamentStats,
+      manualProfile,
+      apiData: currentSession.performance_context || performance_context,
+      gameCategory
+    };
+
+    const hasApiData = performance_context?.matches && performance_context.matches.length > 0;
+    console.log(`[AI Coach] Context sources - Tournament: ${!!tournamentStats}, Manual: ${!!manualProfile}, API: ${hasApiData}`);
+
     const userMessage: ChatMessage = {
       role: 'user',
       content: message,
@@ -511,11 +891,17 @@ Deno.serve(async (req: Request) => {
     };
     conversationHistory.push(userMessage);
 
-    const systemPrompt = buildLoLSystemPrompt(
-      currentSession.performance_context || performance_context,
-      game_name || 'League of Legends',
-      aiConfig
-    );
+    const systemPrompt = hasApiData
+      ? buildLoLSystemPrompt(
+          currentSession.performance_context || performance_context,
+          game_name || 'League of Legends',
+          aiConfig
+        )
+      : buildUniversalSystemPrompt(
+          universalContext,
+          game_name || 'Unknown Game',
+          aiConfig
+        );
 
     const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
