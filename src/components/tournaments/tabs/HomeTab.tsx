@@ -244,40 +244,30 @@ interface InfoCardProps {
 const InfoCard: React.FC<InfoCardProps> = ({ icon: Icon, label, value, accentColor, glowColor, isCompleted }) => {
   return (
     <div
-      className={`group relative flex items-start space-x-3 p-4 rounded-xl transition-all duration-300 overflow-hidden ${
-        isCompleted ? 'opacity-75' : 'hover:scale-[1.02]'
+      className={`group relative flex items-center gap-4 py-3 transition-all duration-300 ${
+        isCompleted ? 'opacity-60' : 'hover:translate-x-1'
       }`}
-      style={{
-        background: 'rgba(255, 255, 255, 0.08)',
-        boxShadow: isCompleted ? 'none' : `inset 0 0 0 1px ${accentColor}20`,
-      }}
     >
       <div
-        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-all duration-300"
+        className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
         style={{
-          background: `linear-gradient(180deg, ${accentColor} 0%, ${accentColor}60 100%)`,
-          opacity: isCompleted ? 0.4 : 1,
-        }}
-      />
-      <div
-        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-        style={{
-          background: `linear-gradient(135deg, ${accentColor}30 0%, ${accentColor}15 100%)`,
-          boxShadow: isCompleted ? 'none' : `0 4px 12px ${accentColor}20, inset 0 1px 1px rgba(255,255,255,0.1)`,
+          background: `linear-gradient(135deg, ${accentColor}25 0%, ${accentColor}10 100%)`,
+          border: `1px solid ${accentColor}30`,
+          boxShadow: isCompleted ? 'none' : `0 4px 16px ${accentColor}15`,
         }}
       >
         <Icon
-          className="w-5 h-5 transition-all duration-300 group-hover:scale-110"
+          className="w-5 h-5 transition-all duration-300"
           style={{
             color: accentColor,
-            filter: isCompleted ? 'none' : `drop-shadow(0 2px 4px ${accentColor}40)`,
+            filter: isCompleted ? 'none' : `drop-shadow(0 2px 6px ${accentColor}50)`,
           }}
         />
       </div>
-      <div className="flex-1 min-w-0 pt-0.5">
+      <div className="flex-1 min-w-0">
         <p
-          className="text-xs uppercase tracking-wider mb-1 transition-colors duration-300"
-          style={{ color: `${accentColor}90` }}
+          className="text-xs uppercase tracking-wider mb-0.5 font-medium"
+          style={{ color: `${accentColor}` }}
         >
           {label}
         </p>
@@ -285,12 +275,6 @@ const InfoCard: React.FC<InfoCardProps> = ({ icon: Icon, label, value, accentCol
           {value}
         </p>
       </div>
-      <div
-        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at top left, ${accentColor}10 0%, transparent 70%)`,
-        }}
-      />
     </div>
   );
 };
