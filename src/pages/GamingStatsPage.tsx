@@ -35,6 +35,7 @@ import { APP_CONFIG } from '../constants';
 import ChatListModal from '../components/chat/ChatListModal';
 import ChatModal from '../components/chat/ChatModal';
 import ChannelModal from '../components/chat/ChannelModal';
+import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
 interface ShareFriend {
   id: string;
@@ -635,7 +636,7 @@ const GamingStatsPage: React.FC = () => {
             </div>
             
             {/* Tabs Navigation */}
-            <div className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
+            <div id="walkthrough-stats-tabs" className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('overview')}
                 className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
@@ -752,23 +753,27 @@ const GamingStatsPage: React.FC = () => {
               {activeTab === 'overview' && (
                 <div className="space-y-8">
                   {/* Gaming Stats Overview */}
-                  <GamingStatsOverview 
-                    personalStats={calculatedAimTrainerStats}
-                    gameRankings={userProfile?.game_rankings || []}
-                  />
-                  
+                  <div id="walkthrough-stats-overview">
+                    <GamingStatsOverview
+                      personalStats={calculatedAimTrainerStats}
+                      gameRankings={userProfile?.game_rankings || []}
+                    />
+                  </div>
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Tournament Stats */}
-                    <TournamentStatsCard 
+                    <TournamentStatsCard
                       tournamentStats={userProfile?.tournament_stats || { total: 0, upcoming: 0, ongoing: 0, completed: 0 }}
                     />
-                    
+
                     {/* Connected Accounts Summary */}
-                    <ConnectedAccountsSummary
-                      totalAccounts={userProfile?.gaming_accounts?.length || 0}
-                      validatedAccounts={userProfile?.gaming_accounts?.filter((account: any) => account.is_validated).length || 0}
-                      gameAccounts={userProfile?.gaming_accounts || []}
-                    />
+                    <div id="walkthrough-stats-accounts">
+                      <ConnectedAccountsSummary
+                        totalAccounts={userProfile?.gaming_accounts?.length || 0}
+                        validatedAccounts={userProfile?.gaming_accounts?.filter((account: any) => account.is_validated).length || 0}
+                        gameAccounts={userProfile?.gaming_accounts || []}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -863,16 +868,17 @@ const GamingStatsPage: React.FC = () => {
                             matches={riotMatchHistory}
                             isLoading={isLoadingRiotMatches}
                             onLoadMore={displayingOwnStats ? () => {
-                              // TODO: Implement load more functionality
                               toast.info(t('gaming.featureComingSoon'));
                             } : undefined}
                             hasMore={false}
                           />
 
-                          <RiotPerformanceTips
-                            matches={riotMatchHistory}
-                            rankedStats={lolAccount?.validation_data?.rankedStats}
-                          />
+                          <div id="walkthrough-stats-performance">
+                            <RiotPerformanceTips
+                              matches={riotMatchHistory}
+                              rankedStats={lolAccount?.validation_data?.rankedStats}
+                            />
+                          </div>
                         </div>
                       )}
                       
@@ -1139,7 +1145,7 @@ const GamingStatsPage: React.FC = () => {
               
               {/* Aim Trainer Tab */}
               {activeTab === 'aim-trainer' && (
-                <div className="space-y-6">
+                <div id="walkthrough-stats-aim-trainer" className="space-y-6">
                   <h2 className="font-heading font-semibold text-xl text-gray-900 dark:text-white">
                     {t('gaming.aimTraining')}
                   </h2>
@@ -1224,6 +1230,9 @@ const GamingStatsPage: React.FC = () => {
           initialMessageContent={shareMessageContent}
         />
       )}
+
+      {/* Onboarding Walkthrough */}
+      <OnboardingWalkthrough pageName="gamingStats" />
     </div>
   );
 };

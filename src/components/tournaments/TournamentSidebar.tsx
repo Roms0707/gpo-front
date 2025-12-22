@@ -163,7 +163,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
   return (
     <div className="space-y-6">
       {/* Registration Card */}
-      <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg relative border border-gray-200 dark:border-gray-800">
+      <div id="walkthrough-tournament-register" className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg relative border border-gray-200 dark:border-gray-800">
         <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">
             {t('tournamentPage.sidebar.registration')}

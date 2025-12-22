@@ -32,6 +32,7 @@ import RewardsTab from '../components/tournaments/tabs/RewardsTab';
 import ClassementTab from '../components/tournaments/tabs/ClassementTab';
 import TrainingTab from '../components/tournaments/tabs/TrainingTab';
 import RulesTab from '../components/tournaments/tabs/RulesTab';
+import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
 // Hooks
 import { useTournamentData } from '../hooks/useTournamentData';
@@ -928,6 +929,9 @@ const TournamentPage: React.FC = () => {
           user={user}
         />
       )}
+
+      {/* Onboarding Walkthrough */}
+      <OnboardingWalkthrough pageName="tournament" />
     </div>
   );
 };

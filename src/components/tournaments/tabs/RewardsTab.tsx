@@ -18,7 +18,7 @@ const RewardsTab: React.FC<RewardsTabProps> = ({ tournament, prizes, gameName })
   const prizeCalculation = calculateTotalPrizePool(prizes);
 
   return (
-    <div className="bg-white dark:bg-dark-100 rounded-xl p-4 sm:p-5 md:p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" id="rewards-panel" aria-labelledby="rewards-tab">
+    <div id="walkthrough-tournament-rewards" className="bg-white dark:bg-dark-100 rounded-xl p-4 sm:p-5 md:p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" aria-labelledby="rewards-tab">
       <h2 className="font-heading font-bold text-xl sm:text-2xl mb-4 sm:mb-6 flex items-center text-gray-900 dark:text-white">
         <Gift className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500 mr-2" aria-hidden="true" />
         <span className="hidden sm:inline">{t('rewardsTab.title', { title: tournament?.title })}</span>

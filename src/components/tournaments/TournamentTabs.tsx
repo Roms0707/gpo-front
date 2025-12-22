@@ -68,7 +68,7 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800 sticky top-16 z-40">
+    <div id="walkthrough-tournament-tabs" className="bg-white dark:bg-dark-100 border-b border-gray-200 dark:border-gray-800 sticky top-16 z-40">
       <div className="container mx-auto px-4">
         {/* Scrollable tabs container with gradient indicators */}
         <div className="relative">

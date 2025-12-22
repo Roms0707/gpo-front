@@ -194,6 +194,7 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
 
   return (
     <div
+      id="walkthrough-tournament-hero"
       ref={ref}
       className={`relative min-h-[420px] md:min-h-[460px] bg-cover bg-center ${isCompleted ? 'grayscale-[30%]' : ''}`}
       style={{
