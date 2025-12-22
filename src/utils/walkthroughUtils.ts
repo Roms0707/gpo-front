@@ -7,6 +7,15 @@ export interface ElementRect {
   right: number;
 }
 
+export interface ViewportRelativeRect {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+  bottom: number;
+  right: number;
+}
+
 export interface TooltipPosition {
   top: number;
   left: number;
@@ -14,7 +23,7 @@ export interface TooltipPosition {
 }
 
 const TOOLTIP_WIDTH = 320;
-const TOOLTIP_HEIGHT = 180;
+const TOOLTIP_HEIGHT = 200;
 const ARROW_OFFSET = 16;
 const VIEWPORT_PADDING = 20;
 const SPOTLIGHT_PADDING = 12;
@@ -40,63 +49,124 @@ export function getViewportRect(elementId: string): DOMRect | null {
   return element.getBoundingClientRect();
 }
 
+export function getVisiblePortionRect(elementId: string): ViewportRelativeRect | null {
+  const element = document.getElementById(elementId);
+  if (!element) return null;
+
+  const rect = element.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+
+  const visibleTop = Math.max(0, rect.top);
+  const visibleLeft = Math.max(0, rect.left);
+  const visibleBottom = Math.min(viewportHeight, rect.bottom);
+  const visibleRight = Math.min(viewportWidth, rect.right);
+
+  if (visibleBottom <= visibleTop || visibleRight <= visibleLeft) {
+    return null;
+  }
+
+  return {
+    top: visibleTop,
+    left: visibleLeft,
+    width: visibleRight - visibleLeft,
+    height: visibleBottom - visibleTop,
+    bottom: visibleBottom,
+    right: visibleRight,
+  };
+}
+
+interface PositionCandidate {
+  position: 'top' | 'bottom' | 'left' | 'right';
+  top: number;
+  left: number;
+  arrowPosition: 'top' | 'bottom' | 'left' | 'right';
+  score: number;
+}
+
 export function calculateTooltipPosition(
-  elementRect: ElementRect,
+  viewportRect: ViewportRelativeRect,
   preferredPosition: 'top' | 'bottom' | 'left' | 'right' | 'center' = 'bottom'
 ): TooltipPosition {
   const viewportHeight = window.innerHeight;
   const viewportWidth = window.innerWidth;
-  const scrollY = window.scrollY;
 
-  const elementCenterX = elementRect.left + elementRect.width / 2;
-  const elementCenterY = elementRect.top + elementRect.height / 2;
+  const elementCenterX = viewportRect.left + viewportRect.width / 2;
+  const elementCenterY = viewportRect.top + viewportRect.height / 2;
 
-  const spaceAbove = elementRect.top - scrollY;
-  const spaceBelow = viewportHeight - (elementRect.bottom - scrollY);
-  const spaceLeft = elementRect.left;
-  const spaceRight = viewportWidth - elementRect.right;
+  const spaceAbove = viewportRect.top;
+  const spaceBelow = viewportHeight - viewportRect.bottom;
+  const spaceLeft = viewportRect.left;
+  const spaceRight = viewportWidth - viewportRect.right;
 
-  let position = preferredPosition;
+  const candidates: PositionCandidate[] = [];
 
-  if (position === 'bottom' && spaceBelow < TOOLTIP_HEIGHT + VIEWPORT_PADDING) {
-    position = spaceAbove > TOOLTIP_HEIGHT + VIEWPORT_PADDING ? 'top' : 'bottom';
-  } else if (position === 'top' && spaceAbove < TOOLTIP_HEIGHT + VIEWPORT_PADDING) {
-    position = spaceBelow > TOOLTIP_HEIGHT + VIEWPORT_PADDING ? 'bottom' : 'top';
+  const topCandidate: PositionCandidate = {
+    position: 'top',
+    top: viewportRect.top - TOOLTIP_HEIGHT - ARROW_OFFSET,
+    left: elementCenterX - TOOLTIP_WIDTH / 2,
+    arrowPosition: 'bottom',
+    score: spaceAbove >= TOOLTIP_HEIGHT + ARROW_OFFSET + VIEWPORT_PADDING ? spaceAbove : -1,
+  };
+  candidates.push(topCandidate);
+
+  const bottomCandidate: PositionCandidate = {
+    position: 'bottom',
+    top: viewportRect.bottom + ARROW_OFFSET,
+    left: elementCenterX - TOOLTIP_WIDTH / 2,
+    arrowPosition: 'top',
+    score: spaceBelow >= TOOLTIP_HEIGHT + ARROW_OFFSET + VIEWPORT_PADDING ? spaceBelow : -1,
+  };
+  candidates.push(bottomCandidate);
+
+  const leftCandidate: PositionCandidate = {
+    position: 'left',
+    top: elementCenterY - TOOLTIP_HEIGHT / 2,
+    left: viewportRect.left - TOOLTIP_WIDTH - ARROW_OFFSET,
+    arrowPosition: 'right',
+    score: spaceLeft >= TOOLTIP_WIDTH + ARROW_OFFSET + VIEWPORT_PADDING ? spaceLeft : -1,
+  };
+  candidates.push(leftCandidate);
+
+  const rightCandidate: PositionCandidate = {
+    position: 'right',
+    top: elementCenterY - TOOLTIP_HEIGHT / 2,
+    left: viewportRect.right + ARROW_OFFSET,
+    arrowPosition: 'left',
+    score: spaceRight >= TOOLTIP_WIDTH + ARROW_OFFSET + VIEWPORT_PADDING ? spaceRight : -1,
+  };
+  candidates.push(rightCandidate);
+
+  let selected: PositionCandidate | null = null;
+
+  const preferred = candidates.find(c => c.position === preferredPosition);
+  if (preferred && preferred.score > 0) {
+    selected = preferred;
   }
 
-  let top: number;
-  let left: number;
-  let arrowPosition: 'top' | 'bottom' | 'left' | 'right';
-
-  switch (position) {
-    case 'top':
-      top = elementRect.top - TOOLTIP_HEIGHT - ARROW_OFFSET;
-      left = elementCenterX - TOOLTIP_WIDTH / 2;
-      arrowPosition = 'bottom';
-      break;
-    case 'bottom':
-      top = elementRect.bottom + ARROW_OFFSET;
-      left = elementCenterX - TOOLTIP_WIDTH / 2;
-      arrowPosition = 'top';
-      break;
-    case 'left':
-      top = elementCenterY - TOOLTIP_HEIGHT / 2;
-      left = elementRect.left - TOOLTIP_WIDTH - ARROW_OFFSET;
-      arrowPosition = 'right';
-      break;
-    case 'right':
-      top = elementCenterY - TOOLTIP_HEIGHT / 2;
-      left = elementRect.right + ARROW_OFFSET;
-      arrowPosition = 'left';
-      break;
-    default:
-      top = viewportHeight / 2 - TOOLTIP_HEIGHT / 2 + scrollY;
-      left = viewportWidth / 2 - TOOLTIP_WIDTH / 2;
-      arrowPosition = 'bottom';
+  if (!selected) {
+    const validCandidates = candidates.filter(c => c.score > 0);
+    if (validCandidates.length > 0) {
+      selected = validCandidates.reduce((best, current) =>
+        current.score > best.score ? current : best
+      );
+    }
   }
+
+  if (!selected) {
+    if (spaceBelow >= spaceAbove) {
+      selected = bottomCandidate;
+    } else {
+      selected = topCandidate;
+    }
+  }
+
+  let { top, left } = selected;
+  const { arrowPosition } = selected;
 
   left = Math.max(VIEWPORT_PADDING, Math.min(left, viewportWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING));
-  top = Math.max(scrollY + VIEWPORT_PADDING, top);
+  top = Math.max(VIEWPORT_PADDING, top);
+  top = Math.min(top, viewportHeight - TOOLTIP_HEIGHT - VIEWPORT_PADDING);
 
   return { top, left, arrowPosition };
 }

@@ -2,11 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { OnboardingStep } from '../../constants/onboardingSteps';
 import {
-  getElementRect,
   getViewportRect,
+  getVisiblePortionRect,
   calculateTooltipPosition,
-  ElementRect,
   TooltipPosition,
+  ViewportRelativeRect,
 } from '../../utils/walkthroughUtils';
 import WalkthroughTooltip from './WalkthroughTooltip';
 
@@ -30,21 +30,32 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
   onPrevious,
   onSkip,
 }) => {
-  const [targetRect, setTargetRect] = useState<ElementRect | null>(null);
   const [viewportRect, setViewportRect] = useState<DOMRect | null>(null);
+  const [visibleRect, setVisibleRect] = useState<ViewportRelativeRect | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
 
   const updatePositions = useCallback(() => {
     if (!step.targetElementId) return;
 
-    const elemRect = getElementRect(step.targetElementId);
     const vpRect = getViewportRect(step.targetElementId);
+    const visRect = getVisiblePortionRect(step.targetElementId);
 
-    setTargetRect(elemRect);
     setViewportRect(vpRect);
+    setVisibleRect(visRect);
 
-    if (elemRect) {
-      const position = calculateTooltipPosition(elemRect, step.position);
+    if (visRect) {
+      const position = calculateTooltipPosition(visRect, step.position);
+      setTooltipPosition(position);
+    } else if (vpRect) {
+      const fallbackRect: ViewportRelativeRect = {
+        top: vpRect.top,
+        left: vpRect.left,
+        width: vpRect.width,
+        height: vpRect.height,
+        bottom: vpRect.bottom,
+        right: vpRect.right,
+      };
+      const position = calculateTooltipPosition(fallbackRect, step.position);
       setTooltipPosition(position);
     }
   }, [step.targetElementId, step.position]);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, X } from 'lucide-react';
@@ -19,6 +19,10 @@ const GOLD_COLOR = '#C8AA6E';
 const GOLD_DARK = '#A68B4B';
 const GOLD_LIGHT = '#F0E6D2';
 
+const TOOLTIP_WIDTH = 320;
+const TOOLTIP_HEIGHT = 200;
+const VIEWPORT_PADDING = 20;
+
 const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
   step,
   position,
@@ -33,6 +37,26 @@ const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
   const isLastStep = currentStep === totalSteps - 1;
   const isFirstFeatureStep = currentStep === 1;
 
+  const clampedPosition = useMemo(() => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let clampedTop = position.top;
+    let clampedLeft = position.left;
+
+    clampedLeft = Math.max(VIEWPORT_PADDING, clampedLeft);
+    clampedLeft = Math.min(clampedLeft, viewportWidth - TOOLTIP_WIDTH - VIEWPORT_PADDING);
+
+    clampedTop = Math.max(VIEWPORT_PADDING, clampedTop);
+    clampedTop = Math.min(clampedTop, viewportHeight - TOOLTIP_HEIGHT - VIEWPORT_PADDING);
+
+    return {
+      top: clampedTop,
+      left: clampedLeft,
+      arrowPosition: position.arrowPosition,
+    };
+  }, [position]);
+
   const getArrowStyles = (): React.CSSProperties => {
     const baseStyles: React.CSSProperties = {
       position: 'absolute',
@@ -40,7 +64,7 @@ const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
       height: 0,
     };
 
-    switch (position.arrowPosition) {
+    switch (clampedPosition.arrowPosition) {
       case 'top':
         return {
           ...baseStyles,
@@ -94,8 +118,8 @@ const WalkthroughTooltip: React.FC<WalkthroughTooltipProps> = ({
       transition={{ duration: 0.25, ease: 'easeOut' }}
       className="fixed z-[10000] w-80"
       style={{
-        top: position.top,
-        left: position.left,
+        top: clampedPosition.top,
+        left: clampedPosition.left,
       }}
     >
       <div

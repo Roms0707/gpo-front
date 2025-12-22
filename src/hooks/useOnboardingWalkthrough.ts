@@ -102,7 +102,7 @@ export function useOnboardingWalkthrough(pageName: OnboardingPage = 'home'): Use
     if (scrollBehavior === 'scroll-to-top') {
       scrollToTop();
     } else if (scrollBehavior === 'scroll-to-element' && !isElementInViewport(step.targetElementId)) {
-      scrollToElement(step.targetElementId, 150);
+      scrollToElement(step.targetElementId, 250);
     }
   }, [steps]);
 
