@@ -16,7 +16,6 @@ interface QuickRegisterBarProps {
   onRegister: () => void;
   canRegister: () => boolean;
   getRegistrationStatus: () => string;
-  heroRef: React.RefObject<HTMLDivElement>;
 }
 
 const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
@@ -29,13 +28,12 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
   gameName,
   onRegister,
   canRegister,
-  getRegistrationStatus,
-  heroRef
+  getRegistrationStatus
 }) => {
   const { t } = useTranslation();
   const location = useLocation();
-  const [isSticky, setIsSticky] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(80);
   const barRef = useRef<HTMLDivElement>(null);
 
   const gameTheme = getGameTheme(gameName || tournament?.game);
@@ -51,26 +49,27 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
   const isNearlyFull = participantPercentage >= 80;
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!heroRef.current) return;
-
-      const heroBottom = heroRef.current.getBoundingClientRect().bottom;
-      const shouldBeSticky = heroBottom < 100;
-
-      setIsSticky(shouldBeSticky);
-
-      if (shouldBeSticky && !isVisible) {
-        setTimeout(() => setIsVisible(true), 50);
-      } else if (!shouldBeSticky) {
-        setIsVisible(false);
+    const calculateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        const headerRect = header.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(header);
+        const marginTop = parseFloat(computedStyle.marginTop) || 0;
+        setHeaderHeight(headerRect.height + marginTop);
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll();
+    calculateHeaderHeight();
 
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [heroRef, isVisible]);
+    const timer = setTimeout(() => setIsVisible(true), 100);
+
+    window.addEventListener('resize', calculateHeaderHeight);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', calculateHeaderHeight);
+    };
+  }, []);
 
   const getStatusBadge = () => {
     if (registrationStatus.registered) {
@@ -182,12 +181,11 @@ const QuickRegisterBar: React.FC<QuickRegisterBarProps> = ({
     );
   };
 
-  if (!isSticky) return null;
-
   return (
     <div
       ref={barRef}
-      className={`fixed top-20 left-0 right-0 z-40 transition-all duration-300 ${
+      style={{ top: `${headerHeight}px` }}
+      className={`fixed left-0 right-0 z-40 transition-all duration-300 ${
         isVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
     >

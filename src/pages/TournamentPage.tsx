@@ -550,7 +550,7 @@ const TournamentPage: React.FC = () => {
         prizes={prizes}
       />
 
-      {/* Sticky Quick Register Bar */}
+      {/* Always Visible Quick Register Bar */}
       <QuickRegisterBar
         tournament={tournament}
         user={user}
@@ -562,7 +562,6 @@ const TournamentPage: React.FC = () => {
         onRegister={handleRegister}
         canRegister={canRegister}
         getRegistrationStatus={getRegistrationStatus}
-        heroRef={heroRef}
       />
 
       {/* Tabs Navigation */}
