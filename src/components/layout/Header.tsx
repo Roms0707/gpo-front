@@ -229,6 +229,7 @@ const Header: React.FC = () => {
       href: '#gaming-stats',
       icon: <Award className="w-4 h-4" />,
       onClick: openGamingStatsModal,
+      id: 'walkthrough-gaming-stats',
     });
 
     navItems.push({

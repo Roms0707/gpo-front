@@ -61,7 +61,8 @@ export const APP_CONFIG = {
   // Local storage keys
   STORAGE_KEYS: {
     USER_DATA: 'esport_user_data',
-    THEME: 'theme'
+    THEME: 'theme',
+    ONBOARDING_COMPLETED: 'onboarding_completed'
   },
   
   // Contact information

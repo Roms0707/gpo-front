@@ -3370,5 +3370,35 @@
       "title": "9. Contact",
       "content": "For any questions regarding these legal notices, you can contact us at the following email address: {{legalEmail}}."
     }
+  },
+  "onboarding": {
+    "welcome": "Welcome, {{username}}!",
+    "welcomeMessage": "Let us show you around and help you get the most out of your gaming experience.",
+    "letsStart": "Let's Get Started",
+    "skip": "Skip Tour",
+    "next": "Next",
+    "previous": "Back",
+    "finish": "Get Started",
+    "defaultUser": "Champion",
+    "gameHub": {
+      "title": "Explore Game Hubs",
+      "description": "Dive deep into your favorite games. Each hub has tournaments, leaderboards, coaching, and more all in one place."
+    },
+    "tournaments": {
+      "title": "Compete in Tournaments",
+      "description": "Join exciting tournaments, battle other players, and win amazing prizes. Register solo or with your team."
+    },
+    "coaching": {
+      "title": "AI-Powered Coaching",
+      "description": "Get personalized tips to level up your gameplay. Our AI coach analyzes your performance and gives you targeted advice."
+    },
+    "gamingStats": {
+      "title": "Track Your Stats",
+      "description": "Connect your gaming accounts to see detailed match history, win rates, and performance trends all in one place."
+    },
+    "training": {
+      "title": "Train Your Reflexes",
+      "description": "Sharpen your skills with aim trainers and reaction time games. Practice makes perfect!"
+    }
   }
 }

@@ -8,6 +8,7 @@ export interface PillNavItem {
   icon?: React.ReactNode;
   badge?: number;
   onClick?: () => void;
+  id?: string;
 }
 
 interface PillNavProps {
@@ -238,6 +239,7 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
           return (
             <button
               key={item.href}
+              id={item.id}
               {...commonProps}
               onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 createRipple(e, index);
@@ -253,6 +255,7 @@ const PillNav: React.FC<PillNavProps> = ({ items, className = '' }) => {
         return (
           <Link
             key={item.href}
+            id={item.id}
             to={item.href}
             {...commonProps}
             onClick={(e: React.MouseEvent<HTMLAnchorElement>) => createRipple(e, index)}

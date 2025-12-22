@@ -106,6 +106,7 @@ const GameLibrarySidebar: React.FC = () => {
     >
       <div className="flex flex-col items-center justify-center p-3 border-b border-gray-800 h-20 gap-1">
         <button
+          id="walkthrough-game-hub"
           onClick={() => navigate('/hub')}
           className={`p-2 rounded-lg transition-all duration-200 ${
             isOnHubPage

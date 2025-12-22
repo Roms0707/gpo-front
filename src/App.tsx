@@ -6,6 +6,7 @@ import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import LiveNotificationManager from './components/notifications/LiveNotificationManager';
 import MatchNotificationManager from './components/notifications/MatchNotificationManager';
+import OnboardingWalkthrough from './components/onboarding/OnboardingWalkthrough';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { useDynamicFavicon } from './hooks/useDynamicFavicon';
@@ -253,6 +254,9 @@ const AppContent = () => {
 
       {/* Match notification system - for gamers only */}
       <MatchNotificationManager />
+
+      {/* First-time user onboarding walkthrough */}
+      <OnboardingWalkthrough />
     </ErrorBoundary>
   );
 };

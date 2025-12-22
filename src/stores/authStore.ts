@@ -52,6 +52,7 @@ const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
     kliento_user_id: dbUser.kliento_user_id as string | undefined,
     auth_provider: dbUser.auth_provider as string | undefined,
     preferred_language: dbUser.preferred_language as 'en' | 'fr' | undefined,
+    has_completed_onboarding: dbUser.has_completed_onboarding as boolean | undefined,
   };
 };
 

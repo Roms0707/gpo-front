@@ -349,7 +349,7 @@ const HomePage: React.FC = () => {
         
         {/* Mobile Game Slider - Only show on mobile */}
         {isMobile && (
-          <section className="py-4 sm:py-6 bg-dark-100 overflow-hidden">
+          <section id="walkthrough-game-hub" className="py-4 sm:py-6 bg-dark-100 overflow-hidden">
             <div className="container mx-auto px-4 max-w-full">
               <div className="flex items-center justify-between mb-3 sm:mb-4">
                 <h2 className="font-heading text-lg sm:text-xl font-bold">{t('home.gamesAvailable')}</h2>
@@ -531,7 +531,7 @@ const HomePage: React.FC = () => {
         )}
         
         {/* Tournament listing section */}
-        <section id="tournaments" className="py-8 sm:py-12 md:py-16 overflow-hidden">
+        <section id="tournaments" data-walkthrough="walkthrough-tournaments" className="py-8 sm:py-12 md:py-16 overflow-hidden">
           <div className="container mx-auto px-4 max-w-full">
             {error && (
               <div className="bg-error-500/20 border border-error-600 text-white px-4 py-3 rounded mb-6">

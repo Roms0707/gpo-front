@@ -3393,5 +3393,35 @@
       "title": "9. Contact",
       "content": "Pour toute question relative aux presentes mentions legales, vous pouvez nous contacter a l'adresse email suivante : {{legalEmail}}."
     }
+  },
+  "onboarding": {
+    "welcome": "Bienvenue, {{username}} !",
+    "welcomeMessage": "Laissez-nous vous faire decouvrir la plateforme et vous aider a tirer le meilleur de votre experience gaming.",
+    "letsStart": "C'est parti !",
+    "skip": "Passer",
+    "next": "Suivant",
+    "previous": "Retour",
+    "finish": "Commencer",
+    "defaultUser": "Champion",
+    "gameHub": {
+      "title": "Explorez les Game Hubs",
+      "description": "Plongez dans vos jeux preferes. Chaque hub regroupe tournois, classements, coaching et bien plus encore."
+    },
+    "tournaments": {
+      "title": "Participez aux Tournois",
+      "description": "Rejoignez des tournois passionnants, affrontez d'autres joueurs et remportez des prix incroyables. Inscrivez-vous en solo ou en equipe."
+    },
+    "coaching": {
+      "title": "Coaching IA Personnalise",
+      "description": "Recevez des conseils personnalises pour ameliorer votre jeu. Notre coach IA analyse vos performances et vous donne des recommandations ciblees."
+    },
+    "gamingStats": {
+      "title": "Suivez vos Statistiques",
+      "description": "Connectez vos comptes de jeu pour voir votre historique de matchs, taux de victoire et tendances de performance en un seul endroit."
+    },
+    "training": {
+      "title": "Entrainez vos Reflexes",
+      "description": "Aiguisez vos competences avec des jeux d'entrainement de visee et de temps de reaction. C'est en forgeant qu'on devient forgeron !"
+    }
   }
 }

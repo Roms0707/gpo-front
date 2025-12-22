@@ -64,6 +64,7 @@ export interface User {
   kliento_user_id?: string;
   auth_provider?: AuthProvider;
   preferred_language?: 'en' | 'fr';
+  has_completed_onboarding?: boolean;
 }
 
 export interface KlientoLoginResponse {
