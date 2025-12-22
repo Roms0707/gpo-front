@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { X, ExternalLink, Copy, Check, Search, User, Link2 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
@@ -172,8 +173,8 @@ const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
     setTimeout(() => setCopiedUrl(null), 2000);
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+  const modalContent = (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
       <div className="bg-dark-200 border border-gray-800 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-gray-800">
           <div className="flex items-center gap-3">
@@ -310,6 +311,8 @@ const ExternalStatsGuideModal: React.FC<ExternalStatsGuideModalProps> = ({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default ExternalStatsGuideModal;
