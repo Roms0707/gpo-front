@@ -244,34 +244,53 @@ interface InfoCardProps {
 const InfoCard: React.FC<InfoCardProps> = ({ icon: Icon, label, value, accentColor, glowColor, isCompleted }) => {
   return (
     <div
-      className={`group flex items-start space-x-3 p-3 rounded-xl transition-all duration-300 border ${
-        isCompleted ? '' : 'hover:scale-[1.02] hover:shadow-sm'
+      className={`group relative flex items-start space-x-3 p-4 rounded-xl transition-all duration-300 overflow-hidden ${
+        isCompleted ? 'opacity-75' : 'hover:scale-[1.02]'
       }`}
       style={{
-        background: `linear-gradient(135deg, ${accentColor}08 0%, rgba(255, 255, 255, 0.4) 100%)`,
-        borderColor: `${accentColor}15`,
+        background: 'rgba(255, 255, 255, 0.08)',
+        boxShadow: isCompleted ? 'none' : `inset 0 0 0 1px ${accentColor}20`,
       }}
     >
       <div
-        className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-105"
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl transition-all duration-300"
         style={{
-          backgroundColor: `${accentColor}20`,
-          boxShadow: isCompleted ? 'none' : `0 0 0 0 ${glowColor}`,
+          background: `linear-gradient(180deg, ${accentColor} 0%, ${accentColor}60 100%)`,
+          opacity: isCompleted ? 0.4 : 1,
+        }}
+      />
+      <div
+        className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+        style={{
+          background: `linear-gradient(135deg, ${accentColor}30 0%, ${accentColor}15 100%)`,
+          boxShadow: isCompleted ? 'none' : `0 4px 12px ${accentColor}20, inset 0 1px 1px rgba(255,255,255,0.1)`,
         }}
       >
         <Icon
-          className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-          style={{ color: accentColor }}
+          className="w-5 h-5 transition-all duration-300 group-hover:scale-110"
+          style={{
+            color: accentColor,
+            filter: isCompleted ? 'none' : `drop-shadow(0 2px 4px ${accentColor}40)`,
+          }}
         />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-0.5">
+      <div className="flex-1 min-w-0 pt-0.5">
+        <p
+          className="text-xs uppercase tracking-wider mb-1 transition-colors duration-300"
+          style={{ color: `${accentColor}90` }}
+        >
           {label}
         </p>
-        <p className="font-medium text-gray-900 dark:text-white text-sm md:text-base break-words">
+        <p className="font-semibold text-gray-900 dark:text-white text-sm md:text-base break-words leading-snug">
           {value}
         </p>
       </div>
+      <div
+        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `radial-gradient(ellipse at top left, ${accentColor}10 0%, transparent 70%)`,
+        }}
+      />
     </div>
   );
 };
