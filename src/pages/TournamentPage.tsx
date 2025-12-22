@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscriptionGuard } from '../hooks/useSubscriptionGuard';
-import { Target, Video, MessageSquare, ExternalLink } from 'lucide-react';
+import { Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cancelTournamentRegistration } from '../services/api';
 import TrainingGamesContainer from '../components/tournaments/TrainingGamesContainer';
@@ -23,6 +23,8 @@ import TeamInvitePopup from '../components/tournaments/TeamInvitePopup';
 import LookingForPeopleModal from '../components/tournaments/LookingForPeopleModal';
 import DiscordInviteModal from '../components/tournaments/DiscordInviteModal';
 import JoinTournamentModal from '../components/tournaments/JoinTournamentModal';
+import QuickRegisterBar from '../components/tournaments/QuickRegisterBar';
+import TeamManagementCard from '../components/tournaments/TeamManagementCard';
 
 // Tabs
 import HomeTab from '../components/tournaments/tabs/HomeTab';
@@ -44,6 +46,7 @@ const TournamentPage: React.FC = () => {
   const { checkAccess, isKliento } = useSubscriptionGuard();
   const navigate = useNavigate();
   const location = useLocation();
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const [activeTab, setActiveTab] = useState('home');
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
@@ -540,10 +543,26 @@ const TournamentPage: React.FC = () => {
     <div className="min-h-screen pt-20 pb-16">
       {/* Hero Section */}
       <TournamentHero
+        ref={heroRef}
         tournament={tournament}
         currentParticipants={currentParticipants}
         isLoadingParticipants={isLoadingParticipants}
         prizes={prizes}
+      />
+
+      {/* Sticky Quick Register Bar */}
+      <QuickRegisterBar
+        tournament={tournament}
+        user={user}
+        registrationStatus={registrationStatus}
+        currentParticipants={currentParticipants}
+        maxParticipants={maxParticipants}
+        isLoadingParticipants={isLoadingParticipants}
+        gameName={gameName}
+        onRegister={handleRegister}
+        canRegister={canRegister}
+        getRegistrationStatus={getRegistrationStatus}
+        heroRef={heroRef}
       />
 
       {/* Tabs Navigation */}
@@ -644,240 +663,55 @@ const TournamentPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Home Tab - Enhanced Layout with Registration First */}
+            {/* Home Tab - Streamlined Layout */}
             {activeTab === 'home' && (
-              <div className="space-y-8">
-                {/* Row 1: Registration Section - Now at the top for better visibility */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                  {/* Enhanced Registration Section - Takes full width on mobile, 3/4 on desktop */}
-                  <div className="lg:col-span-3">
-                    <div className="bg-gradient-to-br from-primary-600/10 via-secondary-600/5 to-accent-600/10 rounded-2xl p-8 border border-primary-500/20 shadow-2xl">
-                      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                        {/* Registration Info */}
-                        <div className="flex-1">
-                          <div className="flex items-center mb-4">
-                            <div className="w-12 h-12 bg-primary-600/20 rounded-xl flex items-center justify-center mr-4">
-                              <svg className="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                            </div>
-                            <div>
-                              <h2 className="font-heading font-bold text-2xl text-gray-900 dark:text-white mb-1">
-                                {registrationStatus.registered ? t('tournamentPage.registrationStatus.joinedRegistration') : t('tournamentPage.registrationStatus.joinTournament')}
-                              </h2>
-                              <p className="text-gray-600 dark:text-gray-300">
-                                {registrationStatus.registered 
-                                  ? `Statut: ${registrationStatus.status}` 
-                                  : t('tournamentPage.registrationStatus.registerNow')
-                                }
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {/* Registration Status Indicator */}
-                          <div className="flex items-center space-x-4 mb-6">
-                            <div className={`px-4 py-2 rounded-full text-sm font-medium ${
-                              getRegistrationStatus() === t('tournamentPage.registrationStatus.open') 
-                                ? 'bg-success-100 dark:bg-success-500/20 text-success-800 dark:text-success-300 border border-success-300 dark:border-success-500/30' 
-                                : getRegistrationStatus() === 'Bientôt ouvertes'
-                                ? 'bg-warning-100 dark:bg-warning-500/20 text-warning-800 dark:text-warning-300 border border-warning-300 dark:border-warning-500/30'
-                                : 'bg-error-100 dark:bg-error-500/20 text-error-800 dark:text-error-300 border border-error-300 dark:border-error-500/30'
-                            }`}>
-                              {getRegistrationStatus()}
-                            </div>
-                            
-                            <div className="flex items-center text-sm text-gray-400">
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                              </svg>
-                              {isLoadingParticipants ? (
-                                <span className="animate-pulse">{t('tournamentPage.loading')}</span>
-                              ) : (
-                                `${currentParticipants}${maxParticipants ? `/${maxParticipants}` : ''} ${isTeamTournament ? t('tournamentPage.teams') : t('tournamentPage.participants')}`
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Team Information for Team Tournaments */}
-                          {isTeamTournament && userTeamId && registrationStatus.registered && (
-                            <div className="bg-white/90 dark:bg-dark-100/50 backdrop-blur-sm rounded-xl p-4 mb-6 border border-gray-300/50 dark:border-gray-700/50">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{t('tournamentPage.yourTeam')}</span>
-                                {isTeamCaptain && (
-                                  <span className="text-xs bg-primary-600 text-white px-2 py-1 rounded-full">
-                                    {t('tournamentPage.captain')}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium text-gray-900 dark:text-white">{userTeamName || t('tournamentPage.team')}</span>
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  {isLoadingTeamInfo ? (
-                                    <span className="animate-pulse">...</span>
-                                  ) : (
-                                    `${currentTeamSize}${maxTeamSize ? `/${maxTeamSize}` : ''} ${t('tournamentPage.members')}`
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Registration Action */}
-                        <div className="flex flex-col items-end space-y-4">
-                          {registrationStatus.registered ? (
-                            <div className="text-center">
-                              <div className="w-16 h-16 bg-success-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
-                                <svg className="w-8 h-8 text-success-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                              </div>
-                              <p className="text-success-700 dark:text-success-300 font-medium">{t('tournamentPage.registrationStatus.confirmedRegistration')}</p>
-                              
-                              {isTeamCaptain && (
-                                <button
-                                  onClick={handleTeamInvite}
-                                  className="mt-3 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
-                                >
-                                  {t('tournamentPage.invitePlayers')}
-                                </button>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="text-center">
-                              {canRegister() ? (
-                                <button
-                                  onClick={handleRegister}
-                                  className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                                >
-                                  {teamIdFromUrl ? t('tournamentPage.joinTeamButton') : t('tournamentPage.registerNowButton')}
-                                </button>
-                              ) : (
-                                <div className="text-center">
-                                  <div className="w-16 h-16 bg-gray-500/20 rounded-full flex items-center justify-center mb-3 mx-auto">
-                                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0h-2m8-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                  </div>
-                                  <p className="text-gray-400 text-sm">
-                                    {!user
-                                      ? t('tournamentPage.signInToRegister')
-                                      : getRegistrationStatus() === t('tournamentPage.registrationStatus.closed')
-                                        ? t('tournamentPage.registrationsClosed')
-                                        : t('tournamentPage.registrationNotAvailable')
-                                    }
-                                  </p>
-                                  {!user && (
-                                    <Link
-                                      to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`}
-                                      className="mt-2 inline-block bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg text-sm transition-colors"
-                                    >
-                                      {t('tournamentPage.signIn')}
-                                    </Link>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* Join Tournament Button - Show when tournament has started and user is registered */}
-                          {canJoinTournament() && (
-                            <div className="mt-6 pt-6 border-t border-gray-700/50">
-                              <button
-                                onClick={() => setShowJoinTournamentModal(true)}
-                                className="w-full bg-gradient-to-r from-success-600 to-emerald-600 hover:from-success-700 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-bold text-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl animate-pulse-glow"
-                              >
-                                {t('tournamentPage.joinTournamentNow')}
-                              </button>
-                              <p className="text-center text-success-600 dark:text-success-300 text-sm mt-2">
-                                {t('tournamentPage.tournamentInProgress')}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Liens Utiles Section - Takes 1/4 on desktop */}
-                  <div className="lg:col-span-1">
-                    {(tournament?.streamLink || tournament?.discord_url) && (
-                      <div className="bg-white dark:bg-dark-100 rounded-xl p-4 h-full border border-gray-200 dark:border-gray-800">
-                        <h3 className="font-heading font-semibold text-base mb-3 text-center text-gray-900 dark:text-white">{t('tournamentPage.community')}</h3>
-                        <div className="space-y-3">
-                          {tournament.streamLink && (
-                            <a 
-                              href={tournament.streamLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group bg-gradient-to-r from-purple-600/80 to-purple-700/80 hover:from-purple-700 hover:to-purple-800 text-white p-3 rounded-lg transition-all duration-300 flex items-center justify-between"
-                            >
-                              <div className="flex items-center">
-                                <div className="bg-white/20 p-2 rounded-lg mr-3">
-                                  <Video className="h-4 w-4" />
-                                </div>
-                                <span className="text-sm font-medium">{t('tournamentPage.stream')}</span>
-                              </div>
-                              <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                            </a>
-                          )}
-                          
-                          {tournament.discord_url && (
-                            <a 
-                              href={tournament.discord_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group bg-gradient-to-r from-indigo-600/80 to-blue-600/80 hover:from-indigo-700 hover:to-blue-700 text-white p-3 rounded-lg transition-all duration-300 flex items-center justify-between"
-                            >
-                              <div className="flex items-center">
-                                <div className="bg-white/20 p-2 rounded-lg mr-3">
-                                  <MessageSquare className="h-4 w-4" />
-                                </div>
-                                <span className="text-sm font-medium">{t('tournamentPage.discord')}</span>
-                              </div>
-                              <ExternalLink className="h-4 w-4 opacity-70 group-hover:opacity-100 transition-opacity" />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Row 2: Tournament Details */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Tournament Details - Takes 2/3 of the width */}
-                  <div className="lg:col-span-2">
-                    <HomeTab 
-                      tournament={tournament}
-                      gameName={gameName}
-                    />
-                  </div>
-                  
-                  {/* Sidebar for home tab */}
-                  <div className="space-y-6">
-                    <TournamentSidebar
-                      tournament={tournament}
-                      user={user}
-                      registrationStatus={registrationStatus}
-                      currentParticipants={currentParticipants}
-                      maxParticipants={maxParticipants}
-                      isLoadingParticipants={isLoadingParticipants}
-                      teamIdFromUrl={teamIdFromUrl}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content - Tournament Details */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Team Management Card - Only for registered team tournament users */}
+                  {isTeamTournament && userTeamId && registrationStatus.registered && (
+                    <TeamManagementCard
                       userTeamId={userTeamId}
+                      userTeamName={userTeamName || ''}
                       isTeamCaptain={isTeamCaptain}
                       currentTeamSize={currentTeamSize}
                       maxTeamSize={maxTeamSize}
                       isLoadingTeamInfo={isLoadingTeamInfo}
-                      onRegister={handleRegister}
+                      gameName={gameName}
                       onTeamInvite={handleTeamInvite}
-                      onCancelRegistration={handleCancelRegistration}
-                      isCancelling={isCancelling}
-                      canRegister={canRegister}
-                      getRegistrationStatus={getRegistrationStatus}
-                      isTournamentStartedOrFinished={isTournamentStartedOrFinished}
                     />
-                  </div>
+                  )}
+
+                  {/* Tournament Info */}
+                  <HomeTab
+                    tournament={tournament}
+                    gameName={gameName}
+                  />
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-6">
+                  <TournamentSidebar
+                    tournament={tournament}
+                    user={user}
+                    registrationStatus={registrationStatus}
+                    currentParticipants={currentParticipants}
+                    maxParticipants={maxParticipants}
+                    isLoadingParticipants={isLoadingParticipants}
+                    teamIdFromUrl={teamIdFromUrl}
+                    userTeamId={userTeamId}
+                    isTeamCaptain={isTeamCaptain}
+                    currentTeamSize={currentTeamSize}
+                    maxTeamSize={maxTeamSize}
+                    isLoadingTeamInfo={isLoadingTeamInfo}
+                    onRegister={handleRegister}
+                    onTeamInvite={handleTeamInvite}
+                    onCancelRegistration={handleCancelRegistration}
+                    isCancelling={isCancelling}
+                    canRegister={canRegister}
+                    getRegistrationStatus={getRegistrationStatus}
+                    isTournamentStartedOrFinished={isTournamentStartedOrFinished}
+                  />
                 </div>
               </div>
             )}

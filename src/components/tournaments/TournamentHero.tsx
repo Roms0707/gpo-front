@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { format, isValid, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import { Calendar, Users, Trophy, ArrowLeft, Loader, Video, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, Users, Trophy, ArrowLeft, Loader, Video, Clock, CheckCircle, MessageSquare, ExternalLink } from 'lucide-react';
 import { Tournament, TournamentPrize } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { calculateTournamentStatus } from '../../utils/tournamentUtils';
@@ -25,12 +25,12 @@ interface CountdownTime {
   seconds: number;
 }
 
-const TournamentHero: React.FC<TournamentHeroProps> = ({
+const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
   tournament,
   currentParticipants,
   isLoadingParticipants,
   prizes = []
-}) => {
+}, ref) => {
   const { t, i18n } = useTranslation();
   const [gameLogoUrl, setGameLogoUrl] = useState<string | null>(null);
   const [gameName, setGameName] = useState<string>('');
@@ -194,6 +194,7 @@ const TournamentHero: React.FC<TournamentHeroProps> = ({
 
   return (
     <div
+      ref={ref}
       className={`relative min-h-[420px] md:min-h-[460px] bg-cover bg-center ${isCompleted ? 'grayscale-[30%]' : ''}`}
       style={{
         backgroundImage: `${getGradientOverlay(gameTheme)}, url(${tournament.header_url || tournament.image || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`,
@@ -335,6 +336,41 @@ const TournamentHero: React.FC<TournamentHeroProps> = ({
                     }
                   </span>
                 </div>
+
+                {(tournament.discord_url || tournament.streamLink) && (
+                  <div className="flex items-center gap-3 mt-5 pt-4 border-t border-white/10">
+                    {tournament.discord_url && (
+                      <a
+                        href={tournament.discord_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#5865F2]/90 hover:bg-[#5865F2] text-white transition-all duration-200 hover:scale-105"
+                        style={{
+                          boxShadow: '0 4px 15px rgba(88, 101, 242, 0.3)'
+                        }}
+                      >
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="text-sm font-medium">Discord</span>
+                        <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    )}
+                    {tournament.streamLink && !isStreamLive && (
+                      <a
+                        href={tournament.streamLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#9146FF]/90 hover:bg-[#9146FF] text-white transition-all duration-200 hover:scale-105"
+                        style={{
+                          boxShadow: '0 4px 15px rgba(145, 70, 255, 0.3)'
+                        }}
+                      >
+                        <Video className="h-4 w-4" />
+                        <span className="text-sm font-medium">{t('tournamentPage.stream')}</span>
+                        <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -453,6 +489,8 @@ const TournamentHero: React.FC<TournamentHeroProps> = ({
       </div>
     </div>
   );
-};
+});
+
+TournamentHero.displayName = 'TournamentHero';
 
 export default TournamentHero;
