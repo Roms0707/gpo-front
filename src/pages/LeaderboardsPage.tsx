@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchGames } from '../services/api';
-import { Award, ArrowRight, Search, Filter, X, Grid, List } from 'lucide-react';
+import { ArrowRight, Search, Filter, X, Grid, List, Award } from 'lucide-react';
+import { getGameTheme, getCardClipPath, getCardBorderRadius } from '../utils/gameThemes';
 
 interface Game {
   id: string;
@@ -157,58 +158,122 @@ const LeaderboardsPage: React.FC = () => {
           ) : filteredGames.length > 0 ? (
             viewMode === 'grid' ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {filteredGames.map((game) => (
-                  <Link
-                    key={game.id}
-                    to={`/leaderboards/${game.id}`}
-                    className="bg-dark-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:translate-y-[-2px] group"
-                    onClick={() => window.scrollTo(0, 0)}
-                  >
-                    <div className="w-full aspect-square overflow-hidden relative">
-                      <img
-                        src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
-                        alt={game.name}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                {filteredGames.map((game) => {
+                  const theme = getGameTheme(game.name);
+                  const GameIcon = theme.icon;
+                  const clipPath = getCardClipPath(theme.shape);
+                  const borderRadius = getCardBorderRadius(theme.shape);
+
+                  return (
+                    <Link
+                      key={game.id}
+                      to={`/leaderboards/${game.id}`}
+                      className="bg-dark-100 overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:translate-y-[-4px] group relative"
+                      style={{
+                        clipPath: clipPath !== 'none' ? clipPath : undefined,
+                        borderRadius: clipPath === 'none' ? borderRadius : undefined,
+                        border: `2px solid ${theme.colors.primary}40`,
+                      }}
+                      onClick={() => window.scrollTo(0, 0)}
+                    >
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        style={{
+                          boxShadow: `0 0 30px ${theme.colors.glow}, inset 0 0 30px ${theme.colors.glow}`,
+                        }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
-                        <div className="w-full p-2 text-center">
-                          <span className="text-xs text-primary-300 bg-dark-300/80 px-2 py-1 rounded-full">
-                            {t('leaderboards.viewLeaderboard')}
-                          </span>
+                      <div className="w-full aspect-square overflow-hidden relative">
+                        <img
+                          src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                          alt={game.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        />
+                        <div
+                          className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-300"
+                          style={{
+                            background: `linear-gradient(to top, ${theme.colors.primary}, transparent 60%)`,
+                          }}
+                        />
+                        <div className="absolute top-2 right-2 p-1.5 rounded-lg bg-dark-100/80 backdrop-blur-sm border border-white/10">
+                          <GameIcon
+                            className="h-4 w-4"
+                            style={{ color: theme.colors.primary }}
+                          />
+                        </div>
+                        <div className="absolute inset-0 flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="w-full p-2 text-center">
+                            <span
+                              className="text-xs font-medium px-3 py-1.5 rounded-full bg-dark-300/90 backdrop-blur-sm"
+                              style={{ color: theme.colors.primary }}
+                            >
+                              {t('leaderboards.viewLeaderboard')}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="font-medium text-sm truncate">{game.name}</h3>
-                      <p className="text-xs text-gray-400 truncate">{game.publisher}</p>
-                    </div>
-                  </Link>
-                ))}
+                      <div className="p-3 relative">
+                        <div
+                          className="absolute top-0 left-0 right-0 h-0.5"
+                          style={{ backgroundColor: theme.colors.primary }}
+                        />
+                        <h3 className="font-medium text-sm truncate">{game.name}</h3>
+                        <p className="text-xs text-gray-400 truncate">{game.publisher}</p>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <div className="space-y-2">
-                {filteredGames.map((game) => (
-                  <Link
-                    key={game.id}
-                    to={`/leaderboards/${game.id}`}
-                    className="flex items-center p-3 bg-dark-100 rounded-lg hover:bg-dark-200 transition-colors"
-                    onClick={() => window.scrollTo(0, 0)}
-                  >
-                    <div className="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0">
-                      <img
-                        src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
-                        alt={game.name}
-                        className="w-full h-full object-cover"
+                {filteredGames.map((game) => {
+                  const theme = getGameTheme(game.name);
+                  const GameIcon = theme.icon;
+
+                  return (
+                    <Link
+                      key={game.id}
+                      to={`/leaderboards/${game.id}`}
+                      className="flex items-center p-3 bg-dark-100 rounded-lg transition-all duration-200 group relative overflow-hidden"
+                      style={{
+                        borderLeft: `3px solid ${theme.colors.primary}`,
+                      }}
+                      onClick={() => window.scrollTo(0, 0)}
+                    >
+                      <div
+                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+                        style={{
+                          background: `linear-gradient(90deg, ${theme.colors.primary}10, transparent 50%)`,
+                        }}
                       />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium">{game.name}</h3>
-                      <p className="text-sm text-gray-400">{game.publisher}</p>
-                    </div>
-                    <Award className="text-primary-500 h-5 w-5 mr-2" />
-                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-primary-500 transition-colors" />
-                  </Link>
-                ))}
+                      <div
+                        className="w-12 h-12 rounded-lg overflow-hidden mr-3 flex-shrink-0 relative"
+                        style={{
+                          border: `1px solid ${theme.colors.primary}40`,
+                        }}
+                      >
+                        <img
+                          src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                          alt={game.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium">{game.name}</h3>
+                        <p className="text-sm text-gray-400">{game.publisher}</p>
+                      </div>
+                      <GameIcon
+                        className="h-5 w-5 mr-3"
+                        style={{ color: theme.colors.primary }}
+                      />
+                      <ArrowRight
+                        className="h-4 w-4 text-gray-400 group-hover:translate-x-1 transition-all duration-200"
+                        style={{
+                          color: theme.colors.secondary,
+                        }}
+                      />
+                    </Link>
+                  );
+                })}
               </div>
             )
           ) : (

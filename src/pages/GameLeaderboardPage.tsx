@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Search, Medal, Trophy, ChevronDown, ChevronUp, Filter, User, Users, Calendar, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Search, Medal, Trophy, ChevronDown, ChevronUp, User, Users, Calendar } from 'lucide-react';
 import { fetchGameById, fetchLeaderboardByGameId, fetchUserProfile } from '../services/api';
 import { supabase } from '../lib/supabase';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import TeamProfileModal from '../components/ui/TeamProfileModal';
 import RecentMatchItem from '../components/ui/RecentMatchItem';
+import { getGameTheme, getCardClipPath, getCardBorderRadius, getCardCornerAccent } from '../utils/gameThemes';
 
 interface LeaderboardEntry {
   rank: number;
@@ -356,16 +357,126 @@ const GameLeaderboardPage: React.FC = () => {
     setIsTeamProfileModalOpen(true);
   };
   
+  const theme = getGameTheme(game?.name);
+  const GameIcon = theme.icon;
+  const clipPath = getCardClipPath(theme.shape);
+  const borderRadius = getCardBorderRadius(theme.shape);
+  const cornerAccents = getCardCornerAccent(theme.shape);
+
   return (
-    <div className="min-h-screen pt-28 pb-16 bg-gray-50 dark:bg-dark-200">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen pb-16 bg-gray-50 dark:bg-dark-200">
+      {!isLoading && game && (
+        <div className="relative h-64 md:h-80 overflow-hidden">
+          <div
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url(${game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg'})`,
+              filter: 'blur(20px)',
+              transform: 'scale(1.1)',
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.primary}CC 0%, ${theme.colors.secondary}99 50%, transparent 100%)`,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-50 dark:from-dark-200 via-transparent to-transparent" />
+
+          {cornerAccents.topLeft && (
+            <div
+              className="absolute top-0 left-0 w-16 h-16 opacity-30"
+              style={{
+                borderTop: `3px solid ${theme.colors.border}`,
+                borderLeft: `3px solid ${theme.colors.border}`,
+              }}
+            />
+          )}
+          {cornerAccents.topRight && (
+            <div
+              className="absolute top-0 right-0 w-16 h-16 opacity-30"
+              style={{
+                borderTop: `3px solid ${theme.colors.border}`,
+                borderRight: `3px solid ${theme.colors.border}`,
+              }}
+            />
+          )}
+          {cornerAccents.bottomLeft && (
+            <div
+              className="absolute bottom-20 left-0 w-16 h-16 opacity-30"
+              style={{
+                borderBottom: `3px solid ${theme.colors.border}`,
+                borderLeft: `3px solid ${theme.colors.border}`,
+              }}
+            />
+          )}
+          {cornerAccents.bottomRight && (
+            <div
+              className="absolute bottom-20 right-0 w-16 h-16 opacity-30"
+              style={{
+                borderBottom: `3px solid ${theme.colors.border}`,
+                borderRight: `3px solid ${theme.colors.border}`,
+              }}
+            />
+          )}
+
+          <div className="container mx-auto px-4 h-full flex items-end pb-8 relative z-10">
+            <div className="flex items-end gap-6">
+              <div
+                className="w-24 h-24 md:w-32 md:h-32 overflow-hidden shadow-2xl flex-shrink-0 relative"
+                style={{
+                  clipPath: clipPath !== 'none' ? clipPath : undefined,
+                  borderRadius: clipPath === 'none' ? borderRadius : undefined,
+                  border: `3px solid ${theme.colors.primary}`,
+                  boxShadow: `0 0 40px ${theme.colors.glow}`,
+                }}
+              >
+                <img
+                  src={game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg'}
+                  alt={game.name}
+                  className="w-full h-full object-cover"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(to top, ${theme.colors.primary}40, transparent 50%)`,
+                  }}
+                />
+              </div>
+              <div className="mb-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <GameIcon
+                    className="h-6 w-6 md:h-8 md:w-8"
+                    style={{ color: theme.colors.primary }}
+                  />
+                  <h1 className="font-heading font-bold text-2xl md:text-4xl text-white drop-shadow-lg">
+                    {game.name}
+                  </h1>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">{game.publisher}</p>
+                <p
+                  className="text-sm font-medium mt-1"
+                  style={{ color: theme.colors.primary }}
+                >
+                  {t('leaderboards.leaderboard')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="container mx-auto px-4 pt-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="w-full md:w-3/4">
-            <Link to="/leaderboards" className="inline-flex items-center text-gray-400 hover:text-white mb-4">
+            <Link
+              to="/leaderboards"
+              className="inline-flex items-center text-gray-400 hover:text-white mb-4 transition-colors"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('leaderboards.backToLeaderboards')}
             </Link>
-            
+
             {isLoading ? (
               <div className="animate-pulse">
                 <div className="h-12 bg-dark-100 rounded-xl mb-4 w-2/3"></div>
@@ -373,46 +484,54 @@ const GameLeaderboardPage: React.FC = () => {
               </div>
             ) : (
               <>
-                <div className="mb-6 flex items-center">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden mr-4">
-                    <img 
-                      src={game?.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg'} 
-                      alt={game?.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">
-                      {game?.name} {t('leaderboards.leaderboard')}
-                    </h1>
-                    <p className="text-gray-400 text-sm">{game?.publisher}</p>
-                  </div>
-                </div>
 
                 {/* Tab Navigation */}
-                <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mb-6 border border-gray-200 dark:border-gray-800">
+                <div
+                  className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mb-6 border border-gray-200 dark:border-gray-800"
+                  style={{
+                    borderTop: `3px solid ${theme.colors.primary}`,
+                  }}
+                >
                   <div className="flex border-b border-gray-800">
                     <button
                       onClick={() => setActiveTab('solo')}
-                      className={`flex-1 px-6 py-4 font-medium text-sm transition-colors flex items-center justify-center border-b border-gray-200 dark:border-gray-800 ${
+                      className={`flex-1 px-6 py-4 font-medium text-sm transition-all flex items-center justify-center relative ${
                         activeTab === 'solo'
-                          ? 'bg-primary-600 text-white'
+                          ? 'text-white'
                           : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-200'
                       }`}
+                      style={activeTab === 'solo' ? {
+                        backgroundColor: theme.colors.primary,
+                      } : undefined}
                     >
-                      <User className="h-4 w-4 mr-2" />
+                      <GameIcon className="h-4 w-4 mr-2" />
                       {t('leaderboards.soloRanking')}
+                      {activeTab === 'solo' && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-1"
+                          style={{ backgroundColor: theme.colors.secondary }}
+                        />
+                      )}
                     </button>
                     <button
                       onClick={() => setActiveTab('team')}
-                      className={`flex-1 px-6 py-4 font-medium text-sm transition-colors flex items-center justify-center border-b border-gray-200 dark:border-gray-800 ${
+                      className={`flex-1 px-6 py-4 font-medium text-sm transition-all flex items-center justify-center relative ${
                         activeTab === 'team'
-                          ? 'bg-primary-600 text-white'
+                          ? 'text-white'
                           : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-200'
                       }`}
+                      style={activeTab === 'team' ? {
+                        backgroundColor: theme.colors.primary,
+                      } : undefined}
                     >
                       <Users className="h-4 w-4 mr-2" />
                       {t('leaderboards.teamRanking')}
+                      {activeTab === 'team' && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-1"
+                          style={{ backgroundColor: theme.colors.secondary }}
+                        />
+                      )}
                     </button>
                   </div>
 
@@ -421,11 +540,17 @@ const GameLeaderboardPage: React.FC = () => {
                     <div className="flex flex-col md:flex-row gap-4 justify-between">
                       <div className="flex-1">
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
+                          <Search
+                            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4"
+                            style={{ color: theme.colors.primary }}
+                          />
                           <input
                             type="text"
                             placeholder={activeTab === 'solo' ? t('leaderboards.searchPlayer') : t('leaderboards.searchTeam')}
-                            className="input pl-10 w-full bg-white dark:bg-dark-300 border-gray-300 dark:border-gray-700"
+                            className="input pl-10 w-full bg-white dark:bg-dark-300 border-gray-300 dark:border-gray-700 focus:ring-2 transition-all"
+                            style={{
+                              '--tw-ring-color': theme.colors.primary,
+                            } as React.CSSProperties}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             disabled={!currentData.hasData}
@@ -435,7 +560,10 @@ const GameLeaderboardPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <div className="relative">
                           <select
-                            className="input appearance-none pr-8 bg-white dark:bg-dark-300 border-gray-300 dark:border-gray-700 cursor-pointer"
+                            className="input appearance-none pr-8 bg-white dark:bg-dark-300 border-gray-300 dark:border-gray-700 cursor-pointer focus:ring-2 transition-all"
+                            style={{
+                              '--tw-ring-color': theme.colors.primary,
+                            } as React.CSSProperties}
                             value={selectedRankTier}
                             onChange={(e) => setSelectedRankTier(e.target.value)}
                             disabled={!currentData.hasData}
@@ -447,7 +575,10 @@ const GameLeaderboardPage: React.FC = () => {
                             <option value="SILVER">{t('leaderboards.silver')}</option>
                             <option value="BRONZE">{t('leaderboards.bronze')}</option>
                           </select>
-                          <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4 pointer-events-none" />
+                          <ChevronDown
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 pointer-events-none"
+                            style={{ color: theme.colors.primary }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -469,22 +600,28 @@ const GameLeaderboardPage: React.FC = () => {
                   ) : ( 
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
-                        <thead className="bg-gray-100 dark:bg-dark-200 text-gray-700 dark:text-gray-300">
+                        <thead
+                          className="text-gray-700 dark:text-gray-300"
+                          style={{
+                            background: `linear-gradient(90deg, ${theme.colors.primary}15, transparent)`,
+                          }}
+                        >
                           <tr>
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors relative"
                               onClick={() => handleSort('rank')}
+                              style={{ borderLeft: `3px solid ${theme.colors.primary}` }}
                             >
-                              <div className="flex items-center">
+                              <div className="flex items-center hover:opacity-70">
                                 <span>#</span>
                                 {getSortIcon('rank')}
                               </div>
                             </th>
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors"
                               onClick={() => handleSort(activeTab === 'solo' ? 'username' : 'team_name')}
                             >
-                              <div className="flex items-center">
+                              <div className="flex items-center hover:opacity-70">
                                 <span>{activeTab === 'solo' ? t('leaderboards.player').toUpperCase() : t('leaderboards.team').toUpperCase()}</span>
                                 {getSortIcon(activeTab === 'solo' ? 'username' : 'team_name')}
                               </div>
@@ -494,36 +631,36 @@ const GameLeaderboardPage: React.FC = () => {
                                 <span>{t('leaderboards.captain').toUpperCase()}</span>
                               </th>
                             )}
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors text-center"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors text-center"
                             >
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center hover:opacity-70">
                                 <span>{t('leaderboards.rank').toUpperCase()}</span>
                               </div>
                             </th>
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors text-center"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors text-center"
                               onClick={() => handleSort('elo')}
                             >
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center hover:opacity-70">
                                 <span>{t('leaderboards.elo').toUpperCase()}</span>
                                 {getSortIcon('elo')}
                               </div>
                             </th>
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors text-center"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors text-center"
                               onClick={() => handleSort('matches')}
                             >
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center hover:opacity-70">
                                 <span>V/D</span>
                                 {getSortIcon('matches')}
                               </div>
                             </th>
-                            <th 
-                              className="p-4 font-medium cursor-pointer hover:text-primary-400 transition-colors text-center"
+                            <th
+                              className="p-4 font-medium cursor-pointer transition-colors text-center"
                               onClick={() => handleSort('win_rate')}
                             >
-                              <div className="flex items-center justify-center">
+                              <div className="flex items-center justify-center hover:opacity-70">
                                 <span>{t('leaderboards.winRate').toUpperCase()}</span>
                                 {getSortIcon('win_rate')}
                               </div>
@@ -534,19 +671,37 @@ const GameLeaderboardPage: React.FC = () => {
                           {activeTab === 'solo' ? (
                             // Solo leaderboard rows
                             filteredAndSortedSoloLeaderboard.map((entry) => (
-                              <tr 
-                                key={entry.user_id} 
-                                className="hover:bg-gray-100 dark:hover:bg-dark-200/50 transition-colors cursor-pointer"
+                              <tr
+                                key={entry.user_id}
+                                className="transition-all cursor-pointer group"
+                                style={{ background: 'transparent' }}
                                 onClick={() => handlePlayerClick(entry.user_id)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = `linear-gradient(90deg, ${theme.colors.glow}, transparent)`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'transparent';
+                                }}
                               >
                                 <td className="p-4 text-center">
                                   <div className="flex justify-center">
                                     {entry.rank <= 3 ? (
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                        entry.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                                        entry.rank === 2 ? 'bg-gray-400/20 text-gray-300' :
-                                        'bg-amber-700/20 text-amber-600'
-                                      }`}>
+                                      <div
+                                        className="w-8 h-8 rounded-full flex items-center justify-center"
+                                        style={{
+                                          backgroundColor: entry.rank === 1
+                                            ? 'rgba(234, 179, 8, 0.2)'
+                                            : entry.rank === 2
+                                            ? 'rgba(156, 163, 175, 0.2)'
+                                            : 'rgba(180, 83, 9, 0.2)',
+                                          color: entry.rank === 1
+                                            ? '#EAB308'
+                                            : entry.rank === 2
+                                            ? '#9CA3AF'
+                                            : '#B45309',
+                                          boxShadow: `0 0 8px ${theme.colors.glow}`,
+                                        }}
+                                      >
                                         <Medal className="h-5 w-5" />
                                       </div>
                                     ) : (
@@ -558,9 +713,9 @@ const GameLeaderboardPage: React.FC = () => {
                                   <div className="flex items-center">
                                     <div className="w-8 h-8 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0 flex items-center justify-center">
                                       {entry.avatar_url ? (
-                                        <img 
-                                          src={entry.avatar_url} 
-                                          alt={entry.username} 
+                                        <img
+                                          src={entry.avatar_url}
+                                          alt={entry.username}
                                           className="w-full h-full object-cover"
                                         />
                                       ) : (
@@ -575,16 +730,19 @@ const GameLeaderboardPage: React.FC = () => {
                                 <td className="p-4 text-center">
                                   {getRankBadge(entry.rank_tier || '')}
                                 </td>
-                                <td className="p-4 text-center font-medium text-gray-900 dark:text-white">
+                                <td
+                                  className="p-4 text-center font-bold"
+                                  style={{ color: theme.colors.primary }}
+                                >
                                   {entry.elo || 0}
                                 </td>
-                                <td className="p-4 text-center">
+                                <td className="p-4 text-center text-gray-900 dark:text-white">
                                   {formatWinLoss(entry.wins, entry.matches || 0)}
                                 </td>
                                 <td className="p-4 text-center">
                                   <span className={`font-medium ${
-                                    (entry.win_rate || 0) >= 70 ? 'text-green-500' : 
-                                    (entry.win_rate || 0) >= 50 ? 'text-blue-500' : 
+                                    (entry.win_rate || 0) >= 70 ? 'text-green-500' :
+                                    (entry.win_rate || 0) >= 50 ? 'text-blue-500' :
                                     'text-red-500'
                                   }`}>
                                     {entry.win_rate || 0}%
@@ -595,19 +753,37 @@ const GameLeaderboardPage: React.FC = () => {
                           ) : (
                             // Team leaderboard rows
                             filteredAndSortedTeamLeaderboard.map((entry) => (
-                              <tr 
-                                key={entry.team_id} 
-                                className="hover:bg-gray-100 dark:hover:bg-dark-200/50 transition-colors cursor-pointer"
+                              <tr
+                                key={entry.team_id}
+                                className="transition-all cursor-pointer group"
+                                style={{ background: 'transparent' }}
                                 onClick={() => handleTeamClick(entry.team_id)}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = `linear-gradient(90deg, ${theme.colors.glow}, transparent)`;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'transparent';
+                                }}
                               >
                                 <td className="p-4 text-center">
                                   <div className="flex justify-center">
                                     {entry.rank <= 3 ? (
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                        entry.rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
-                                        entry.rank === 2 ? 'bg-gray-400/20 text-gray-300' :
-                                        'bg-amber-700/20 text-amber-600'
-                                      }`}>
+                                      <div
+                                        className="w-8 h-8 rounded-full flex items-center justify-center"
+                                        style={{
+                                          backgroundColor: entry.rank === 1
+                                            ? 'rgba(234, 179, 8, 0.2)'
+                                            : entry.rank === 2
+                                            ? 'rgba(156, 163, 175, 0.2)'
+                                            : 'rgba(180, 83, 9, 0.2)',
+                                          color: entry.rank === 1
+                                            ? '#EAB308'
+                                            : entry.rank === 2
+                                            ? '#9CA3AF'
+                                            : '#B45309',
+                                          boxShadow: `0 0 8px ${theme.colors.glow}`,
+                                        }}
+                                      >
                                         <Medal className="h-5 w-5" />
                                       </div>
                                     ) : (
@@ -617,7 +793,10 @@ const GameLeaderboardPage: React.FC = () => {
                                 </td>
                                 <td className="p-4">
                                   <div className="flex items-center">
-                                    <Users className="h-5 w-5 text-primary-500 mr-3" />
+                                    <Users
+                                      className="h-5 w-5 mr-3"
+                                      style={{ color: theme.colors.primary }}
+                                    />
                                     <div>
                                       <span className="font-medium text-gray-900 dark:text-white">{entry.team_name}</span>
                                     </div>
@@ -629,16 +808,19 @@ const GameLeaderboardPage: React.FC = () => {
                                 <td className="p-4 text-center">
                                   {getRankBadge(entry.rank_tier || '')}
                                 </td>
-                                <td className="p-4 text-center font-medium text-gray-900 dark:text-white">
+                                <td
+                                  className="p-4 text-center font-bold"
+                                  style={{ color: theme.colors.primary }}
+                                >
                                   {entry.elo || 0}
                                 </td>
-                                <td className="p-4 text-center">
+                                <td className="p-4 text-center text-gray-900 dark:text-white">
                                   {formatWinLoss(entry.wins, entry.matches || 0)}
                                 </td>
                                 <td className="p-4 text-center">
                                   <span className={`font-medium ${
-                                    (entry.win_rate || 0) >= 70 ? 'text-green-500' : 
-                                    (entry.win_rate || 0) >= 50 ? 'text-blue-500' : 
+                                    (entry.win_rate || 0) >= 70 ? 'text-green-500' :
+                                    (entry.win_rate || 0) >= 50 ? 'text-blue-500' :
                                     'text-red-500'
                                   }`}>
                                     {entry.win_rate || 0}%
@@ -667,14 +849,20 @@ const GameLeaderboardPage: React.FC = () => {
           {/* Right Sidebar */}
           <div className="w-full md:w-1/4">
             {/* Recent Matches Card */}
-            <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
+            <div
+              className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800"
+              style={{ borderTop: `3px solid ${theme.colors.primary}` }}
+            >
               <div className="p-4 border-b border-gray-200 dark:border-gray-800 min-h-[60px] flex items-center overflow-visible">
                 <div className="flex items-center">
-                  <Trophy className="h-5 w-5 text-yellow-500 mr-2" />
+                  <Trophy
+                    className="h-5 w-5 mr-2"
+                    style={{ color: theme.colors.primary }}
+                  />
                   <h2 className="font-medium text-gray-900 dark:text-white whitespace-nowrap text-base leading-relaxed">{t('leaderboards.recentMatches')}</h2>
                 </div>
               </div>
-              
+
               {isLoadingMatches ? (
                 <div className="p-4 space-y-4">
                   {[...Array(3)].map((_, index) => (
@@ -704,38 +892,68 @@ const GameLeaderboardPage: React.FC = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Game Stats Card */}
-            <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mt-6 border border-gray-200 dark:border-gray-800">
+            <div
+              className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mt-6 border border-gray-200 dark:border-gray-800"
+              style={{ borderTop: `3px solid ${theme.colors.secondary}` }}
+            >
               <div className="p-4 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex items-center">
-                  <Calendar className="h-5 w-5 text-primary-500 mr-2" />
+                  <Calendar
+                    className="h-5 w-5 mr-2"
+                    style={{ color: theme.colors.primary }}
+                  />
                   <h2 className="font-medium text-gray-900 dark:text-white">{t('leaderboards.gameStatistics')}</h2>
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-gray-100 dark:bg-dark-200 p-3 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-primary-400">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: `${theme.colors.primary}15` }}
+                  >
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: theme.colors.primary }}
+                    >
                       {filteredAndSortedSoloLeaderboard.length}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">{t('leaderboards.rankedPlayers')}</div>
                   </div>
-                  <div className="bg-gray-100 dark:bg-dark-200 p-3 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-secondary-400">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: `${theme.colors.secondary}15` }}
+                  >
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: theme.colors.secondary }}
+                    >
                       {filteredAndSortedTeamLeaderboard.length}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">{t('leaderboards.rankedTeams')}</div>
                   </div>
-                  <div className="bg-gray-100 dark:bg-dark-200 p-3 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-warning-400">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: `${theme.colors.primary}10` }}
+                  >
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: theme.colors.primary }}
+                    >
                       {recentMatches.length}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">{t('leaderboards.recentMatches')}</div>
                   </div>
-                  <div className="bg-gray-100 dark:bg-dark-200 p-3 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-success-400">
+                  <div
+                    className="p-3 rounded-lg text-center"
+                    style={{ backgroundColor: `${theme.colors.secondary}10` }}
+                  >
+                    <div
+                      className="text-2xl font-bold"
+                      style={{ color: theme.colors.secondary }}
+                    >
                       {recentMatches.filter(m => m.is_tournament).length}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">{t('leaderboards.tournamentMatches')}</div>
