@@ -1,4 +1,4 @@
-import { Brain, Trophy, BarChart3, Gamepad2, Target, Users, Award, Zap, BookOpen, TrendingUp, Play, Crosshair } from 'lucide-react';
+import { Brain, Trophy, BarChart3, Gamepad2, Target, Users, Award, BookOpen, TrendingUp, Play, Crosshair } from 'lucide-react';
 
 export type OnboardingPage = 'home' | 'gameHub' | 'tournament' | 'gamingStats';
 
@@ -116,6 +116,8 @@ export const GAME_HUB_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.gameHub.training.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tab-training',
+    fallbackMessageKey: 'onboarding.gameHub.training.clickTab',
   },
 ];
 
@@ -228,17 +230,6 @@ export const GAMING_STATS_STEPS: OnboardingStep[] = [
     scrollBehavior: 'scroll-to-element',
     fallbackTabId: 'walkthrough-tab-aim-trainer',
     fallbackMessageKey: 'onboarding.gamingStats.aimTrainer.clickTab',
-  },
-  {
-    id: 'stats-performance',
-    type: 'spotlight',
-    page: 'gamingStats',
-    targetElementId: 'walkthrough-stats-performance',
-    icon: Zap,
-    titleKey: 'onboarding.gamingStats.performance.title',
-    descriptionKey: 'onboarding.gamingStats.performance.description',
-    position: 'top',
-    scrollBehavior: 'scroll-to-element',
   },
 ];
 

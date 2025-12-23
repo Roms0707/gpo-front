@@ -6,6 +6,7 @@ import {
   getViewportRect,
   getVisiblePortionRect,
   calculateTooltipPosition,
+  scrollToElement,
   TooltipPosition,
   ViewportRelativeRect,
 } from '../../utils/walkthroughUtils';
@@ -50,6 +51,9 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
         const clickableElement = element.querySelector('button, a, [role="button"], [tabindex]') as HTMLElement || element;
         clickableElement.click();
         await new Promise(resolve => setTimeout(resolve, 300));
+        if (step.targetElementId) {
+          scrollToElement(step.targetElementId, 150);
+        }
       }
       setTimeout(() => {
         setIsProcessingClick(false);
@@ -64,7 +68,7 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
       setIsProcessingClick(false);
       clickProcessedRef.current = false;
     }, 100);
-  }, [step.fallbackTabId, isUsingFallback, isProcessingClick, onNext]);
+  }, [step.fallbackTabId, step.targetElementId, isUsingFallback, isProcessingClick, onNext]);
 
   useEffect(() => {
     clickProcessedRef.current = false;
