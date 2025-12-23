@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { fetchHeroCarouselData } from '../../services/api';
+import { fetchHeroCarouselData, extractTwitchChannelName } from '../../services/api';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { HeroSlide } from './HeroSlide';
 import { APP_CONFIG } from '../../constants';
@@ -62,13 +62,34 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         featuredTrailers.forEach((trailer: any) => {
           if (trailer.tournament_id) {
             const tournamentId = trailer.tournament?.id || trailer.tournament_id;
+            const tournamentStatus = trailer.tournament?.status;
+            const twitchUrl = trailer.tournament?.twitch_url;
+            const isTwitchLive = trailer.tournament?.is_twitch_live;
+
+            let ctaText = t('heroCarousel.registerNow');
+            let ctaLink = `/tournaments/${tournamentId}`;
+
+            if (tournamentStatus === 'ongoing') {
+              if (isTwitchLive && twitchUrl) {
+                const channelName = extractTwitchChannelName(twitchUrl);
+                if (channelName) {
+                  ctaText = t('heroCarousel.watchNow');
+                  ctaLink = `/stream/${channelName}`;
+                } else {
+                  ctaText = t('heroCarousel.viewTournament');
+                }
+              } else {
+                ctaText = t('heroCarousel.viewTournament');
+              }
+            }
+
             carouselSlides.push({
               id: trailer.id,
               videoUrl: trailer.video_url,
               title: trailer.title || trailer.tournament?.title || '',
               gameName: trailer.game?.name,
-              ctaText: t('heroCarousel.registerNow'),
-              ctaLink: `/tournaments/${tournamentId}`,
+              ctaText,
+              ctaLink,
               isDefault: false,
             });
           }

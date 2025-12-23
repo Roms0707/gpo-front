@@ -1664,7 +1664,9 @@ export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
           end_date,
           header_url,
           status,
-          game_id
+          game_id,
+          twitch_url,
+          is_twitch_live
         ),
         game:game_id (
           id,
@@ -1693,7 +1695,9 @@ export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
         endDate: trailer.tournament.end_date,
         header_url: trailer.tournament.header_url,
         status: trailer.tournament.status,
-        game_id: trailer.tournament.game_id
+        game_id: trailer.tournament.game_id,
+        twitch_url: trailer.tournament.twitch_url,
+        is_twitch_live: trailer.tournament.is_twitch_live
       } : null
     }));
 
