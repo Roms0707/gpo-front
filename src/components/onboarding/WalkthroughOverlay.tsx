@@ -44,19 +44,18 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
     setIsProcessingClick(true);
     clickProcessedRef.current = true;
 
-    const targetId = isUsingFallback ? step.fallbackTabId : step.targetElementId;
-    if (!targetId) {
-      setIsProcessingClick(false);
-      clickProcessedRef.current = false;
+    if (isUsingFallback && step.fallbackTabId) {
+      const element = document.getElementById(step.fallbackTabId);
+      if (element) {
+        const clickableElement = element.querySelector('button, a, [role="button"], [tabindex]') as HTMLElement || element;
+        clickableElement.click();
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      setTimeout(() => {
+        setIsProcessingClick(false);
+        clickProcessedRef.current = false;
+      }, 100);
       return;
-    }
-
-    const element = document.getElementById(targetId);
-    if (element) {
-      const clickableElement = element.querySelector('button, a, [role="button"], [tabindex]') as HTMLElement || element;
-      clickableElement.click();
-
-      await new Promise(resolve => setTimeout(resolve, 300));
     }
 
     onNext();
@@ -65,7 +64,7 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
       setIsProcessingClick(false);
       clickProcessedRef.current = false;
     }, 100);
-  }, [step.targetElementId, step.fallbackTabId, isUsingFallback, isProcessingClick, onNext]);
+  }, [step.fallbackTabId, isUsingFallback, isProcessingClick, onNext]);
 
   useEffect(() => {
     clickProcessedRef.current = false;
@@ -222,37 +221,39 @@ const WalkthroughOverlay: React.FC<WalkthroughOverlayProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="absolute inset-0 flex items-center justify-center"
-                style={{
-                  background: `${GOLD_COLOR}08`,
-                  borderRadius: 12,
-                }}
-              >
+              {isUsingFallback && (
                 <motion.div
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    opacity: [0.6, 1, 0.6],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute inset-0 flex items-center justify-center"
                   style={{
-                    background: `linear-gradient(135deg, ${GOLD_COLOR}90 0%, ${GOLD_COLOR}70 100%)`,
-                    color: '#0f0f1a',
-                    fontSize: '0.75rem',
-                    fontWeight: 600,
+                    background: `${GOLD_COLOR}08`,
+                    borderRadius: 12,
                   }}
                 >
-                  <MousePointerClick className="w-3.5 h-3.5" />
-                  <span>Click</span>
+                  <motion.div
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.6, 1, 0.6],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{
+                      background: `linear-gradient(135deg, ${GOLD_COLOR}90 0%, ${GOLD_COLOR}70 100%)`,
+                      color: '#0f0f1a',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <MousePointerClick className="w-3.5 h-3.5" />
+                    <span>Click</span>
+                  </motion.div>
                 </motion.div>
-              </motion.div>
+              )}
             </motion.div>
           </>
         )}
