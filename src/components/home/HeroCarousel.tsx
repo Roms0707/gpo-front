@@ -69,7 +69,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             let ctaText = t('heroCarousel.registerNow');
             let ctaLink = `/tournaments/${tournamentId}`;
 
-            if (tournamentStatus === 'ongoing') {
+            if (tournamentStatus === 'ongoing' || tournamentStatus === 'active') {
               if (isTwitchLive && twitchUrl) {
                 const channelName = extractTwitchChannelName(twitchUrl);
                 if (channelName) {

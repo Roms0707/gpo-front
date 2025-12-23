@@ -1598,7 +1598,7 @@ export const checkTwitchChannelLiveStatus = async (channelName: string): Promise
         .from('tournaments')
         .select('is_twitch_live')
         .ilike('twitch_url', `%${channelName}%`)
-        .eq('status', 'active')
+        .eq('status', 'ongoing')
         .maybeSingle()
     );
 
