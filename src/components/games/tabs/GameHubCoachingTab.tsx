@@ -285,7 +285,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
     }
 
     return (
-      <div className="relative bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div id="walkthrough-gamehub-coaching" className="relative bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden">
         <div
           className="absolute inset-0 opacity-5"
           style={{
