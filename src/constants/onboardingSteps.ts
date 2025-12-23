@@ -173,6 +173,8 @@ export const TOURNAMENT_STEPS: OnboardingStep[] = [
     descriptionKey: 'onboarding.tournament.rewards.description',
     position: 'top',
     scrollBehavior: 'scroll-to-element',
+    fallbackTabId: 'walkthrough-tournament-tabs',
+    fallbackMessageKey: 'onboarding.tournament.rewards.clickTab',
   },
 ];
 

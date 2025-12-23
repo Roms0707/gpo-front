@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubscriptionGuard } from '../hooks/useSubscriptionGuard';
@@ -514,6 +514,12 @@ const TournamentPage: React.FC = () => {
     };
   }, [activeTab, user, tournament?.game_id, isTeamTournament]);
 
+  const handleWalkthroughActivate = useCallback(() => {
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+    }
+  }, [activeTab]);
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen pt-16">
@@ -931,7 +937,7 @@ const TournamentPage: React.FC = () => {
       )}
 
       {/* Onboarding Walkthrough */}
-      <OnboardingWalkthrough pageName="tournament" />
+      <OnboardingWalkthrough pageName="tournament" onActivate={handleWalkthroughActivate} />
     </div>
   );
 };

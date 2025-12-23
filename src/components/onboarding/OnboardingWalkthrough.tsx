@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useOnboardingWalkthrough } from '../../hooks/useOnboardingWalkthrough';
 import { OnboardingPage } from '../../constants/onboardingSteps';
@@ -7,9 +7,10 @@ import WalkthroughOverlay from './WalkthroughOverlay';
 
 interface OnboardingWalkthroughProps {
   pageName?: OnboardingPage;
+  onActivate?: () => void;
 }
 
-const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ pageName = 'home' }) => {
+const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ pageName = 'home', onActivate }) => {
   const {
     isActive,
     currentStep,
@@ -20,6 +21,18 @@ const OnboardingWalkthrough: React.FC<OnboardingWalkthroughProps> = ({ pageName 
     previousStep,
     skipWalkthrough,
   } = useOnboardingWalkthrough(pageName);
+
+  const hasCalledActivate = useRef(false);
+
+  useEffect(() => {
+    if (isActive && !hasCalledActivate.current && onActivate) {
+      hasCalledActivate.current = true;
+      onActivate();
+    }
+    if (!isActive) {
+      hasCalledActivate.current = false;
+    }
+  }, [isActive, onActivate]);
 
   if (!isActive || !currentStepData) {
     return null;
