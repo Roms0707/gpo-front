@@ -28,6 +28,8 @@ import TournamentWLStatsCard from '../../coaching/TournamentWLStatsCard';
 import CoachingQuestPanel from '../../coaching/CoachingQuestPanel';
 import { useAICoachingSession } from '../../../hooks/useAICoachingSession';
 import { useLoLCoachingAnalysis } from '../../../hooks/useLoLCoachingAnalysis';
+import { useGameCoachingConfig, getLocalizedPrompts } from '../../../hooks/useGameCoachingConfig';
+import i18n from '../../../locales/i18n';
 
 interface GameHubCoachingTabProps {
   gameId: string;
@@ -89,6 +91,9 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
     isLoading: isContextLoading,
     refresh: refreshContext
   } = useLoLCoachingAnalysis(gameId);
+
+  const { config: coachingConfig } = useGameCoachingConfig(gameId, gameName);
+  const localizedQuickPrompts = getLocalizedPrompts(coachingConfig?.quick_prompts, i18n.language);
 
   useEffect(() => {
     const checkConnectionAndProfile = async () => {
@@ -502,6 +507,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
               videoRecommendations={videoRecommendations}
               onSendMessage={sendMessage}
               onVideoClick={handleVideoClick}
+              quickPrompts={localizedQuickPrompts}
             />
           </div>
 

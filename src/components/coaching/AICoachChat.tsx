@@ -54,6 +54,7 @@ interface AICoachChatProps {
   videoRecommendations: VideoRecommendation[];
   onSendMessage: (message: string) => Promise<void>;
   onVideoClick: (contentId: string) => void;
+  quickPrompts?: string[];
 }
 
 const QuickActionPill: React.FC<{
@@ -101,7 +102,8 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
   isLoading,
   videoRecommendations,
   onSendMessage,
-  onVideoClick
+  onVideoClick,
+  quickPrompts = []
 }) => {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
@@ -209,13 +211,15 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
     setIsFullscreen(!isFullscreen);
   };
 
-  const quickActions = [
-    t('coaching.quickAction.analyzeGames'),
-    t('coaching.quickAction.improveCS'),
-    t('coaching.quickAction.reviewMatch'),
-    t('coaching.quickAction.championTips'),
-    t('coaching.quickAction.whatWrong')
-  ];
+  const quickActions = quickPrompts.length > 0
+    ? quickPrompts
+    : [
+        t('coaching.quickAction.analyzeGames'),
+        t('coaching.quickAction.improveCS'),
+        t('coaching.quickAction.reviewMatch'),
+        t('coaching.quickAction.championTips'),
+        t('coaching.quickAction.whatWrong')
+      ];
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
