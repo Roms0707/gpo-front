@@ -12,11 +12,16 @@ import {
   Check,
   Gamepad2,
   Car,
-  Layers
+  Layers,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useGameCoachingConfig, StatsPlatform } from '../../hooks/useGameCoachingConfig';
 import toast from 'react-hot-toast';
 import ExternalStatsGuideModal from './ExternalStatsGuideModal';
 
@@ -37,95 +42,22 @@ interface ManualProfile {
   main_characters: string[];
   playstyle_notes: string | null;
   hours_played_estimate: number | null;
+  external_stats_validated?: boolean;
+  external_stats_cached_data?: any;
 }
 
-const RANK_OPTIONS: Record<string, string[]> = {
-  default: ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Professional'],
-  moba: ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Emerald', 'Diamond', 'Master', 'Grandmaster', 'Challenger'],
-  fps: ['Iron', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Ascendant', 'Immortal', 'Radiant'],
-  battle_royale: ['Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond', 'Elite', 'Champion', 'Unreal'],
-  fighting: ['Rookie', 'Beginner', 'Intermediate', 'Advanced', 'Master', 'Legend'],
-};
+type GameCategory = 'moba' | 'fps' | 'battle_royale' | 'fighting' | 'sports' | 'racing' | 'card' | 'hero_shooter' | 'autobattler' | 'default';
 
-const STATS_PLATFORMS = [
-  { id: 'op.gg', name: 'OP.GG', games: ['league of legends', 'lol', 'valorant', 'tft'] },
-  { id: 'tracker.gg', name: 'Tracker.gg', games: ['valorant', 'fortnite', 'apex legends', 'apex', 'rocket league', 'cs2', 'overwatch', 'fc 24', 'fc 25', 'fc24', 'fc25', 'fc 26', 'fc26', 'ea fc', 'fifa', 'pubg', 'halo'] },
-  { id: 'blitz.gg', name: 'Blitz.gg', games: ['league of legends', 'lol', 'valorant', 'tft'] },
-  { id: 'u.gg', name: 'U.GG', games: ['league of legends', 'lol'] },
-  { id: 'leetify', name: 'Leetify', games: ['cs2', 'counter-strike', 'csgo'] },
-  { id: 'dotabuff', name: 'Dotabuff', games: ['dota 2', 'dota'] },
-  { id: 'other', name: 'Other', games: [] },
-];
-
-type GameCategory = 'moba' | 'fps' | 'battle_royale' | 'fighting' | 'sports' | 'racing' | 'card' | 'default';
-
-interface GameFieldConfig {
-  labelKey: string;
-  placeholderKey: string;
-  icon: 'sword' | 'gamepad' | 'car' | 'cards';
-}
-
-const GAME_FIELD_CONFIG: Record<GameCategory, GameFieldConfig> = {
-  moba: {
-    labelKey: 'coaching.fieldLabel.champions',
-    placeholderKey: 'coaching.fieldPlaceholder.champions',
-    icon: 'sword',
-  },
-  fps: {
-    labelKey: 'coaching.fieldLabel.agents',
-    placeholderKey: 'coaching.fieldPlaceholder.agents',
-    icon: 'sword',
-  },
-  battle_royale: {
-    labelKey: 'coaching.fieldLabel.legends',
-    placeholderKey: 'coaching.fieldPlaceholder.legends',
-    icon: 'sword',
-  },
-  fighting: {
-    labelKey: 'coaching.fieldLabel.fighters',
-    placeholderKey: 'coaching.fieldPlaceholder.fighters',
-    icon: 'sword',
-  },
-  sports: {
-    labelKey: 'coaching.fieldLabel.formations',
-    placeholderKey: 'coaching.fieldPlaceholder.formations',
-    icon: 'gamepad',
-  },
-  racing: {
-    labelKey: 'coaching.fieldLabel.cars',
-    placeholderKey: 'coaching.fieldPlaceholder.cars',
-    icon: 'car',
-  },
-  card: {
-    labelKey: 'coaching.fieldLabel.decks',
-    placeholderKey: 'coaching.fieldPlaceholder.decks',
-    icon: 'cards',
-  },
-  default: {
-    labelKey: 'coaching.fieldLabel.default',
-    placeholderKey: 'coaching.fieldPlaceholder.default',
-    icon: 'sword',
-  },
-};
-
-const detectGameCategory = (gameName: string): GameCategory => {
-  const lowerName = gameName.toLowerCase();
-  if (lowerName.includes('league') || lowerName.includes('dota') || lowerName.includes('lol')) return 'moba';
-  if (lowerName.includes('valorant') || lowerName.includes('cs') || lowerName.includes('counter-strike') || lowerName.includes('overwatch')) return 'fps';
-  if (lowerName.includes('fortnite') || lowerName.includes('apex') || lowerName.includes('pubg') || lowerName.includes('warzone')) return 'battle_royale';
-  if (lowerName.includes('street fighter') || lowerName.includes('tekken') || lowerName.includes('mortal') || lowerName.includes('guilty gear') || lowerName.includes('smash')) return 'fighting';
-  if (lowerName.includes('fc') || lowerName.includes('fifa') || lowerName.includes('nba') || lowerName.includes('madden') || lowerName.includes('pes') || lowerName.includes('efootball')) return 'sports';
-  if (lowerName.includes('forza') || lowerName.includes('gran turismo') || lowerName.includes('f1') || lowerName.includes('need for speed')) return 'racing';
-  if (lowerName.includes('hearthstone') || lowerName.includes('tft') || lowerName.includes('teamfight') || lowerName.includes('legends of runeterra') || lowerName.includes('marvel snap')) return 'card';
-  return 'default';
-};
-
-const getFieldIcon = (iconType: string) => {
-  switch (iconType) {
-    case 'gamepad': return Gamepad2;
-    case 'car': return Car;
-    case 'cards': return Layers;
-    default: return Sword;
+const getFieldIcon = (category: string) => {
+  switch (category) {
+    case 'sports':
+    case 'racing':
+      return Gamepad2;
+    case 'card':
+    case 'autobattler':
+      return Layers;
+    default:
+      return Sword;
   }
 };
 
@@ -139,9 +71,14 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
 }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { config, isLoading: configLoading } = useGameCoachingConfig(gameId, gameName);
+
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showRankDropdown, setShowRankDropdown] = useState(false);
+  const [isFetchingStats, setIsFetchingStats] = useState(false);
+  const [statsFetchError, setStatsFetchError] = useState<string | null>(null);
+  const [statsValidated, setStatsValidated] = useState(existingProfile?.external_stats_validated || false);
 
   const [profile, setProfile] = useState<ManualProfile>({
     self_reported_rank: existingProfile?.self_reported_rank || null,
@@ -154,14 +91,11 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
 
   const [characterInput, setCharacterInput] = useState('');
 
-  const gameCategory = detectGameCategory(gameName);
-  const rankOptions = RANK_OPTIONS[gameCategory] || RANK_OPTIONS.default;
-  const fieldConfig = GAME_FIELD_CONFIG[gameCategory] || GAME_FIELD_CONFIG.default;
-  const FieldIcon = getFieldIcon(fieldConfig.icon);
-
-  const relevantPlatforms = STATS_PLATFORMS.filter(
-    p => p.games.length === 0 || p.games.some(g => gameName.toLowerCase().includes(g))
-  );
+  const FieldIcon = config ? getFieldIcon(config.game_category) : Sword;
+  const rankOptions = config?.rank_tiers || ['Beginner', 'Intermediate', 'Advanced', 'Expert', 'Professional'];
+  const statsPlatforms = config?.stats_platforms || [];
+  const characterLabel = config?.character_field_label || t('coaching.fieldLabel.default');
+  const characterPlaceholder = config?.character_field_placeholder || t('coaching.fieldPlaceholder.default');
 
   useEffect(() => {
     if (existingProfile) {
@@ -173,8 +107,18 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
         playstyle_notes: existingProfile.playstyle_notes,
         hours_played_estimate: existingProfile.hours_played_estimate,
       });
+      setStatsValidated(existingProfile.external_stats_validated || false);
     }
   }, [existingProfile]);
+
+  useEffect(() => {
+    if (config && statsPlatforms.length > 0 && !profile.external_stats_platform) {
+      setProfile(prev => ({
+        ...prev,
+        external_stats_platform: statsPlatforms[0].platform
+      }));
+    }
+  }, [config, statsPlatforms, profile.external_stats_platform]);
 
   const handleAddCharacter = () => {
     if (characterInput.trim() && !profile.main_characters.includes(characterInput.trim())) {
@@ -191,6 +135,55 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
       ...prev,
       main_characters: prev.main_characters.filter(c => c !== char)
     }));
+  };
+
+  const handleFetchStats = async () => {
+    if (!profile.external_stats_url || !profile.external_stats_platform || !user) return;
+
+    setIsFetchingStats(true);
+    setStatsFetchError(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-external-stats`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: profile.external_stats_url,
+            platform: profile.external_stats_platform,
+            game_id: gameId,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!result.success) {
+        if (result.errorType === 'rate_limited') {
+          setStatsFetchError(`${t('coaching.rateLimited')} ${result.retryAfter} ${t('common.minutes')}`);
+        } else {
+          setStatsFetchError(result.error || t('coaching.fetchStatsFailed'));
+        }
+        return;
+      }
+
+      setStatsValidated(true);
+      toast.success(t('coaching.statsValidated'));
+    } catch (error: any) {
+      console.error('Error fetching stats:', error);
+      setStatsFetchError(error.message || t('coaching.fetchStatsFailed'));
+    } finally {
+      setIsFetchingStats(false);
+    }
   };
 
   const handleSave = async () => {
@@ -227,6 +220,21 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
       setIsSaving(false);
     }
   };
+
+  const getSelectedPlatform = (): StatsPlatform | null => {
+    if (!profile.external_stats_platform || statsPlatforms.length === 0) return null;
+    return statsPlatforms.find(p => p.platform === profile.external_stats_platform) || null;
+  };
+
+  const selectedPlatform = getSelectedPlatform();
+
+  if (configLoading) {
+    return (
+      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-6 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-6">
@@ -319,42 +327,96 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
             </button>
           </div>
 
-          <div className="flex gap-2 mb-2">
-            {relevantPlatforms.map(platform => (
+          {statsPlatforms.length > 0 && (
+            <div className="flex gap-2 mb-2 flex-wrap">
+              {statsPlatforms.map(platform => (
+                <button
+                  key={platform.platform}
+                  onClick={() => {
+                    setProfile(prev => ({ ...prev, external_stats_platform: platform.platform }));
+                    setStatsValidated(false);
+                    setStatsFetchError(null);
+                  }}
+                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                    profile.external_stats_platform === platform.platform
+                      ? 'border-transparent text-white'
+                      : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                  }`}
+                  style={{
+                    backgroundColor: profile.external_stats_platform === platform.platform
+                      ? theme.colors.primary
+                      : 'transparent'
+                  }}
+                >
+                  {platform.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <input
+                type="url"
+                value={profile.external_stats_url || ''}
+                onChange={(e) => {
+                  setProfile(prev => ({ ...prev, external_stats_url: e.target.value }));
+                  setStatsValidated(false);
+                  setStatsFetchError(null);
+                }}
+                placeholder={selectedPlatform?.url_example || 'https://...'}
+                className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
+              />
+            </div>
+            {profile.external_stats_url && profile.external_stats_platform && (
               <button
-                key={platform.id}
-                onClick={() => setProfile(prev => ({ ...prev, external_stats_platform: platform.id }))}
-                className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                  profile.external_stats_platform === platform.id
-                    ? 'border-transparent text-white'
-                    : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                }`}
+                onClick={handleFetchStats}
+                disabled={isFetchingStats}
+                className="flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all disabled:opacity-50"
                 style={{
-                  backgroundColor: profile.external_stats_platform === platform.id
-                    ? theme.colors.primary
-                    : 'transparent'
+                  backgroundColor: statsValidated ? '#22c55e20' : `${theme.colors.primary}20`,
+                  color: statsValidated ? '#22c55e' : theme.colors.primary,
                 }}
               >
-                {platform.name}
+                {isFetchingStats ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : statsValidated ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <RefreshCw className="w-5 h-5" />
+                )}
+                <span className="hidden sm:inline">
+                  {statsValidated ? t('coaching.validated') : t('coaching.fetchStats')}
+                </span>
               </button>
-            ))}
+            )}
           </div>
 
-          <div className="relative">
-            <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-            <input
-              type="url"
-              value={profile.external_stats_url || ''}
-              onChange={(e) => setProfile(prev => ({ ...prev, external_stats_url: e.target.value }))}
-              placeholder="https://tracker.gg/valorant/profile/..."
-              className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
-            />
-          </div>
+          {statsFetchError && (
+            <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-red-400">{statsFetchError}</p>
+                <ul className="mt-1 text-xs text-gray-400 list-disc list-inside">
+                  <li>{t('coaching.troubleshooting.checkUrl')}</li>
+                  <li>{t('coaching.troubleshooting.checkPublic')}</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {statsValidated && (
+            <div className="mt-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-sm text-green-400">{t('coaching.statsValidatedSuccess')}</p>
+            </div>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
-            {t(fieldConfig.labelKey)}
+            {characterLabel}
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
             {profile.main_characters.map(char => (
@@ -386,7 +448,7 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
                     handleAddCharacter();
                   }
                 }}
-                placeholder={t(fieldConfig.placeholderKey)}
+                placeholder={characterPlaceholder}
                 className="w-full pl-10 pr-4 py-2 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
               />
             </div>

@@ -36,6 +36,8 @@ interface ManualProfile {
   main_characters: string[];
   playstyle_notes: string | null;
   hours_played_estimate: number | null;
+  external_stats_validated: boolean;
+  external_stats_cached_data: any | null;
 }
 
 interface UniversalPerformanceContext {
@@ -194,7 +196,7 @@ const fetchManualProfile = async (supabase: any, userId: string, gameId: string)
       return null;
     }
 
-    console.log(`[AI Coach] Manual profile found: rank=${profile.self_reported_rank}`);
+    console.log(`[AI Coach] Manual profile found: rank=${profile.self_reported_rank}, validated=${profile.external_stats_validated}`);
 
     return {
       self_reported_rank: profile.self_reported_rank,
@@ -202,7 +204,9 @@ const fetchManualProfile = async (supabase: any, userId: string, gameId: string)
       external_stats_platform: profile.external_stats_platform,
       main_characters: profile.main_characters || [],
       playstyle_notes: profile.playstyle_notes,
-      hours_played_estimate: profile.hours_played_estimate
+      hours_played_estimate: profile.hours_played_estimate,
+      external_stats_validated: profile.external_stats_validated || false,
+      external_stats_cached_data: profile.external_stats_cached_data || null
     };
   } catch (err) {
     console.error('[AI Coach] Error fetching manual profile:', err);
@@ -497,8 +501,24 @@ ${stats.winRate < 40 ? '- Room for improvement. Let\'s work on fundamentals.' : 
       contextSection += `## Experience: ~${profile.hours_played_estimate} hours played\n`;
     }
 
-    if (profile.external_stats_url) {
-      contextSection += `## External Stats: Available at ${profile.external_stats_platform || 'external site'}\n`;
+    if (profile.external_stats_validated && profile.external_stats_cached_data) {
+      const cachedStats = profile.external_stats_cached_data;
+      contextSection += `\n## Verified External Stats (from ${profile.external_stats_platform || 'stats platform'}):\n`;
+      if (cachedStats.rank) contextSection += `- Current Rank: ${cachedStats.rank}\n`;
+      if (cachedStats.winRate) contextSection += `- Win Rate: ${cachedStats.winRate}%\n`;
+      if (cachedStats.kd) contextSection += `- K/D Ratio: ${cachedStats.kd}\n`;
+      if (cachedStats.level) contextSection += `- Level: ${cachedStats.level}\n`;
+      if (cachedStats.gamesPlayed) contextSection += `- Games Played: ${cachedStats.gamesPlayed}\n`;
+      if (cachedStats.additionalStats) {
+        for (const [key, value] of Object.entries(cachedStats.additionalStats)) {
+          if (key !== 'note' && key !== 'validatedUrl') {
+            contextSection += `- ${key}: ${value}\n`;
+          }
+        }
+      }
+      contextSection += `- Stats URL validated: Yes\n`;
+    } else if (profile.external_stats_url) {
+      contextSection += `## External Stats: Available at ${profile.external_stats_platform || 'external site'} (not yet validated)\n`;
     }
   }
 
@@ -658,21 +678,12 @@ Deno.serve(async (req: Request) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    console.log(`[AI Coach] SUPABASE_URL: ${supabaseUrl ? `SET (${supabaseUrl.substring(0, 30)}...)` : 'NOT SET'}`);
-    console.log(`[AI Coach] SUPABASE_SERVICE_ROLE_KEY: ${serviceRoleKey ? `SET (length: ${serviceRoleKey.length}, starts: ${serviceRoleKey.substring(0, 10)}...)` : 'NOT SET'}`);
-    console.log(`[AI Coach] SUPABASE_ANON_KEY: ${anonKey ? `SET (length: ${anonKey.length}, starts: ${anonKey.substring(0, 10)}...)` : 'NOT SET'}`);
-
     if (!supabaseUrl || !serviceRoleKey || !anonKey) {
       console.error('[AI Coach] CRITICAL: Missing required environment variables!');
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Server configuration error - missing environment variables',
-          debug: {
-            supabaseUrl: !!supabaseUrl,
-            serviceRoleKey: !!serviceRoleKey,
-            anonKey: !!anonKey
-          }
+          error: 'Server configuration error - missing environment variables'
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -680,7 +691,6 @@ Deno.serve(async (req: Request) => {
 
     console.log('[AI Coach] --- Authorization Check ---');
     const authHeader = req.headers.get('Authorization');
-    console.log(`[AI Coach] Authorization header: ${authHeader ? `Present (length: ${authHeader.length}, starts: ${authHeader.substring(0, 20)}...)` : 'NOT PRESENT'}`);
 
     if (!authHeader) {
       console.error('[AI Coach] Missing authorization header');
@@ -691,63 +701,35 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log('[AI Coach] --- Creating Supabase Clients ---');
-    let supabase;
-    let userSupabase;
-
-    try {
-      console.log('[AI Coach] Creating service role client...');
-      supabase = createClient(supabaseUrl, serviceRoleKey);
-      console.log('[AI Coach] Service role client created successfully');
-    } catch (clientError) {
-      console.error('[AI Coach] Failed to create service role client:', clientError);
-      throw clientError;
-    }
-
-    try {
-      console.log('[AI Coach] Creating user client with auth header...');
-      userSupabase = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: authHeader } }
-      });
-      console.log('[AI Coach] User client created successfully');
-    } catch (clientError) {
-      console.error('[AI Coach] Failed to create user client:', clientError);
-      throw clientError;
-    }
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const userSupabase = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
 
     console.log('[AI Coach] --- Authenticating User ---');
     const { data: { user }, error: authError } = await userSupabase.auth.getUser();
-    console.log(`[AI Coach] Auth result - User: ${user ? user.id : 'null'}, Error: ${authError ? authError.message : 'none'}`);
 
     if (authError || !user) {
       console.error('[AI Coach] Authentication failed:', authError?.message || 'No user returned');
       return new Response(
-        JSON.stringify({ success: false, error: 'Unauthorized', authError: authError?.message }),
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[AI Coach] User authenticated: ${user.id} (${user.email})`);
+    console.log(`[AI Coach] User authenticated: ${user.id}`);
 
     const requestData: CoachingRequest = await req.json();
     const { session_id, message, game_id, game_name, performance_context } = requestData;
-    console.log(`[AI Coach] Request data - game_id: ${game_id}, game_name: ${game_name}, session_id: ${session_id || 'new'}, message length: ${message?.length || 0}`);
 
     if (!message || !game_id) {
-      console.error('[AI Coach] Missing required fields: message or game_id');
       return new Response(
         JSON.stringify({ success: false, error: 'Message and game_id are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`[AI Coach] Processing request for user ${user.id}, game: ${game_name}`);
-
     const topicDetection = detectTopics(message);
-    console.log(`[AI Coach] Detected topics: ${topicDetection.topics.join(', ')} | Primary: ${topicDetection.primaryCategory}`);
-
-    console.log('[AI Coach] --- Fetching OpenAI API Configuration ---');
-    console.log('[AI Coach] Querying platform_api_integrations table...');
-    console.log('[AI Coach] Query: SELECT api_key FROM platform_api_integrations WHERE api_name = "OpenAI API" AND is_active = true');
 
     const [apiConfigResult, aiConfig] = await Promise.all([
       supabase
@@ -759,57 +741,13 @@ Deno.serve(async (req: Request) => {
       loadAIConfig(supabase, game_id)
     ]);
 
-    console.log('[AI Coach] --- API Config Query Result ---');
-    console.log(`[AI Coach] Error: ${apiConfigResult.error ? JSON.stringify(apiConfigResult.error) : 'none'}`);
-    console.log(`[AI Coach] Status: ${apiConfigResult.status || 'unknown'}`);
-    console.log(`[AI Coach] Status Text: ${apiConfigResult.statusText || 'unknown'}`);
-    console.log(`[AI Coach] Data: ${apiConfigResult.data ? 'FOUND' : 'NULL/UNDEFINED'}`);
-
-    if (apiConfigResult.data) {
-      console.log(`[AI Coach] Data fields present: ${Object.keys(apiConfigResult.data).join(', ')}`);
-      console.log(`[AI Coach] api_name in result: ${apiConfigResult.data.api_name}`);
-      console.log(`[AI Coach] is_active in result: ${apiConfigResult.data.is_active}`);
-      console.log(`[AI Coach] api_key exists: ${!!apiConfigResult.data.api_key}`);
-      console.log(`[AI Coach] api_key length: ${apiConfigResult.data.api_key?.length || 0}`);
-      if (apiConfigResult.data.api_key) {
-        console.log(`[AI Coach] api_key starts with: ${apiConfigResult.data.api_key.substring(0, 10)}...`);
-      }
-    } else {
-      console.log('[AI Coach] No data returned from query - checking all records...');
-      const { data: allRecords, error: allError } = await supabase
-        .from('platform_api_integrations')
-        .select('api_name, is_active')
-        .limit(10);
-      console.log(`[AI Coach] All records query error: ${allError ? JSON.stringify(allError) : 'none'}`);
-      console.log(`[AI Coach] All records found: ${allRecords ? allRecords.length : 0}`);
-      if (allRecords && allRecords.length > 0) {
-        console.log('[AI Coach] Available records:');
-        allRecords.forEach((r, i) => {
-          console.log(`[AI Coach]   ${i + 1}. api_name="${r.api_name}", is_active=${r.is_active}`);
-        });
-      }
-    }
-
     if (apiConfigResult.error || !apiConfigResult.data?.api_key) {
-      console.error('[AI Coach] FAILED: OpenAI API key not configured or not found');
-      console.error('[AI Coach] Error details:', apiConfigResult.error?.message || 'No error message');
-      console.error('[AI Coach] Data received:', JSON.stringify(apiConfigResult.data));
+      console.error('[AI Coach] FAILED: OpenAI API key not configured');
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'AI service not configured',
-          debug: {
-            hasError: !!apiConfigResult.error,
-            errorMessage: apiConfigResult.error?.message,
-            hasData: !!apiConfigResult.data,
-            hasApiKey: !!apiConfigResult.data?.api_key
-          }
-        }),
+        JSON.stringify({ success: false, error: 'AI service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log('[AI Coach] SUCCESS: OpenAI API key retrieved successfully');
 
     const openai = new OpenAI({ apiKey: apiConfigResult.data.api_key });
 
@@ -856,23 +794,14 @@ Deno.serve(async (req: Request) => {
       currentSession = newSession;
     }
 
-    trackQuestionAnalytics(
-      supabase,
-      user.id,
-      game_id,
-      currentSession.id,
-      message,
-      topicDetection
-    );
+    trackQuestionAnalytics(supabase, user.id, game_id, currentSession.id, message, topicDetection);
 
-    console.log('[AI Coach] --- Building Universal Performance Context ---');
     const [tournamentStats, manualProfile] = await Promise.all([
       fetchTournamentStats(supabase, user.id, game_id),
       fetchManualProfile(supabase, user.id, game_id)
     ]);
 
     const gameCategory = detectGameCategory(game_name || '');
-    console.log(`[AI Coach] Game category detected: ${gameCategory}`);
 
     const universalContext: UniversalPerformanceContext = {
       tournamentStats,
@@ -882,7 +811,6 @@ Deno.serve(async (req: Request) => {
     };
 
     const hasApiData = performance_context?.matches && performance_context.matches.length > 0;
-    console.log(`[AI Coach] Context sources - Tournament: ${!!tournamentStats}, Manual: ${!!manualProfile}, API: ${hasApiData}`);
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -892,16 +820,8 @@ Deno.serve(async (req: Request) => {
     conversationHistory.push(userMessage);
 
     const systemPrompt = hasApiData
-      ? buildLoLSystemPrompt(
-          currentSession.performance_context || performance_context,
-          game_name || 'League of Legends',
-          aiConfig
-        )
-      : buildUniversalSystemPrompt(
-          universalContext,
-          game_name || 'Unknown Game',
-          aiConfig
-        );
+      ? buildLoLSystemPrompt(currentSession.performance_context || performance_context, game_name || 'League of Legends', aiConfig)
+      : buildUniversalSystemPrompt(universalContext, game_name || 'Unknown Game', aiConfig);
 
     const openaiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
@@ -911,33 +831,14 @@ Deno.serve(async (req: Request) => {
       }))
     ];
 
-    console.log('[AI Coach] --- Sending Request to OpenAI ---');
-    console.log(`[AI Coach] Conversation messages: ${openaiMessages.length - 1}`);
-    console.log(`[AI Coach] Model: gpt-4o, Max tokens: 1024`);
-
-    let response;
-    try {
-      response = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        max_tokens: 1024,
-        messages: openaiMessages
-      });
-      console.log('[AI Coach] OpenAI response received successfully');
-      console.log(`[AI Coach] Response ID: ${response.id}`);
-      console.log(`[AI Coach] Tokens used - Prompt: ${response.usage?.prompt_tokens}, Completion: ${response.usage?.completion_tokens}`);
-    } catch (openaiError: any) {
-      console.error('[AI Coach] OpenAI API Error:', openaiError.message);
-      console.error('[AI Coach] OpenAI Error Details:', JSON.stringify({
-        status: openaiError.status,
-        code: openaiError.code,
-        type: openaiError.type
-      }));
-      throw openaiError;
-    }
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      max_tokens: 1024,
+      messages: openaiMessages
+    });
 
     const assistantContent = response.choices[0]?.message?.content
       || 'I apologize, but I encountered an issue generating a response.';
-    console.log(`[AI Coach] Response content length: ${assistantContent.length} characters`);
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
@@ -946,17 +847,13 @@ Deno.serve(async (req: Request) => {
     };
     conversationHistory.push(assistantMessage);
 
-    const { error: updateError } = await supabase
+    await supabase
       .from('ai_coaching_sessions')
       .update({
         messages: conversationHistory,
         updated_at: new Date().toISOString()
       })
       .eq('id', currentSession.id);
-
-    if (updateError) {
-      console.error('[AI Coach] Error updating session:', updateError.message);
-    }
 
     let videoRecommendations: ContentRecommendation[] = [];
     const contentKeywords = ['watch', 'tutorial', 'video', 'guide', 'learn'];
@@ -971,12 +868,6 @@ Deno.serve(async (req: Request) => {
       }
       if (assistantContent.toLowerCase().includes('ward') || assistantContent.toLowerCase().includes('vision')) {
         topicKeywords.push('vision', 'ward', 'map');
-      }
-      if (assistantContent.toLowerCase().includes('teamfight') || assistantContent.toLowerCase().includes('positioning')) {
-        topicKeywords.push('teamfight', 'position', 'fight');
-      }
-      if (assistantContent.toLowerCase().includes('wave') || assistantContent.toLowerCase().includes('lane')) {
-        topicKeywords.push('wave', 'lane', 'trading');
       }
 
       if (topicKeywords.length > 0) {
@@ -993,25 +884,9 @@ Deno.serve(async (req: Request) => {
             title: v.title,
             reason: `Recommended based on coaching discussion about ${topicKeywords[0]}`
           }));
-
-          for (const rec of videoRecommendations) {
-            await supabase
-              .from('coaching_content_recommendations')
-              .insert({
-                session_id: currentSession.id,
-                content_id: rec.content_id,
-                reason: rec.reason,
-                was_watched: false
-              });
-          }
         }
       }
     }
-
-    console.log('[AI Coach] ========== REQUEST COMPLETE ==========');
-    console.log(`[AI Coach] Session: ${currentSession.id}`);
-    console.log(`[AI Coach] Video recommendations: ${videoRecommendations.length}`);
-    console.log(`[AI Coach] Tokens used: ${response.usage?.completion_tokens || 0}`);
 
     return new Response(
       JSON.stringify({
@@ -1030,22 +905,9 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error: any) {
-    console.error('[AI Coach] ========== FATAL ERROR ==========');
-    console.error('[AI Coach] Error name:', error.name);
-    console.error('[AI Coach] Error message:', error.message);
-    console.error('[AI Coach] Error stack:', error.stack);
-    if (error.cause) {
-      console.error('[AI Coach] Error cause:', error.cause);
-    }
+    console.error('[AI Coach] Error:', error.message);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'Internal server error',
-        debug: {
-          errorName: error.name,
-          errorMessage: error.message
-        }
-      }),
+      JSON.stringify({ success: false, error: 'Internal server error' }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

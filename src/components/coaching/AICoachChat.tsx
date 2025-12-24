@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Brain,
@@ -12,7 +12,8 @@ import {
   Clock,
   Maximize2,
   Minimize2,
-  X
+  X,
+  ArrowDown
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
 import CoachingMessageRenderer from './CoachingMessageRenderer';
@@ -107,16 +108,46 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
   const [previewVideo, setPreviewVideo] = useState<VideoSuggestion | null>(null);
   const [watchedVideoIds, setWatchedVideoIds] = useState<string[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [prevMessageCount, setPrevMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToLatestMessage = useCallback(() => {
+    setTimeout(() => {
+      if (lastMessageRef.current) {
+        lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  }, []);
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+    setShowScrollButton(false);
+  }, []);
+
+  const handleScroll = useCallback(() => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom && messages.length > 0);
+  }, [messages.length]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (messages.length > prevMessageCount && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'user') {
+        scrollToLatestMessage();
+      } else if (lastMessage.role === 'assistant') {
+        setTimeout(() => {
+          scrollToLatestMessage();
+        }, 150);
+      }
+    }
+    setPrevMessageCount(messages.length);
+  }, [messages, prevMessageCount, scrollToLatestMessage]);
 
   useEffect(() => {
     if (isFullscreen) {
@@ -255,9 +286,13 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
         </div>
       </div>
 
-      <div className={`flex-1 overflow-y-auto space-y-4 min-h-0 ${
-        isFullscreen ? 'p-6 max-w-4xl mx-auto w-full' : 'p-4'
-      }`}>
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className={`flex-1 overflow-y-auto space-y-4 min-h-0 relative ${
+          isFullscreen ? 'p-6 max-w-4xl mx-auto w-full' : 'p-4'
+        }`}
+      >
         {messages.length === 0 ? (
           <div className={`flex flex-col items-center justify-center h-full text-center ${
             isFullscreen ? 'py-16' : 'py-8'
@@ -299,9 +334,12 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
           </div>
         ) : (
           <>
-            {messages.map((msg, index) => (
+            {messages.map((msg, index) => {
+              const isLastMessage = index === messages.length - 1;
+              return (
               <div
                 key={index}
+                ref={isLastMessage ? lastMessageRef : undefined}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
@@ -354,7 +392,8 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
 
             {videoRecommendations.length > 0 && (
               <div className={`mt-4 bg-dark-300/50 rounded-xl border border-gray-700 animate-slide-up ${
@@ -431,6 +470,19 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
             )}
             <div ref={messagesEndRef} />
           </>
+        )}
+
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-4 right-4 p-2 rounded-full shadow-lg transition-all hover:scale-110 z-10"
+            style={{
+              backgroundColor: theme.colors.primary,
+              color: theme.colors.text,
+            }}
+          >
+            <ArrowDown className="w-5 h-5" />
+          </button>
         )}
       </div>
 

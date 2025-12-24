@@ -39,7 +39,8 @@
     "team": "Team",
     "solo": "Solo",
     "add": "Add",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "minutes": "minutes"
   },
   "countries": {
     "BF": "Burkina Faso",
@@ -2182,7 +2183,17 @@
       "decks": "e.g., Aggro, Control, Reroll",
       "default": "e.g., Your main picks or strategies"
     },
-    "customRank": "Enter custom rank..."
+    "customRank": "Enter custom rank...",
+    "fetchStats": "Validate",
+    "validated": "Validated",
+    "rateLimited": "Rate limited. Try again in",
+    "fetchStatsFailed": "Failed to validate profile",
+    "statsValidated": "Profile validated successfully",
+    "statsValidatedSuccess": "Your stats profile has been validated and linked",
+    "troubleshooting": {
+      "checkUrl": "Make sure the profile URL is correct",
+      "checkPublic": "Check if the profile is set to public"
+    }
   },
   "tournamentTabsPage": {
     "home": "Home",
