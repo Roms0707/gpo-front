@@ -54,15 +54,15 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
 
   if (availableTabs.length === 0) {
     return (
-      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-12 text-center">
+      <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
         <div
           className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
           style={{ backgroundColor: `${theme.colors.primary}10` }}
         >
-          <Gamepad2 className="w-10 h-10 text-gray-500" />
+          <Gamepad2 className="w-10 h-10 text-gray-400 dark:text-gray-500" />
         </div>
-        <h3 className="text-xl font-bold text-white mb-3">{t('gameHub.skillLab.noGamesAvailable')}</h3>
-        <p className="text-gray-400 max-w-md mx-auto mb-6">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('gameHub.skillLab.noGamesAvailable')}</h3>
+        <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6">
           {t('gameHub.skillLab.noGamesAvailableDesc', { gameName })}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
@@ -88,15 +88,15 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">{t('gameHub.skillLab.title')}</h2>
-        <p className="text-gray-400 max-w-2xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('gameHub.skillLab.title')}</h2>
+        <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
           {t('gameHub.skillLab.subtitle')}
         </p>
       </div>
 
       {availableTabs.length > 1 && (
         <div className="flex justify-center">
-          <div className="inline-flex bg-dark-300/50 p-1 rounded-xl border border-gray-800">
+          <div className="inline-flex bg-gray-100 dark:bg-dark-300/50 p-1 rounded-xl border border-gray-200 dark:border-gray-800">
             {availableTabs.map((tab) => {
               const TabIcon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -108,14 +108,14 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
                   onClick={() => handleTabChange(tab.id)}
                   className={`
                     flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-200
-                    ${isActive ? 'shadow-lg' : 'hover:bg-dark-300/50'}
+                    ${isActive ? 'shadow-lg' : 'hover:bg-gray-200 dark:hover:bg-dark-300/50'}
                   `}
                   style={isActive ? {
                     backgroundColor: tabColor,
                     color: theme.colors.text,
                     boxShadow: `0 4px 20px ${tabColor}40`,
                   } : {
-                    color: 'rgb(156, 163, 175)',
+                    color: 'rgb(107, 114, 128)',
                   }}
                 >
                   <TabIcon className="w-4 h-4" />
@@ -136,37 +136,37 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
         )}
       </div>
 
-      <div className="bg-dark-200/30 border border-gray-800/50 rounded-xl p-6">
-        <h4 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+      <div className="bg-gray-50 dark:bg-dark-200/30 border border-gray-200 dark:border-gray-800/50 rounded-xl p-6">
+        <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" style={{ color: theme.colors.primary }} />
           {t('gameHub.skillLab.whyTrain')}
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-dark-300/50">
-              <Crosshair className="w-5 h-5 text-gray-400" />
+            <div className="p-2 rounded-lg bg-gray-100 dark:bg-dark-300/50">
+              <Crosshair className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
-              <p className="font-medium text-white text-sm">{t('gameHub.skillLab.benefit1Title')}</p>
-              <p className="text-xs text-gray-400">{t('gameHub.skillLab.benefit1Desc')}</p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{t('gameHub.skillLab.benefit1Title')}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('gameHub.skillLab.benefit1Desc')}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-dark-300/50">
-              <Timer className="w-5 h-5 text-gray-400" />
+            <div className="p-2 rounded-lg bg-gray-100 dark:bg-dark-300/50">
+              <Timer className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
-              <p className="font-medium text-white text-sm">{t('gameHub.skillLab.benefit2Title')}</p>
-              <p className="text-xs text-gray-400">{t('gameHub.skillLab.benefit2Desc')}</p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{t('gameHub.skillLab.benefit2Title')}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('gameHub.skillLab.benefit2Desc')}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-dark-300/50">
-              <Trophy className="w-5 h-5 text-gray-400" />
+            <div className="p-2 rounded-lg bg-gray-100 dark:bg-dark-300/50">
+              <Trophy className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
-              <p className="font-medium text-white text-sm">{t('gameHub.skillLab.benefit3Title')}</p>
-              <p className="text-xs text-gray-400">{t('gameHub.skillLab.benefit3Desc')}</p>
+              <p className="font-medium text-gray-900 dark:text-white text-sm">{t('gameHub.skillLab.benefit3Title')}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{t('gameHub.skillLab.benefit3Desc')}</p>
             </div>
           </div>
         </div>

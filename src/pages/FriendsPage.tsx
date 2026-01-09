@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +13,13 @@ import {
   XCircle,
   Loader,
   User,
-  MessageSquare
+  MessageSquare,
+  Gamepad2,
+  Send,
+  Inbox,
+  UserCheck
 } from 'lucide-react';
 import {
-  fetchUserRelationships,
   fetchPendingFriendRequests,
   fetchSentFriendRequests,
   fetchFriends,
@@ -26,12 +29,14 @@ import {
   sendFriendRequest
 } from '../services/api';
 import { supabase } from '../lib/supabase';
-import { UserRelationship, FriendRequest } from '../types';
-import FriendRequestItem from '../components/ui/FriendRequestItem';
-import FriendItem from '../components/ui/FriendItem';
+import { UserRelationship, FriendRequest, Game } from '../types';
 import toast from 'react-hot-toast';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import ChatModal from '../components/chat/ChatModal';
+import { getGameTheme, GameTheme } from '../utils/gameThemes';
+import { countries } from '../utils/countries';
+
+type OnlineStatus = 'online' | 'away' | 'offline';
 
 const FriendsPage: React.FC = () => {
   const { user } = useAuth();
@@ -47,12 +52,11 @@ const FriendsPage: React.FC = () => {
   const [userSuggestions, setUserSuggestions] = useState<any[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [favoriteGame, setFavoriteGame] = useState<Game | null>(null);
 
-  // Player profile modal state
   const [isPlayerProfileModalOpen, setIsPlayerProfileModalOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
 
-  // Chat modal state
   const [showChatModal, setShowChatModal] = useState(false);
   const [selectedChatUser, setSelectedChatUser] = useState<{
     id: string;
@@ -60,7 +64,32 @@ const FriendsPage: React.FC = () => {
     avatar?: string | null;
   } | null>(null);
 
-  // Get tab from URL query parameter
+  const theme: GameTheme = useMemo(() => {
+    return getGameTheme(favoriteGame?.name || null);
+  }, [favoriteGame]);
+
+  useEffect(() => {
+    const loadFavoriteGame = async () => {
+      if (!user?.favorite_game_id) return;
+
+      try {
+        const { data } = await supabase
+          .from('games')
+          .select('*')
+          .eq('id', user.favorite_game_id)
+          .maybeSingle();
+
+        if (data) {
+          setFavoriteGame(data);
+        }
+      } catch (error) {
+        console.error('Error loading favorite game:', error);
+      }
+    };
+
+    loadFavoriteGame();
+  }, [user?.favorite_game_id]);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
@@ -73,7 +102,6 @@ const FriendsPage: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
 
     if (user?.id) {
@@ -86,15 +114,12 @@ const FriendsPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Load friends (accepted relationships)
       const friendsData = await fetchFriends(user.id);
       setFriends(friendsData);
 
-      // Load pending friend requests
       const pendingRequestsData = await fetchPendingFriendRequests(user.id);
       setPendingRequests(pendingRequestsData);
 
-      // Load sent friend requests
       const sentRequestsData = await fetchSentFriendRequests(user.id);
       setSentRequests(sentRequestsData);
     } catch (error) {
@@ -104,7 +129,6 @@ const FriendsPage: React.FC = () => {
     }
   };
 
-  // Load user suggestions based on search query
   const loadUserSuggestions = async (query: string) => {
     if (!query.trim() || query.length < 2) {
       setUserSuggestions([]);
@@ -115,7 +139,6 @@ const FriendsPage: React.FC = () => {
     try {
       setIsLoadingSuggestions(true);
 
-      // Get existing friend IDs to exclude them from suggestions
       const existingFriendIds = friends.map(friend => friend.related_user?.id).filter(Boolean);
       const pendingRequestIds = [
         ...pendingRequests.map(req => req.sender_id),
@@ -123,14 +146,12 @@ const FriendsPage: React.FC = () => {
       ];
       const excludeIds = [...existingFriendIds, ...pendingRequestIds, user?.id].filter(Boolean);
 
-      // Search for users by username
       let suggestionQuery = supabase
         .from('users')
-        .select('id, username, avatar_url, country')
+        .select('id, username, avatar_url, country, favorite_game_id')
         .ilike('username', `%${query.trim()}%`)
         .limit(5);
 
-      // Exclude current user, existing friends, and pending requests
       if (excludeIds.length > 0) {
         suggestionQuery = suggestionQuery.not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`);
       }
@@ -151,13 +172,10 @@ const FriendsPage: React.FC = () => {
     }
   };
 
-  // Handle search query change with debouncing
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
 
-    // Only show suggestions on Friends tab
     if (activeTab === 'friends') {
-      // Debounce the search
       const timeoutId = setTimeout(() => {
         loadUserSuggestions(query);
       }, 300);
@@ -168,7 +186,6 @@ const FriendsPage: React.FC = () => {
     }
   };
 
-  // Send friend request to suggested user
   const handleSendFriendRequest = async (receiverId: string, receiverUsername: string) => {
     if (!user?.id) return;
 
@@ -176,7 +193,6 @@ const FriendsPage: React.FC = () => {
       await sendFriendRequest(user.id, receiverId);
       toast.success(t('friends.requestSentSuccess', { username: receiverUsername }));
 
-      // Remove from suggestions and refresh data
       setUserSuggestions(prev => prev.filter(suggestion => suggestion.id !== receiverId));
       loadData();
     } catch (error) {
@@ -187,7 +203,6 @@ const FriendsPage: React.FC = () => {
 
   const handleAcceptRequest = (requestId: string) => {
     setPendingRequests(prev => prev.filter(request => request.id !== requestId));
-    // Reload friends list
     if (user?.id) {
       fetchFriends(user.id).then(data => setFriends(data));
     }
@@ -215,319 +230,438 @@ const FriendsPage: React.FC = () => {
     }
   };
 
-  // Handle player profile click
   const handlePlayerClick = (userId: string) => {
     setSelectedPlayerId(userId);
     setIsPlayerProfileModalOpen(true);
   };
 
-  // Handle chat button click
-  const handleChatClick = (friend: UserRelationship) => {
-    if (!friend.related_user) return;
-
-    setSelectedChatUser({
-      id: friend.related_user.id,
-      username: friend.related_user.username,
-      avatar: friend.related_user.avatar_url
-    });
-    setShowChatModal(true);
-  };
-
-  // Filter friends based on search query
   const filteredFriends = friends.filter(friend =>
     friend.related_user?.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const getOnlineStatus = (userId: string): OnlineStatus => {
+    const hash = userId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    const statuses: OnlineStatus[] = ['online', 'away', 'offline'];
+    return statuses[Math.abs(hash) % 3];
+  };
+
+  const getCountryName = (countryCode?: string) => {
+    if (!countryCode) return null;
+    const country = countries.find(c => c.code === countryCode);
+    return country ? country.name : countryCode;
+  };
+
+  const getCountryFlag = (countryCode?: string) => {
+    if (!countryCode) return null;
+    const country = countries.find(c => c.code === countryCode);
+    return country?.flag || null;
+  };
+
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return t('friends.today');
+    if (diffDays === 1) return t('friends.yesterday');
+    if (diffDays < 7) return t('friends.daysAgo', { count: diffDays });
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div className="min-h-screen pt-28 pb-16">
+    <div
+      className="min-h-screen pt-28 pb-16"
+      style={{
+        background: `linear-gradient(180deg, ${theme.colors.primary}08 0%, transparent 30%)`
+      }}
+    >
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
-          <Link to="/profile" className="inline-flex items-center text-gray-400 hover:text-white mb-6">
+        <div className="max-w-4xl mx-auto">
+          <Link to="/profile" className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('friends.backToProfile')}
           </Link>
 
-          <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
-            <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
-              <h1 className="font-heading font-bold text-2xl flex items-center text-gray-900 dark:text-white">
-                <Users className="h-6 w-6 mr-2 text-primary-500" />
-                {t('friends.pageTitle')}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">{t('friends.pageSubtitle')}</p>
+          <div
+            className="relative rounded-2xl mb-6"
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.primary}20 0%, ${theme.colors.secondary}15 50%, ${theme.colors.primary}10 100%)`
+            }}
+          >
+            <div
+              className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-20"
+              style={{ backgroundColor: theme.colors.primary }}
+            />
+            <div
+              className="absolute bottom-0 left-0 w-56 h-56 rounded-full blur-3xl opacity-15"
+              style={{ backgroundColor: theme.colors.secondary }}
+            />
+
+            <div className="relative z-10 p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{
+                      backgroundColor: `${theme.colors.primary}25`,
+                      boxShadow: `0 0 20px ${theme.colors.primary}30`
+                    }}
+                  >
+                    <Users className="w-7 h-7" style={{ color: theme.colors.primary }} />
+                  </div>
+                  <div>
+                    <h1 className="font-heading font-bold text-2xl md:text-3xl text-white">
+                      {t('friends.pageTitle')}
+                    </h1>
+                    <p className="text-gray-400 text-sm">{t('friends.pageSubtitle')}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-white">{friends.length}</div>
+                      <div className="text-xs text-gray-400">{t('friends.friends')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold" style={{ color: pendingRequests.length > 0 ? theme.colors.primary : 'white' }}>
+                        {pendingRequests.length}
+                      </div>
+                      <div className="text-xs text-gray-400">{t('friends.pending')}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-white">{sentRequests.length}</div>
+                      <div className="text-xs text-gray-400">{t('friends.sent')}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  placeholder={t('friends.searchPlaceholder')}
+                  className="w-full bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-400 transition-all focus:outline-none"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={() => {
+                    if (searchQuery.length >= 2) {
+                      setShowSuggestions(true);
+                    }
+                  }}
+                  onBlur={() => {
+                    setTimeout(() => setShowSuggestions(false), 200);
+                  }}
+                  style={{
+                    boxShadow: 'none'
+                  }}
+                />
+
+                {showSuggestions && activeTab === 'friends' && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-dark-100 border border-gray-700/50 rounded-xl shadow-2xl z-20 max-h-80 overflow-y-auto">
+                    {isLoadingSuggestions ? (
+                      <div className="p-4 flex items-center justify-center">
+                        <Loader className="h-5 w-5 animate-spin text-gray-400" />
+                      </div>
+                    ) : userSuggestions.length > 0 ? (
+                      <div className="py-2">
+                        <div className="px-4 py-2 text-xs text-gray-500 font-medium border-b border-gray-700/50">
+                          {t('friends.usersFound')} ({userSuggestions.length})
+                        </div>
+                        {userSuggestions.map(suggestion => (
+                          <div
+                            key={suggestion.id}
+                            className="flex items-center justify-between px-4 py-3 hover:bg-dark-200/50 transition-colors"
+                          >
+                            <div
+                              className="flex items-center flex-1 cursor-pointer"
+                              onClick={() => handlePlayerClick(suggestion.id)}
+                            >
+                              <div className="relative">
+                                <div className="w-10 h-10 rounded-xl bg-dark-300 overflow-hidden mr-3">
+                                  {suggestion.avatar_url ? (
+                                    <img
+                                      src={suggestion.avatar_url}
+                                      alt={suggestion.username}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                      <User className="h-5 w-5" />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <p className="font-medium text-white text-sm">
+                                  {suggestion.username}
+                                </p>
+                                {suggestion.country && (
+                                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                                    <span>{getCountryFlag(suggestion.country)}</span>
+                                    {getCountryName(suggestion.country)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSendFriendRequest(suggestion.id, suggestion.username);
+                              }}
+                              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                              style={{
+                                backgroundColor: theme.colors.primary,
+                                color: theme.colors.text
+                              }}
+                            >
+                              <UserPlus className="h-4 w-4" />
+                              {t('friends.add')}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : searchQuery.length >= 2 ? (
+                      <div className="p-6 text-center">
+                        <User className="h-10 w-10 text-gray-500 mx-auto mb-2" />
+                        <p className="text-gray-400 text-sm">
+                          {t('friends.noUsersFound', { query: searchQuery })}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-dark-100/80 backdrop-blur-sm rounded-2xl border border-gray-800/50 overflow-hidden">
+            <div className="p-2 border-b border-gray-800/50">
+              <div className="flex rounded-xl bg-dark-200/50 p-1">
+                {[
+                  { id: 'friends' as const, icon: Users, label: t('friends.myFriends'), count: friends.length },
+                  { id: 'requests' as const, icon: Inbox, label: t('friends.requestsReceived'), count: pendingRequests.length, highlight: true },
+                  { id: 'sent' as const, icon: Send, label: t('friends.requestsSent'), count: sentRequests.length }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-sm font-medium transition-all
+                      ${activeTab === tab.id
+                        ? 'text-white'
+                        : 'text-gray-400 hover:text-gray-300'
+                      }
+                    `}
+                    style={{
+                      backgroundColor: activeTab === tab.id ? theme.colors.primary : 'transparent',
+                      boxShadow: activeTab === tab.id ? `0 4px 15px ${theme.colors.primary}30` : 'none'
+                    }}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    {tab.count > 0 && (
+                      <span
+                        className={`
+                          px-2 py-0.5 rounded-full text-xs font-medium
+                          ${activeTab === tab.id
+                            ? 'bg-white/20 text-white'
+                            : tab.highlight && tab.count > 0
+                              ? 'text-white'
+                              : 'bg-dark-300 text-gray-400'
+                          }
+                        `}
+                        style={{
+                          backgroundColor: activeTab !== tab.id && tab.highlight && tab.count > 0 ? theme.colors.primary : undefined
+                        }}
+                      >
+                        {tab.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Tabs Navigation */}
-            <div className="flex border-b border-gray-800">
-              <button
-                onClick={() => setActiveTab('friends')}
-                className={`flex-1 py-3 px-4 text-sm font-medium ${
-                  activeTab === 'friends'
-                    ? 'text-primary-500 border-b-2 border-primary-500'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <Users className="h-4 w-4 inline mr-2" />
-                {t('friends.myFriends')}
-                <span className="ml-2 bg-dark-300 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                  {friends.length}
-                </span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('requests')}
-                className={`flex-1 py-3 px-4 text-sm font-medium ${
-                  activeTab === 'requests'
-                    ? 'text-primary-500 border-b-2 border-primary-500'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <UserPlus className="h-4 w-4 inline mr-2" />
-                {t('friends.requestsReceived')}
-                {pendingRequests.length > 0 && (
-                  <span className="ml-2 bg-primary-600 text-white text-xs px-2 py-0.5 rounded-full">
-                    {pendingRequests.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('sent')}
-                className={`flex-1 py-3 px-4 text-sm font-medium ${
-                  activeTab === 'sent'
-                    ? 'text-primary-500 border-b-2 border-primary-500'
-                    : 'text-gray-400 hover:text-gray-300'
-                }`}
-              >
-                <Clock className="h-4 w-4 inline mr-2" />
-                {t('friends.requestsSent')}
-                {sentRequests.length > 0 && (
-                  <span className="ml-2 bg-dark-300 text-gray-300 text-xs px-2 py-0.5 rounded-full">
-                    {sentRequests.length}
-                  </span>
-                )}
-              </button>
-            </div>
-
-            {/* Tab Content */}
             <div className="p-6">
               {isLoading ? (
-                <div className="flex justify-center items-center py-12">
-                  <Loader className="h-8 w-8 animate-spin text-primary-500 mr-3" />
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader className="h-10 w-10 animate-spin mb-4" style={{ color: theme.colors.primary }} />
                   <span className="text-gray-400">{t('common.loading')}</span>
                 </div>
               ) : (
                 <>
-                  {/* Friends Tab */}
                   {activeTab === 'friends' && (
                     <div>
-                      {/* Search Bar */}
-                      <div className="mb-6">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                          <input
-                            type="text"
-                            placeholder={t('friends.searchPlaceholder')}
-                            className="w-full bg-dark-200 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                            value={searchQuery}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                            onFocus={() => {
-                              if (searchQuery.length >= 2) {
-                                setShowSuggestions(true);
-                              }
-                            }}
-                            onBlur={() => {
-                              // Delay hiding suggestions to allow clicking on them
-                              setTimeout(() => setShowSuggestions(false), 200);
-                            }}
-                          />
-
-                          {/* User Suggestions Dropdown */}
-                          {showSuggestions && activeTab === 'friends' && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto">
-                              {isLoadingSuggestions ? (
-                                <div className="p-3 text-center">
-                                  <Loader className="h-4 w-4 animate-spin text-primary-500 mx-auto" />
-                                </div>
-                              ) : userSuggestions.length > 0 ? (
-                                <div className="py-2">
-                                  <div className="px-3 py-1 text-xs text-gray-500 dark:text-gray-400 font-medium border-b border-gray-200 dark:border-gray-700">
-                                    {t('friends.usersFound')}
-                                  </div>
-                                  {userSuggestions.map(suggestion => (
-                                    <div
-                                      key={suggestion.id}
-                                      className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-200 transition-colors"
-                                    >
-                                      <div
-                                        className="flex items-center flex-1 cursor-pointer"
-                                        onClick={() => handlePlayerClick(suggestion.id)}
-                                      >
-                                        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
-                                          {suggestion.avatar_url ? (
-                                            <img
-                                              src={suggestion.avatar_url}
-                                              alt={suggestion.username}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                              <User className="h-4 w-4" />
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div>
-                                          <p className="font-medium text-gray-900 dark:text-white text-sm">
-                                            {suggestion.username}
-                                          </p>
-                                          {suggestion.country && (
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                              {suggestion.country}
-                                            </p>
-                                          )}
-                                        </div>
-                                      </div>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleSendFriendRequest(suggestion.id, suggestion.username);
-                                        }}
-                                        className="bg-primary-600 hover:bg-primary-700 text-white p-1.5 rounded-lg transition-colors"
-                                        title={t('friends.addAsFriend', { username: suggestion.username })}
-                                      >
-                                        <UserPlus className="h-3 w-3" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : searchQuery.length >= 2 ? (
-                                <div className="p-3 text-center text-gray-500 dark:text-gray-400 text-sm">
-                                  {t('friends.noUsersFound', { query: searchQuery })}
-                                </div>
-                              ) : null}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Friends List */}
                       {friends.length > 0 ? (
                         <div className="space-y-3">
-                          {filteredFriends.map(friend => (
-                            <div key={friend.id} className="bg-dark-200 p-4 rounded-lg hover:bg-dark-300/50 transition-colors">
-                              <div className="flex items-center justify-between">
-                                <div
-                                  className="flex items-center cursor-pointer"
-                                  onClick={() => handlePlayerClick(friend.related_user?.id || '')}
-                                >
-                                  <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
-                                    {friend.related_user?.avatar_url ? (
-                                      <img
-                                        src={friend.related_user.avatar_url}
-                                        alt={friend.related_user.username}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <User className="h-5 w-5" />
+                          {filteredFriends.map(friend => {
+                            const onlineStatus = getOnlineStatus(friend.related_user?.id || '');
+                            return (
+                              <div
+                                key={friend.id}
+                                className="group bg-dark-200/50 rounded-xl p-4 hover:bg-dark-200 transition-all border border-transparent hover:border-gray-700/30"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div
+                                    className="flex items-center flex-1 cursor-pointer"
+                                    onClick={() => handlePlayerClick(friend.related_user?.id || '')}
+                                  >
+                                    <div className="relative mr-4">
+                                      <div className="w-12 h-12 rounded-xl bg-dark-300 overflow-hidden">
+                                        {friend.related_user?.avatar_url ? (
+                                          <img
+                                            src={friend.related_user.avatar_url}
+                                            alt={friend.related_user.username}
+                                            className="w-full h-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                            <User className="h-6 w-6" />
+                                          </div>
+                                        )}
                                       </div>
-                                    )}
+                                      <div
+                                        className={`
+                                          absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-dark-200
+                                          ${onlineStatus === 'online' ? 'bg-success-500' : onlineStatus === 'away' ? 'bg-warning-500' : 'bg-gray-500'}
+                                        `}
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="font-medium text-white group-hover:text-primary-400 transition-colors truncate">
+                                        {friend.related_user?.username}
+                                      </h3>
+                                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                                        {friend.related_user?.country && (
+                                          <span className="flex items-center gap-1">
+                                            <span>{getCountryFlag(friend.related_user.country)}</span>
+                                            {getCountryName(friend.related_user.country)}
+                                          </span>
+                                        )}
+                                        <span
+                                          className={`
+                                            ${onlineStatus === 'online' ? 'text-success-400' : onlineStatus === 'away' ? 'text-warning-400' : ''}
+                                          `}
+                                        >
+                                          {onlineStatus === 'online' && t('friends.online')}
+                                          {onlineStatus === 'away' && t('friends.away')}
+                                          {onlineStatus === 'offline' && t('friends.offline')}
+                                        </span>
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div>
-                                    <h3 className="font-medium hover:text-primary-400 transition-colors">
-                                      {friend.related_user?.username}
-                                    </h3>
-                                    {friend.related_user?.country && (
-                                      <p className="text-xs text-gray-400">
-                                        {friend.related_user.country}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
 
-                                <div className="flex space-x-2">
-                                  <button
-                                    onClick={() => {
-                                      if (friend.related_user) {
-                                        setSelectedChatUser({
-                                          id: friend.related_user.id,
-                                          username: friend.related_user.username,
-                                          avatar: friend.related_user.avatar_url
-                                        });
-                                        setShowChatModal(true);
-                                      }
-                                    }}
-                                    className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-lg transition-colors"
-                                    title={t('friends.sendMessage')}
-                                  >
-                                    <MessageSquare className="h-4 w-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      if (friend.id) {
-                                        handleRemoveFriend(friend.id);
-                                        removeRelationship(friend.id)
-                                          .then(() => toast.success(t('friends.friendRemovedSuccess', { username: friend.related_user?.username })))
-                                          .catch(err => {
-                                            console.error('Error removing friend:', err);
-                                            toast.error(t('friends.removeFriendError'));
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => {
+                                        if (friend.related_user) {
+                                          setSelectedChatUser({
+                                            id: friend.related_user.id,
+                                            username: friend.related_user.username,
+                                            avatar: friend.related_user.avatar_url
                                           });
-                                      }
-                                    }}
-                                    disabled={isProcessing}
-                                    className="bg-dark-300 hover:bg-dark-400 disabled:bg-dark-300/50 disabled:cursor-not-allowed text-gray-300 p-2 rounded-lg transition-colors"
-                                    title={t('friends.removeFromFriends')}
-                                  >
-                                    <UserMinus className="h-4 w-4" />
-                                  </button>
+                                          setShowChatModal(true);
+                                        }
+                                      }}
+                                      className="p-2.5 rounded-xl transition-all"
+                                      style={{
+                                        backgroundColor: `${theme.colors.primary}20`,
+                                        color: theme.colors.primary
+                                      }}
+                                      title={t('friends.sendMessage')}
+                                    >
+                                      <MessageSquare className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        if (friend.id) {
+                                          handleRemoveFriend(friend.id);
+                                          removeRelationship(friend.id)
+                                            .then(() => toast.success(t('friends.friendRemovedSuccess', { username: friend.related_user?.username })))
+                                            .catch(err => {
+                                              console.error('Error removing friend:', err);
+                                              toast.error(t('friends.removeFriendError'));
+                                            });
+                                        }
+                                      }}
+                                      disabled={isProcessing}
+                                      className="p-2.5 rounded-xl bg-dark-300/50 hover:bg-dark-300 text-gray-400 hover:text-gray-300 transition-all disabled:opacity-50"
+                                      title={t('friends.removeFromFriends')}
+                                    >
+                                      <UserMinus className="h-4 w-4" />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
 
                           {filteredFriends.length === 0 && searchQuery && (
-                            <div className="text-center py-8">
+                            <div className="text-center py-12">
+                              <Search className="h-12 w-12 text-gray-600 mx-auto mb-4" />
                               <p className="text-gray-400">{t('friends.noFriendsMatchSearch')}</p>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="text-center py-12">
-                          <Users className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                          <h3 className="font-medium text-lg mb-2">{t('friends.noFriendsYet')}</h3>
-                          <p className="text-gray-400 mb-6">
+                        <div className="text-center py-16">
+                          <div
+                            className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center"
+                            style={{ backgroundColor: `${theme.colors.primary}15` }}
+                          >
+                            <Users className="h-10 w-10" style={{ color: theme.colors.primary }} />
+                          </div>
+                          <h3 className="font-heading font-bold text-xl text-white mb-2">
+                            {t('friends.noFriendsYet')}
+                          </h3>
+                          <p className="text-gray-400 mb-6 max-w-md mx-auto">
                             {t('friends.noFriendsDescription')}
                           </p>
-                          <button
-                            onClick={() => {
-                              const searchInput = document.querySelector(`input[placeholder="${t('friends.searchPlaceholder')}"]`) as HTMLInputElement;
-                              if (searchInput) {
-                                searchInput.focus();
-                              }
-                            }}
-                            className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
-                          >
-                            {t('friends.searchPlayers')}
-                          </button>
+                          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <button
+                              onClick={() => {
+                                const searchInput = document.querySelector(`input[placeholder="${t('friends.searchPlaceholder')}"]`) as HTMLInputElement;
+                                if (searchInput) {
+                                  searchInput.focus();
+                                }
+                              }}
+                              className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all"
+                              style={{
+                                backgroundColor: theme.colors.primary,
+                                color: theme.colors.text,
+                                boxShadow: `0 4px 15px ${theme.colors.primary}30`
+                              }}
+                            >
+                              <Search className="h-4 w-4" />
+                              {t('friends.searchPlayers')}
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Requests Tab */}
                   {activeTab === 'requests' && (
                     <div>
-                      <h2 className="font-medium text-lg mb-4">{t('friends.pendingFriendRequests')}</h2>
-
                       {pendingRequests.length > 0 ? (
                         <div className="space-y-3">
                           {pendingRequests.map(request => (
-                            <div key={request.id} className="bg-dark-200 p-4 rounded-lg hover:bg-dark-300/50 transition-colors">
+                            <div
+                              key={request.id}
+                              className="group bg-dark-200/50 rounded-xl p-4 hover:bg-dark-200 transition-all border border-transparent hover:border-gray-700/30"
+                            >
                               <div className="flex items-center justify-between">
                                 <div
-                                  className="flex items-center cursor-pointer"
+                                  className="flex items-center flex-1 cursor-pointer"
                                   onClick={() => handlePlayerClick(request.sender_id)}
                                 >
-                                  <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
+                                  <div className="w-12 h-12 rounded-xl bg-dark-300 overflow-hidden mr-4">
                                     {request.sender_avatar ? (
                                       <img
                                         src={request.sender_avatar}
@@ -536,22 +670,22 @@ const FriendsPage: React.FC = () => {
                                       />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <UserPlus className="h-5 w-5" />
+                                        <User className="h-6 w-6" />
                                       </div>
                                     )}
                                   </div>
                                   <div>
-                                    <h3 className="font-medium hover:text-primary-400 transition-colors">
+                                    <h3 className="font-medium text-white group-hover:text-primary-400 transition-colors">
                                       {request.sender_username}
                                     </h3>
-                                    <p className="text-xs text-gray-400 flex items-center">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {new Date(request.created_at).toLocaleDateString()}
+                                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {t('friends.receivedTime', { time: formatRelativeTime(request.created_at) })}
                                     </p>
                                   </div>
                                 </div>
 
-                                <div className="flex space-x-2">
+                                <div className="flex items-center gap-2">
                                   <button
                                     onClick={() => {
                                       acceptFriendRequest(request.id)
@@ -565,10 +699,10 @@ const FriendsPage: React.FC = () => {
                                         });
                                     }}
                                     disabled={isProcessing}
-                                    className="bg-success-600 hover:bg-success-700 disabled:bg-success-600/50 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
-                                    title={t('friends.acceptRequest')}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-success-600 hover:bg-success-700 text-white transition-all disabled:opacity-50"
                                   >
                                     <CheckCircle className="h-4 w-4" />
+                                    <span className="hidden sm:inline">{t('friends.accept')}</span>
                                   </button>
                                   <button
                                     onClick={() => {
@@ -583,8 +717,7 @@ const FriendsPage: React.FC = () => {
                                         });
                                     }}
                                     disabled={isProcessing}
-                                    className="bg-error-600 hover:bg-error-700 disabled:bg-error-600/50 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
-                                    title={t('friends.rejectRequest')}
+                                    className="p-2 rounded-xl bg-error-600/20 hover:bg-error-600/30 text-error-400 transition-all disabled:opacity-50"
                                   >
                                     <XCircle className="h-4 w-4" />
                                   </button>
@@ -594,43 +727,60 @@ const FriendsPage: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-8 bg-dark-200 rounded-lg">
-                          <UserPlus className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                          <p className="text-gray-400">
+                        <div className="text-center py-16">
+                          <div
+                            className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center"
+                            style={{ backgroundColor: `${theme.colors.primary}15` }}
+                          >
+                            <Inbox className="h-10 w-10" style={{ color: theme.colors.primary }} />
+                          </div>
+                          <h3 className="font-heading font-bold text-xl text-white mb-2">
+                            {t('friends.allCaughtUp')}
+                          </h3>
+                          <p className="text-gray-400 max-w-md mx-auto">
                             {t('friends.noPendingRequests')}
                           </p>
                         </div>
                       )}
 
-                      <div className="mt-8 p-4 bg-dark-200 rounded-lg">
-                        <h3 className="font-medium mb-2">{t('friends.howToAddFriends')}</h3>
-                        <p className="text-sm text-gray-400 mb-3">
-                          {t('friends.howToAddFriendsDescription')}
-                        </p>
-                        <ul className="text-sm text-gray-400 space-y-2 list-disc pl-5">
-                          <li>{t('friends.addFriendsMethod1')}</li>
-                          <li>{t('friends.addFriendsMethod2')}</li>
-                          <li>{t('friends.addFriendsMethod3')}</li>
+                      <div className="mt-8 p-5 bg-dark-200/30 rounded-xl border border-gray-800/30">
+                        <h3 className="font-medium text-white mb-3 flex items-center gap-2">
+                          <UserCheck className="h-5 w-5" style={{ color: theme.colors.primary }} />
+                          {t('friends.howToAddFriends')}
+                        </h3>
+                        <ul className="space-y-2 text-sm text-gray-400">
+                          <li className="flex items-start gap-2">
+                            <span style={{ color: theme.colors.primary }}>1.</span>
+                            {t('friends.addFriendsMethod1')}
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span style={{ color: theme.colors.primary }}>2.</span>
+                            {t('friends.addFriendsMethod2')}
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <span style={{ color: theme.colors.primary }}>3.</span>
+                            {t('friends.addFriendsMethod3')}
+                          </li>
                         </ul>
                       </div>
                     </div>
                   )}
 
-                  {/* Sent Requests Tab */}
                   {activeTab === 'sent' && (
                     <div>
-                      <h2 className="font-medium text-lg mb-4">{t('friends.sentFriendRequests')}</h2>
-
                       {sentRequests.length > 0 ? (
                         <div className="space-y-3">
                           {sentRequests.map(request => (
-                            <div key={request.id} className="bg-dark-200 p-4 rounded-lg hover:bg-dark-300/50 transition-colors">
+                            <div
+                              key={request.id}
+                              className="group bg-dark-200/50 rounded-xl p-4 hover:bg-dark-200 transition-all border border-transparent hover:border-gray-700/30"
+                            >
                               <div className="flex items-center justify-between">
                                 <div
-                                  className="flex items-center cursor-pointer"
+                                  className="flex items-center flex-1 cursor-pointer"
                                   onClick={() => handlePlayerClick(request.receiver_id)}
                                 >
-                                  <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
+                                  <div className="w-12 h-12 rounded-xl bg-dark-300 overflow-hidden mr-4">
                                     {request.receiver_avatar ? (
                                       <img
                                         src={request.receiver_avatar}
@@ -639,30 +789,30 @@ const FriendsPage: React.FC = () => {
                                       />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        <User className="h-5 w-5" />
+                                        <User className="h-6 w-6" />
                                       </div>
                                     )}
                                   </div>
                                   <div>
-                                    <h3 className="font-medium hover:text-primary-400 transition-colors">
+                                    <h3 className="font-medium text-white group-hover:text-primary-400 transition-colors">
                                       {request.receiver_username}
                                     </h3>
-                                    <p className="text-xs text-gray-400 flex items-center">
-                                      <Clock className="h-3 w-3 mr-1" />
-                                      {t('friends.sentOn', { date: new Date(request.created_at).toLocaleDateString() })}
+                                    <p className="text-xs text-gray-400 flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {t('friends.sentOn', { date: formatRelativeTime(request.created_at) })}
                                     </p>
                                   </div>
                                 </div>
 
-                                <div className="flex items-center">
-                                  <span className="bg-warning-600/20 text-warning-400 px-3 py-1 rounded-lg text-sm flex items-center mr-2">
-                                    <Clock className="h-3 w-3 mr-1" />
+                                <div className="flex items-center gap-3">
+                                  <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-warning-500/15 text-warning-400 text-sm">
+                                    <Clock className="h-3.5 w-3.5" />
                                     {t('friends.pending')}
                                   </span>
                                   <button
                                     onClick={() => handleCancelRequest(request.id)}
                                     disabled={isProcessing}
-                                    className="bg-dark-300 hover:bg-dark-400 disabled:bg-dark-300/50 disabled:cursor-not-allowed text-gray-300 p-2 rounded-lg transition-colors"
+                                    className="p-2 rounded-xl bg-dark-300/50 hover:bg-dark-300 text-gray-400 hover:text-gray-300 transition-all disabled:opacity-50"
                                     title={t('friends.cancelRequest')}
                                   >
                                     <XCircle className="h-4 w-4" />
@@ -673,11 +823,39 @@ const FriendsPage: React.FC = () => {
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-8 bg-dark-200 rounded-lg">
-                          <Clock className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                          <p className="text-gray-400">
+                        <div className="text-center py-16">
+                          <div
+                            className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center"
+                            style={{ backgroundColor: `${theme.colors.primary}15` }}
+                          >
+                            <Send className="h-10 w-10" style={{ color: theme.colors.primary }} />
+                          </div>
+                          <h3 className="font-heading font-bold text-xl text-white mb-2">
+                            {t('friends.noSentRequestsTitle')}
+                          </h3>
+                          <p className="text-gray-400 mb-6 max-w-md mx-auto">
                             {t('friends.noSentRequests')}
                           </p>
+                          <button
+                            onClick={() => {
+                              setActiveTab('friends');
+                              setTimeout(() => {
+                                const searchInput = document.querySelector(`input[placeholder="${t('friends.searchPlaceholder')}"]`) as HTMLInputElement;
+                                if (searchInput) {
+                                  searchInput.focus();
+                                }
+                              }, 100);
+                            }}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all mx-auto"
+                            style={{
+                              backgroundColor: theme.colors.primary,
+                              color: theme.colors.text,
+                              boxShadow: `0 4px 15px ${theme.colors.primary}30`
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4" />
+                            {t('friends.findFriends')}
+                          </button>
                         </div>
                       )}
                     </div>
@@ -689,7 +867,6 @@ const FriendsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Player Profile Modal */}
       <PlayerProfileModal
         isOpen={isPlayerProfileModalOpen}
         onClose={() => setIsPlayerProfileModalOpen(false)}
@@ -697,7 +874,6 @@ const FriendsPage: React.FC = () => {
         gameId={null}
       />
 
-      {/* Chat Modal */}
       {showChatModal && selectedChatUser && (
         <ChatModal
           isOpen={showChatModal}

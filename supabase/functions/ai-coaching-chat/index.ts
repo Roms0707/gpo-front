@@ -701,7 +701,12 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log('[AI Coach] --- Creating Supabase Clients ---');
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
     const userSupabase = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } }
     });

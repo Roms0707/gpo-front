@@ -167,10 +167,10 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (isLoading) {
     return (
-      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-dark-100 flex items-center justify-center">
+      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-gray-100 dark:bg-dark-100 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="w-36 h-52 md:w-48 md:h-64 bg-dark-300 rounded-xl mb-4"></div>
-          <div className="w-28 md:w-36 h-5 bg-dark-300 rounded"></div>
+          <div className="w-36 h-52 md:w-48 md:h-64 bg-gray-200 dark:bg-dark-300 rounded-xl mb-4"></div>
+          <div className="w-28 md:w-36 h-5 bg-gray-200 dark:bg-dark-300 rounded"></div>
         </div>
       </div>
     );
@@ -178,8 +178,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 
   if (games.length === 0) {
     return (
-      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-dark-100 flex items-center justify-center">
-        <div className="text-center text-gray-400">
+      <div className="relative pt-16 md:pt-20 min-h-[50vh] sm:min-h-[55vh] md:min-h-[65vh] lg:min-h-[70vh] xl:min-h-[75vh] 2xl:min-h-[80vh] bg-gray-100 dark:bg-dark-100 flex items-center justify-center">
+        <div className="text-center text-gray-500 dark:text-gray-400">
           <Gamepad2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
           <p className="text-sm">{t('gameHub.noGamesAvailable')}</p>
         </div>
@@ -425,7 +425,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
                   />
                 )}
                 <div
-                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none px-2 py-1 rounded bg-dark-300/90"
+                  className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none px-2 py-1 rounded bg-white/90 dark:bg-dark-300/90 shadow-lg"
                   style={{ color: gameTheme.colors.primary }}
                 >
                   {game.name}
@@ -437,7 +437,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       </div>
 
       {games.length > 1 && !isPaused && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-dark-300/50 z-30">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200/50 dark:bg-dark-300/50 z-30">
           <div
             className="h-full transition-all"
             style={{

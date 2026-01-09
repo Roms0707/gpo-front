@@ -54,11 +54,15 @@ export function useOnboardingWalkthrough(pageName: OnboardingPage = 'home'): Use
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('onboarding_progress, has_completed_onboarding')
+          .select('onboarding_progress, has_completed_onboarding, is_profile_completed')
           .eq('id', user.id)
           .maybeSingle();
 
         if (error) throw error;
+
+        if (data?.is_profile_completed !== true) {
+          return;
+        }
 
         let progress: OnboardingProgress = DEFAULT_PROGRESS;
 
@@ -78,7 +82,7 @@ export function useOnboardingWalkthrough(pageName: OnboardingPage = 'home'): Use
           const timer = setTimeout(() => {
             setIsActive(true);
             setCurrentStep(0);
-          }, 1000);
+          }, 1500);
           return () => clearTimeout(timer);
         }
       } catch (error) {

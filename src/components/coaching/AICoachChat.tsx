@@ -119,14 +119,22 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
 
   const scrollToLatestMessage = useCallback(() => {
     setTimeout(() => {
-      if (lastMessageRef.current) {
-        lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (messagesContainerRef.current && lastMessageRef.current) {
+        const container = messagesContainerRef.current;
+        const lastMessage = lastMessageRef.current;
+        const offsetTop = lastMessage.offsetTop - container.offsetTop;
+        container.scrollTo({ top: offsetTop, behavior: 'smooth' });
       }
     }, 100);
   }, []);
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
     setShowScrollButton(false);
   }, []);
 
@@ -229,15 +237,14 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
 
   const chatContent = (
     <div
-      className={`flex flex-col bg-dark-200/95 overflow-hidden ${
+      className={`flex flex-col overflow-hidden ${
         isFullscreen
-          ? 'h-full rounded-none border-0'
-          : 'h-full rounded-xl border border-gray-800'
+          ? 'h-full rounded-none border-0 bg-white dark:bg-dark-200/95'
+          : 'h-full rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-dark-200/50'
       }`}
-      style={!isFullscreen ? { backgroundColor: 'rgba(30, 30, 30, 0.5)' } : {}}
     >
       <div
-        className={`flex items-center gap-3 border-b border-gray-800 ${
+        className={`flex items-center gap-3 border-b border-gray-200 dark:border-gray-800 ${
           isFullscreen ? 'px-6 py-4' : 'px-4 py-3'
         }`}
         style={{ backgroundColor: `${theme.colors.primary}10` }}
@@ -254,7 +261,7 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
           />
         </div>
         <div className="flex-1">
-          <h3 className={`font-bold text-white flex items-center gap-2 ${
+          <h3 className={`font-bold text-gray-900 dark:text-white flex items-center gap-2 ${
             isFullscreen ? 'text-xl' : 'text-base'
           }`}>
             {t('coaching.aiCoach')}
@@ -263,14 +270,14 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
               style={{ color: theme.colors.primary }}
             />
           </h3>
-          <p className={`text-gray-400 ${isFullscreen ? 'text-sm' : 'text-xs'}`}>
+          <p className={`text-gray-500 dark:text-gray-400 ${isFullscreen ? 'text-sm' : 'text-xs'}`}>
             {gameName} {t('coaching.specialist')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleFullscreen}
-            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -282,7 +289,7 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
           {isFullscreen && (
             <button
               onClick={() => setIsFullscreen(false)}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white"
             >
               <X className="w-5 h-5" />
             </button>

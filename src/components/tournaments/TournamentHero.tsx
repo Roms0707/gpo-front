@@ -196,7 +196,7 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
     <div
       id="walkthrough-tournament-hero"
       ref={ref}
-      className={`relative min-h-[420px] md:min-h-[460px] bg-cover bg-center ${isCompleted ? 'grayscale-[30%]' : ''}`}
+      className={`relative min-h-[500px] md:min-h-[540px] bg-cover bg-center ${isCompleted ? 'grayscale-[30%]' : ''}`}
       style={{
         backgroundImage: `${getGradientOverlay(gameTheme)}, url(${tournament.header_url || tournament.image || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80'})`,
         backgroundPosition: 'center 30%'
@@ -227,7 +227,7 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
             <div
-              className="lg:col-span-3 backdrop-blur-md bg-dark-300/50 p-6 lg:p-8 relative overflow-hidden"
+              className="lg:col-span-3 backdrop-blur-md bg-dark-300/50 p-6 lg:p-8 relative"
               style={{
                 clipPath: clipPath !== 'none' ? clipPath : undefined,
                 borderRadius: clipPath === 'none' ? '16px' : undefined,
@@ -376,7 +376,7 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
             </div>
 
             <div
-              className="lg:col-span-2 backdrop-blur-md bg-dark-300/50 p-6 relative overflow-hidden flex flex-col justify-between"
+              className="lg:col-span-2 backdrop-blur-md bg-dark-300/50 p-6 relative flex flex-col justify-between"
               style={{
                 clipPath: clipPath !== 'none' ? clipPath : undefined,
                 borderRadius: clipPath === 'none' ? '16px' : undefined,

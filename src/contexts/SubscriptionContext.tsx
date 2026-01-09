@@ -16,6 +16,8 @@ interface SubscriptionContextState {
   refreshSubscription: () => Promise<void>;
   showSubscriptionModal: boolean;
   setShowSubscriptionModal: (show: boolean) => void;
+  showSuspendedModal: boolean;
+  setShowSuspendedModal: (show: boolean) => void;
 }
 
 const defaultSubscriptionStatus: SubscriptionStatus = {
@@ -38,6 +40,7 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
 
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>(defaultSubscriptionStatus);
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [showSuspendedModal, setShowSuspendedModal] = useState(false);
 
   const isKliento = isKlientoUser(user);
 
@@ -75,8 +78,15 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
     if (!user) {
       setSubscriptionStatus(defaultSubscriptionStatus);
       setShowSubscriptionModal(false);
+      setShowSuspendedModal(false);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (subscriptionStatus.isSuspended && !subscriptionStatus.isLoading) {
+      setShowSuspendedModal(true);
+    }
+  }, [subscriptionStatus.isSuspended, subscriptionStatus.isLoading]);
 
   const value: SubscriptionContextState = {
     subscriptionStatus,
@@ -86,6 +96,8 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
     refreshSubscription,
     showSubscriptionModal,
     setShowSubscriptionModal,
+    showSuspendedModal,
+    setShowSuspendedModal,
   };
 
   return (

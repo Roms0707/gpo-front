@@ -77,7 +77,7 @@ const GameHubPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-100 flex items-center justify-center">
         <LoadingSpinner size="lg" text={t('gameHub.loading')} />
       </div>
     );
@@ -85,8 +85,8 @@ const GameHubPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-dark-100 flex items-center justify-center">
-        <div className="text-center text-gray-400">
+      <div className="min-h-screen bg-gray-50 dark:bg-dark-100 flex items-center justify-center">
+        <div className="text-center text-gray-500 dark:text-gray-400">
           <p className="text-lg mb-4">{error}</p>
           <button
             onClick={() => navigate('/')}
@@ -160,7 +160,7 @@ const GameHubPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-100">
       <div
         className="fixed inset-0 pointer-events-none transition-all duration-700"
         style={{

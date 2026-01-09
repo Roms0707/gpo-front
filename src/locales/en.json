@@ -40,7 +40,10 @@
     "solo": "Solo",
     "add": "Add",
     "saving": "Saving...",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "sampleButton": "Sample Button",
+    "keepEditing": "Keep Editing",
+    "discardChanges": "Discard Changes"
   },
   "countries": {
     "BF": "Burkina Faso",
@@ -705,6 +708,7 @@
   "profile": {
     "title": "Profile",
     "editProfile": "Edit Profile",
+    "preview": "Preview",
     "myStats": "My Gaming Stats",
     "friends": "Friends",
     "information": "Information",
@@ -730,6 +734,10 @@
     "phoneNumber": "Phone Number",
     "dateOfBirth": "Date of Birth",
     "favoriteGame": "Favorite Game",
+    "favoriteGameDescription": "Select your favorite game to personalize your profile theme",
+    "profileTheme": "Profile Theme",
+    "autoDetect": "Auto-detect",
+    "basedOnActivity": "Based on activity",
     "playStyle": "Play Style",
     "achievements": "Achievements",
     "stats": "Statistics",
@@ -875,7 +883,50 @@
     "accountValidatedSuccessGeneric": "Account validated successfully!",
     "errorValidatingAccount": "Error validating account",
     "profileUpdatedSuccess": "Profile updated successfully!",
-    "errorUpdatingProfile": "Error updating profile"
+    "errorUpdatingProfile": "Error updating profile",
+    "settingsTitle": "Account Settings",
+    "settingsDescription": "Manage your gaming account connections and integrations",
+    "settingsSavedSuccess": "Settings saved successfully!",
+    "errorSavingSettings": "Error saving settings",
+    "saveSettings": "Save Settings",
+    "tip": "Tip",
+    "guidedTours": "Guided Tours",
+    "dragDropOrClick": "Drag and drop an image or click to browse",
+    "socialConnections": "Social Connections",
+    "selectGameToCustomize": "Select a game to customize your profile colors",
+    "themePreview": "Theme Preview",
+    "tournamentInfoNote": "This information may be required for certain tournaments with geographic restrictions or prize distributions.",
+    "livePreview": "Live Preview",
+    "unsavedChanges": "Unsaved changes",
+    "unsavedChangesTitle": "Discard changes?",
+    "unsavedChangesDescription": "You have unsaved changes. Are you sure you want to leave?",
+    "previewAsOthersSeeYou": "Preview as Others See You",
+    "previewDescription": "See exactly what other players see when they view your profile",
+    "previewMode": "Preview Mode",
+    "howOthersSeeYou": "This is how others see your profile",
+    "selectYourFavoriteGame": "Select your favorite game",
+    "themeColors": "Theme Colors",
+    "noSocialLinksYet": "No social links added yet",
+    "sampleDataNotice": "This is sample data for preview purposes. Your actual stats will be displayed here.",
+    "customization": {
+      "title": "Profile Customization",
+      "subtitle": "Personalize your avatar and profile",
+      "avatarFrame": "Avatar Frame",
+      "modalFrame": "Modal Frame",
+      "badges": "Badges",
+      "preview": "Preview",
+      "noFrame": "No Frame",
+      "none": "None",
+      "achievementRequired": "Achievement required to unlock",
+      "premiumRequired": "Premium item",
+      "equipped": "Equipped",
+      "locked": "Locked",
+      "unlockAt": "Unlock at {{xp}} XP",
+      "common": "Common",
+      "rare": "Rare",
+      "epic": "Epic",
+      "legendary": "Legendary"
+    }
   },
   "friends": {
     "title": "Friends",
@@ -890,6 +941,7 @@
     "noRequests": "No pending friend requests",
     "online": "Online",
     "offline": "Offline",
+    "away": "Away",
     "sendMessage": "Send Message",
     "viewProfile": "View Profile",
     "pending": "Pending",
@@ -912,7 +964,7 @@
     "myFriends": "My Friends",
     "requestsReceived": "Requests Received",
     "requestsSent": "Sent Requests",
-    "searchPlaceholder": "Search for a friend...",
+    "searchPlaceholder": "Search for a friend or player...",
     "usersFound": "Users found",
     "noUsersFound": "No user found for \"{{query}}\"",
     "addAsFriend": "Add {{username}} as a friend",
@@ -935,7 +987,18 @@
     "requestSentError": "Error sending friend request",
     "requestCancelledSuccess": "Request cancelled",
     "requestCancelledError": "Error cancelling request",
-    "removeFromFriends": "Remove from friends"
+    "removeFromFriends": "Remove from friends",
+    "friends": "Friends",
+    "sent": "Sent",
+    "add": "Add",
+    "accept": "Accept",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "receivedTime": "Received {{time}}",
+    "allCaughtUp": "All caught up!",
+    "noSentRequestsTitle": "No sent requests",
+    "findFriends": "Find friends"
   },
   "messages": {
     "title": "Messages",
@@ -1222,9 +1285,9 @@
   "communitiesPage": {
     "title": "Communities",
     "subtitle": "Join themed communities, chat with other players and share your passion for video games.",
-    "search": "Search...",
-    "myCommunities": "My communities",
-    "publicCommunities": "Public communities",
+    "search": "Search communities...",
+    "myCommunities": "My Communities",
+    "publicCommunities": "Discover Communities",
     "loading": "Loading...",
     "noCommunities": "You haven't joined any community yet",
     "noCommunitiesDesc": "Join an existing community or create your own to start chatting with other players.",
@@ -1232,19 +1295,91 @@
     "signIn": "Sign in",
     "noCommunitiesFound": "No communities found for this search",
     "noPublicCommunities": "No public communities available",
-    "by": "By",
+    "by": "by",
     "members": "members",
     "open": "Open",
     "join": "Join",
     "joining": "Joining...",
     "community": "Community",
     "private": "Private",
+    "online": "online",
+    "active": "Active",
     "aboutTitle": "About communities",
     "aboutDesc": "Communities are themed discussion spaces where you can chat with other players who share the same interests.",
     "openCommunitiesLabel": "Open communities",
     "openCommunitiesDesc": "Accessible to everyone, anyone can join without invitation.",
     "privateChannelsLabel": "Private channels",
     "privateChannelsDesc": "Accessible only by invitation, for more restricted discussions.",
+    "hero": {
+      "badge": "Gaming Hub",
+      "createCommunity": "Create Community",
+      "totalCommunities": "Communities",
+      "totalMembers": "Members",
+      "onlineNow": "Online Now"
+    },
+    "categories": {
+      "all": "All",
+      "gaming": "Gaming",
+      "casual": "Casual",
+      "tournament": "Tournament",
+      "social": "Social"
+    },
+    "featured": {
+      "title": "Featured Communities",
+      "trending": "Trending",
+      "online": "online"
+    },
+    "sort": {
+      "members": "Most Members",
+      "activity": "Most Active",
+      "newest": "Newest",
+      "alphabetical": "A-Z"
+    },
+    "roles": {
+      "admin": "Admin",
+      "moderator": "Mod"
+    },
+    "tips": {
+      "title": "Tips & Info",
+      "public": {
+        "title": "Public Communities",
+        "description": "Open to everyone - join freely and start chatting with fellow gamers."
+      },
+      "private": {
+        "title": "Private Communities",
+        "description": "Invite-only spaces for more exclusive discussions and team coordination."
+      },
+      "guidelines": {
+        "title": "Community Guidelines",
+        "description": "Be respectful, avoid spam, and help create a positive gaming environment."
+      },
+      "featured": {
+        "title": "Get Featured",
+        "description": "Active communities with engaged members can be featured on the homepage."
+      }
+    },
+    "empty": {
+      "noResults": {
+        "title": "No Communities Found",
+        "description": "Try adjusting your search or filters, or create a new community.",
+        "action": "Create Community"
+      },
+      "noPublic": {
+        "title": "No Communities Yet",
+        "description": "Be the first to create a community and start building your gaming network.",
+        "action": "Create First Community"
+      },
+      "notJoined": {
+        "title": "No Communities Joined",
+        "description": "Explore and join communities to connect with other gamers.",
+        "action": "Browse Communities"
+      },
+      "signIn": {
+        "title": "Sign In Required",
+        "description": "Sign in to view your communities and join new ones.",
+        "action": "Sign In"
+      }
+    },
     "errors": {
       "loadError": "Error loading communities",
       "mustBeLoggedIn": "You must be logged in to join a community",
@@ -2163,6 +2298,8 @@
     "questUpdateError": "Error updating quest",
     "externalStats": "External Stats",
     "viewOnPlatform": "View on {{platform}}",
+    "noPlatformAvailable": "No tracking platform available",
+    "noPlatformAvailableDesc": "External stats tracking is not available for this game yet. You can still use the other profile fields.",
     "fieldLabel": {
       "champions": "Main Champions",
       "agents": "Main Agents",
@@ -2777,13 +2914,17 @@
       "notLinked": "Discord not linked",
       "notLinkedHelp": "Link your Discord account to participate in tournaments that require Discord server membership.",
       "linkedHelp": "Your Discord account is connected. You can verify your server membership for tournaments that require it.",
+      "linkHelp": "Link your Discord account to participate in tournaments that require Discord server membership.",
       "linkError": "Error linking Discord account",
       "unlinkError": "Error unlinking Discord account",
       "unlinkSuccess": "Discord account unlinked successfully",
       "unlinkConfirm": "Are you sure you want to unlink your Discord account?",
       "connecting": "Connecting...",
       "unlinking": "Unlinking...",
-      "connectedSuccess": "Discord account connected successfully! You can now continue your registration."
+      "connectedSuccess": "Discord account connected successfully! You can now continue your registration.",
+      "userId": "Discord ID",
+      "userIdCopied": "Discord ID copied to clipboard",
+      "userIdTooltip": "This ID is used to verify your membership in tournament Discord servers"
     },
     "status": {
       "loading": "Checking Discord status...",
@@ -2807,7 +2948,11 @@
     },
     "registration": {
       "notLinked": "Please connect your Discord account to register for this tournament",
-      "notMember": "You must be a member of the tournament Discord server to register"
+      "notMember": "You must be a member of the tournament Discord server to register",
+      "noDiscordUserId": "You must link your Discord account to register for this tournament. Please connect Discord first.",
+      "linkDiscordFirst": "This tournament requires Discord membership. Please connect your Discord account to continue with registration.",
+      "verificationUnavailable": "Discord verification is temporarily unavailable. You can still register, but please ensure you have joined the tournament Discord server.",
+      "verificationTemporarilyUnavailable": "Discord membership verification is temporarily unavailable due to technical issues. You may proceed with registration, but please make sure you have joined the tournament Discord server."
     },
     "sidebar": {
       "title": "Discord Verification"
@@ -2958,8 +3103,8 @@
     "welcomeTitle": "Welcome!",
     "welcomeSubtitle": "Let's set up your profile to get started",
     "chooseUsername": "Choose your username",
-    "usernamePlaceholder": "Enter your username",
-    "usernameHelp": "This is how other players will see you. Choose a unique name!",
+    "usernamePlaceholder": "Enter your nickname",
+    "usernameHelp": "This is how other players will see you. Choose a unique nickname!",
     "usernameRequired": "Username is required",
     "usernameCannotBeAutoGenerated": "Please choose a personalized username",
     "usernameTooShort": "Username must be at least 3 characters",
@@ -2975,7 +3120,10 @@
   "subscription": {
     "expiredTitle": "Your subscription has expired",
     "expiredMessage": "You no longer have access to this content because your subscription is not active. Re-subscribe to access tournaments, training videos, and training games.",
-    "resubscribe": "Re-subscribe"
+    "resubscribe": "Re-subscribe",
+    "suspendedTitle": "Account Suspended",
+    "suspendedMessage": "Please recharge your phone with credit to reactivate your account and try again.",
+    "tryAgain": "Try Again"
   },
   "contactPage": {
     "title": "Contact Us",
@@ -3471,6 +3619,7 @@
     "guidedTours": {
       "title": "Guided Tours",
       "description": "Replay the guided walkthrough for any section of the platform.",
+      "pageDescription": "Explore the platform features with interactive guided tours. Replay any tour to refresh your memory.",
       "home": "Home Page Tour",
       "gameHub": "Game Hub Tour",
       "tournament": "Tournament Tour",

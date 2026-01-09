@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import AuthLayout from '../../components/auth/AuthLayout';
 import ErrorMessage from '../../components/ui/ErrorMessage';
+import AccountSuspendedModal from '../../components/ui/AccountSuspendedModal';
 import { useAuthStore } from '../../stores/authStore';
 import { BillingInfo } from '../../types';
 
@@ -27,6 +28,7 @@ const LoginKlientoOTPPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(false);
+  const [showSuspendedModal, setShowSuspendedModal] = useState(false);
 
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -53,6 +55,18 @@ const LoginKlientoOTPPage: React.FC = () => {
 
       const result = await checkSubscription(username.trim(), projectConfigUuid);
 
+      if (result.isSuspended) {
+        setShowSuspendedModal(true);
+        return;
+      }
+
+      const redirectUrl = result.redirectUrl || subscriptionRedirectUrl;
+      if (!result.isSubscribed && redirectUrl) {
+        toast.error(t('loginPage.otp.subscriptionRequired'));
+        window.location.href = redirectUrl;
+        return;
+      }
+
       if (!result.success) {
         setError(result.error || t('loginPage.otp.checkError'));
         toast.error(result.error || t('loginPage.otp.checkError'));
@@ -60,14 +74,8 @@ const LoginKlientoOTPPage: React.FC = () => {
       }
 
       if (!result.isSubscribed) {
-        const redirectUrl = result.redirectUrl || subscriptionRedirectUrl;
-        if (redirectUrl) {
-          toast.error(t('loginPage.otp.subscriptionRequired'));
-          window.location.href = redirectUrl;
-        } else {
-          setError(t('loginPage.otp.subscriptionRequired'));
-          toast.error(t('loginPage.otp.subscriptionRequired'));
-        }
+        setError(t('loginPage.otp.subscriptionRequired'));
+        toast.error(t('loginPage.otp.subscriptionRequired'));
         return;
       }
 
@@ -368,6 +376,11 @@ const LoginKlientoOTPPage: React.FC = () => {
           {t('loginPage.otp.infoMessage')}
         </p>
       </div>
+
+      <AccountSuspendedModal
+        isOpen={showSuspendedModal}
+        onClose={() => setShowSuspendedModal(false)}
+      />
     </AuthLayout>
   );
 };

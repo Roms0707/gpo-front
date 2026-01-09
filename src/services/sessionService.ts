@@ -13,18 +13,54 @@ export interface SessionCheckResult {
   error: string | null;
 }
 
-// Handle Discord user creation
+const extractDiscordUserId = (sessionUser: any): string | null => {
+  let discordUserId: string | null = null;
+  let source = '';
+
+  const discordIdentity = sessionUser.identities?.find(
+    (identity: any) => identity.provider === 'discord'
+  );
+
+  if (discordIdentity?.identity_data?.id) {
+    discordUserId = discordIdentity.identity_data.id;
+    source = 'identities[].identity_data.id';
+  } else if (discordIdentity?.id) {
+    discordUserId = discordIdentity.id;
+    source = 'identities[].id (fallback 1)';
+    console.warn('[SessionService] Discord user ID extracted from identity.id instead of identity_data.id');
+  } else if (sessionUser.user_metadata?.provider_id) {
+    discordUserId = sessionUser.user_metadata.provider_id;
+    source = 'user_metadata.provider_id (fallback 2)';
+    console.warn('[SessionService] Discord user ID extracted from user_metadata.provider_id - identity_data not available');
+  }
+
+  if (discordUserId) {
+    console.log('[SessionService] Discord user ID extracted:', { discordUserId, source });
+  } else {
+    console.warn('[SessionService] Could not extract Discord user ID from session user', {
+      hasIdentities: !!sessionUser.identities,
+      identitiesCount: sessionUser.identities?.length || 0,
+      hasDiscordIdentity: !!discordIdentity,
+      hasUserMetadata: !!sessionUser.user_metadata,
+      hasProviderIdInMetadata: !!sessionUser.user_metadata?.provider_id
+    });
+  }
+
+  return discordUserId;
+};
+
 const createDiscordUser = async (sessionUser: any): Promise<User> => {
   const discordUsername = sessionUser.user_metadata.full_name ||
                          sessionUser.user_metadata.name ||
                          sessionUser.user_metadata.preferred_username ||
                          sessionUser.user_metadata.username;
 
-  console.log('Creating new user from Discord OAuth with username:', discordUsername);
+  const discordUserId = extractDiscordUserId(sessionUser);
+
+  console.log('Creating new user from Discord OAuth with username:', discordUsername, 'discord_user_id:', discordUserId);
 
   let discordCountry = 'TN';
 
-  // Create user record in database with Discord info
   const { error: insertError } = await supabase
     .from('users')
     .insert([
@@ -34,6 +70,7 @@ const createDiscordUser = async (sessionUser: any): Promise<User> => {
         username: discordUsername || sessionUser.email?.split('@')[0] || 'User',
         type: 'gamer',
         discord_handle: discordUsername || '',
+        discord_user_id: discordUserId,
         avatar_url: sessionUser.user_metadata.avatar_url || null,
         country: discordCountry,
         is_profile_completed: false
@@ -42,24 +79,22 @@ const createDiscordUser = async (sessionUser: any): Promise<User> => {
 
   if (insertError) {
     console.warn('Error creating user from Discord OAuth:', insertError);
-    // Return basic user even if database insert fails
     return createUserFromData({}, sessionUser);
   }
 
-  // Return user with Discord info
   return createUserFromData({
     id: sessionUser.id,
     email: sessionUser.email || '',
     username: discordUsername || sessionUser.email?.split('@')[0] || 'User',
     type: 'gamer',
     discord_handle: discordUsername || '',
+    discord_user_id: discordUserId || undefined,
     avatar_url: sessionUser.user_metadata.avatar_url || null,
     country: discordCountry,
     is_profile_completed: false
   });
 };
 
-// Update existing Discord user
 const updateDiscordUser = async (sessionUser: any, userData: any): Promise<User> => {
   let shouldUpdateCountry = false;
   let detectedCountry = userData.country;
@@ -69,19 +104,22 @@ const updateDiscordUser = async (sessionUser: any, userData: any): Promise<User>
     shouldUpdateCountry = true;
   }
 
-  // Check if we need to update Discord info
   const discordUsername = sessionUser.user_metadata.full_name ||
                          sessionUser.user_metadata.name ||
                          sessionUser.user_metadata.preferred_username ||
                          sessionUser.user_metadata.username;
 
+  const discordUserId = extractDiscordUserId(sessionUser);
+  const needsDiscordUserIdUpdate = !userData.discord_user_id && discordUserId;
+
   const needsUpdate = !userData.discord_handle ||
                      !userData.username ||
                      userData.username === userData.email?.split('@')[0] ||
-                     shouldUpdateCountry;
+                     shouldUpdateCountry ||
+                     needsDiscordUserIdUpdate;
 
   if (discordUsername && needsUpdate) {
-    console.log('Updating existing user with Discord info - username and handle:', discordUsername);
+    console.log('Updating existing user with Discord info - username:', discordUsername, 'discord_user_id:', discordUserId);
 
     const updateData: any = {
       username: discordUsername,
@@ -89,9 +127,13 @@ const updateDiscordUser = async (sessionUser: any, userData: any): Promise<User>
       avatar_url: sessionUser.user_metadata.avatar_url || userData.avatar_url
     };
 
-    // Include country if we detected it
     if (shouldUpdateCountry && detectedCountry) {
       updateData.country = detectedCountry;
+    }
+
+    if (needsDiscordUserIdUpdate) {
+      updateData.discord_user_id = discordUserId;
+      console.log('[SessionService] Updating missing discord_user_id for existing user');
     }
 
     const { error: updateError } = await supabase
@@ -104,7 +146,6 @@ const updateDiscordUser = async (sessionUser: any, userData: any): Promise<User>
       return createUserFromData(userData);
     }
 
-    // Fetch the complete user record with all defaults from database
     const { data: newUserData, error: fetchError } = await supabase
       .from('users')
       .select('*')
@@ -113,17 +154,16 @@ const updateDiscordUser = async (sessionUser: any, userData: any): Promise<User>
 
     if (fetchError) {
       console.warn('Error fetching new Discord user data:', fetchError);
-      // Fallback to basic user object
       const user = createUserFromData({
         id: sessionUser.id,
         email: sessionUser.email || '',
         username: discordUsername || sessionUser.email?.split('@')[0] || 'User',
         type: 'gamer',
         discord_handle: discordUsername || '',
+        discord_user_id: discordUserId || userData.discord_user_id,
         avatar_url: sessionUser.user_metadata.avatar_url || null
       });
 
-      // If we updated the country, ensure it's reflected
       if (shouldUpdateCountry && detectedCountry) {
         user.country = detectedCountry;
       }

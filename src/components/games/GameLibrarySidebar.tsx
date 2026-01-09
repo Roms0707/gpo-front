@@ -102,16 +102,16 @@ const GameLibrarySidebar: React.FC = () => {
   return (
     <div
       ref={sidebarRef}
-      className="fixed inset-y-0 left-0 z-50 w-[72px] bg-dark-100 border-r border-gray-800 flex flex-col"
+      className="fixed inset-y-0 left-0 z-50 w-[72px] bg-white dark:bg-dark-100 border-r border-gray-200 dark:border-gray-800 flex flex-col"
     >
-      <div className="flex flex-col items-center justify-center p-3 border-b border-gray-800 h-20 gap-1">
+      <div className="flex flex-col items-center justify-center p-3 border-b border-gray-200 dark:border-gray-800 h-20 gap-1">
         <button
           id="walkthrough-game-hub"
           onClick={() => navigate('/hub')}
           className={`p-2 rounded-lg transition-all duration-200 ${
             isOnHubPage
               ? 'bg-primary-500/20 text-primary-500'
-              : 'text-gray-400 hover:text-primary-500 hover:bg-dark-200'
+              : 'text-gray-500 dark:text-gray-400 hover:text-primary-500 hover:bg-gray-100 dark:hover:bg-dark-200'
           }`}
           title={t('gameHub.title')}
         >
@@ -123,7 +123,7 @@ const GameLibrarySidebar: React.FC = () => {
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(6)].map((_, index) => (
-              <div key={index} className="w-14 h-14 mx-auto bg-dark-300 rounded-xl animate-pulse" />
+              <div key={index} className="w-14 h-14 mx-auto bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : (
@@ -170,14 +170,14 @@ const GameLibrarySidebar: React.FC = () => {
 
         {tooltip.visible && (
           <div
-            className="absolute left-full ml-3 px-3 py-2 bg-dark-200 border border-gray-700 rounded-lg shadow-xl whitespace-nowrap z-50 animate-tooltip-fade-in"
+            className="absolute left-full ml-3 px-3 py-2 bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl whitespace-nowrap z-50 animate-tooltip-fade-in"
             style={{
               top: tooltip.y,
               transform: 'translateY(-50%)'
             }}
           >
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-dark-200 border-l border-b border-gray-700 rotate-45" />
-            <span className="text-sm font-medium text-white">{tooltip.gameName}</span>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-2 h-2 bg-white dark:bg-dark-200 border-l border-b border-gray-200 dark:border-gray-700 rotate-45" />
+            <span className="text-sm font-medium text-gray-900 dark:text-white">{tooltip.gameName}</span>
           </div>
         )}
       </div>

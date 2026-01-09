@@ -113,11 +113,11 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4 animate-pulse">
-        <div className="h-6 bg-dark-300 rounded w-1/2 mb-4" />
+      <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 animate-pulse">
+        <div className="h-6 bg-gray-200 dark:bg-dark-300 rounded w-1/2 mb-4" />
         <div className="space-y-3">
-          <div className="h-10 bg-dark-300 rounded" />
-          <div className="h-10 bg-dark-300 rounded" />
+          <div className="h-10 bg-gray-200 dark:bg-dark-300 rounded" />
+          <div className="h-10 bg-gray-200 dark:bg-dark-300 rounded" />
         </div>
       </div>
     );
@@ -125,19 +125,19 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
 
   if (!stats) {
     return (
-      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4">
+      <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Trophy className="w-5 h-5 text-gray-500" />
-          <h3 className="font-semibold text-white">{t('coaching.tournamentStats')}</h3>
+          <Trophy className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+          <h3 className="font-semibold text-gray-900 dark:text-white">{t('coaching.tournamentStats')}</h3>
         </div>
-        <p className="text-sm text-gray-400">{t('coaching.noTournamentData')}</p>
-        <p className="text-xs text-gray-500 mt-2">{t('coaching.playTournamentsToSeeStats')}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400">{t('coaching.noTournamentData')}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">{t('coaching.playTournamentsToSeeStats')}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4">
+    <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div
@@ -146,12 +146,12 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
           >
             <Trophy className="w-4 h-4" style={{ color: theme.colors.primary }} />
           </div>
-          <h3 className="font-semibold text-white">{t('coaching.tournamentStats')}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{t('coaching.tournamentStats')}</h3>
         </div>
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
-          className="p-1.5 rounded-lg hover:bg-dark-300 transition-colors disabled:opacity-50"
+          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 text-gray-400 ${isRefreshing ? 'animate-spin' : ''}`} />
         </button>
@@ -159,22 +159,22 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
 
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="text-center">
-          <div className="text-2xl font-bold text-white">{stats.totalMatches}</div>
-          <div className="text-xs text-gray-500">{t('coaching.matches')}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalMatches}</div>
+          <div className="text-xs text-gray-400 dark:text-gray-500">{t('coaching.matches')}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-success-400">{stats.wins}</div>
-          <div className="text-xs text-gray-500">{t('coaching.wins')}</div>
+          <div className="text-xs text-gray-400 dark:text-gray-500">{t('coaching.wins')}</div>
         </div>
         <div className="text-center">
           <div className="text-2xl font-bold text-error-400">{stats.losses}</div>
-          <div className="text-xs text-gray-500">{t('coaching.losses')}</div>
+          <div className="text-xs text-gray-400 dark:text-gray-500">{t('coaching.losses')}</div>
         </div>
       </div>
 
-      <div className="bg-dark-300/50 rounded-lg p-3 mb-3">
+      <div className="bg-gray-100 dark:bg-dark-300/50 rounded-lg p-3 mb-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-400">{t('coaching.winRate')}</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">{t('coaching.winRate')}</span>
           <div className="flex items-center gap-1">
             {stats.winRate >= 50 ? (
               <TrendingUp className="w-4 h-4 text-success-400" />
@@ -189,7 +189,7 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
             </span>
           </div>
         </div>
-        <div className="w-full h-2 bg-dark-400 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-gray-200 dark:bg-dark-400 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -203,7 +203,7 @@ const TournamentWLStatsCard: React.FC<TournamentWLStatsCardProps> = ({
       {stats.recentForm.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">{t('coaching.recentForm')}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">{t('coaching.recentForm')}</span>
             {stats.currentStreak.count >= 2 && (
               <div
                 className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"

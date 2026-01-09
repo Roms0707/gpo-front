@@ -317,100 +317,116 @@ const ManualGameProfileSetup: React.FC<ManualGameProfileSetupProps> = ({
             <label className="block text-sm font-medium text-gray-300">
               {t('coaching.externalStatsUrl')}
             </label>
-            <button
-              onClick={() => setShowGuideModal(true)}
-              className="flex items-center gap-1 text-xs hover:underline"
-              style={{ color: theme.colors.primary }}
-            >
-              <HelpCircle className="w-3 h-3" />
-              {t('coaching.howToFind')}
-            </button>
-          </div>
-
-          {statsPlatforms.length > 0 && (
-            <div className="flex gap-2 mb-2 flex-wrap">
-              {statsPlatforms.map(platform => (
-                <button
-                  key={platform.platform}
-                  onClick={() => {
-                    setProfile(prev => ({ ...prev, external_stats_platform: platform.platform }));
-                    setStatsValidated(false);
-                    setStatsFetchError(null);
-                  }}
-                  className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
-                    profile.external_stats_platform === platform.platform
-                      ? 'border-transparent text-white'
-                      : 'border-gray-700 text-gray-400 hover:border-gray-600'
-                  }`}
-                  style={{
-                    backgroundColor: profile.external_stats_platform === platform.platform
-                      ? theme.colors.primary
-                      : 'transparent'
-                  }}
-                >
-                  {platform.name}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <input
-                type="url"
-                value={profile.external_stats_url || ''}
-                onChange={(e) => {
-                  setProfile(prev => ({ ...prev, external_stats_url: e.target.value }));
-                  setStatsValidated(false);
-                  setStatsFetchError(null);
-                }}
-                placeholder={selectedPlatform?.url_example || 'https://...'}
-                className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
-              />
-            </div>
-            {profile.external_stats_url && profile.external_stats_platform && (
+            {statsPlatforms.length > 0 && (
               <button
-                onClick={handleFetchStats}
-                disabled={isFetchingStats}
-                className="flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all disabled:opacity-50"
-                style={{
-                  backgroundColor: statsValidated ? '#22c55e20' : `${theme.colors.primary}20`,
-                  color: statsValidated ? '#22c55e' : theme.colors.primary,
-                }}
+                onClick={() => setShowGuideModal(true)}
+                className="flex items-center gap-1 text-xs hover:underline"
+                style={{ color: theme.colors.primary }}
               >
-                {isFetchingStats ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : statsValidated ? (
-                  <CheckCircle className="w-5 h-5" />
-                ) : (
-                  <RefreshCw className="w-5 h-5" />
-                )}
-                <span className="hidden sm:inline">
-                  {statsValidated ? t('coaching.validated') : t('coaching.fetchStats')}
-                </span>
+                <HelpCircle className="w-3 h-3" />
+                {t('coaching.howToFind')}
               </button>
             )}
           </div>
 
-          {statsFetchError && (
-            <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-red-400">{statsFetchError}</p>
-                <ul className="mt-1 text-xs text-gray-400 list-disc list-inside">
-                  <li>{t('coaching.troubleshooting.checkUrl')}</li>
-                  <li>{t('coaching.troubleshooting.checkPublic')}</li>
-                </ul>
+          {statsPlatforms.length === 0 ? (
+            <div className="p-4 bg-dark-300/50 border border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gray-700/50">
+                  <Link2 className="w-5 h-5 text-gray-400" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-400">{t('coaching.noPlatformAvailable')}</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('coaching.noPlatformAvailableDesc')}</p>
+                </div>
               </div>
             </div>
-          )}
+          ) : (
+            <>
+              <div className="flex gap-2 mb-2 flex-wrap">
+                {statsPlatforms.map(platform => (
+                  <button
+                    key={platform.platform}
+                    onClick={() => {
+                      setProfile(prev => ({ ...prev, external_stats_platform: platform.platform }));
+                      setStatsValidated(false);
+                      setStatsFetchError(null);
+                    }}
+                    className={`px-3 py-1.5 text-xs rounded-full border transition-colors ${
+                      profile.external_stats_platform === platform.platform
+                        ? 'border-transparent text-white'
+                        : 'border-gray-700 text-gray-400 hover:border-gray-600'
+                    }`}
+                    style={{
+                      backgroundColor: profile.external_stats_platform === platform.platform
+                        ? theme.colors.primary
+                        : 'transparent'
+                    }}
+                  >
+                    {platform.name}
+                  </button>
+                ))}
+              </div>
 
-          {statsValidated && (
-            <div className="mt-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <p className="text-sm text-green-400">{t('coaching.statsValidatedSuccess')}</p>
-            </div>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Link2 className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <input
+                    type="url"
+                    value={profile.external_stats_url || ''}
+                    onChange={(e) => {
+                      setProfile(prev => ({ ...prev, external_stats_url: e.target.value }));
+                      setStatsValidated(false);
+                      setStatsFetchError(null);
+                    }}
+                    placeholder={selectedPlatform?.url_example || 'https://...'}
+                    className="w-full pl-10 pr-4 py-3 bg-dark-300 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-gray-600"
+                  />
+                </div>
+                {profile.external_stats_url && profile.external_stats_platform && (
+                  <button
+                    onClick={handleFetchStats}
+                    disabled={isFetchingStats}
+                    className="flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all disabled:opacity-50"
+                    style={{
+                      backgroundColor: statsValidated ? '#22c55e20' : `${theme.colors.primary}20`,
+                      color: statsValidated ? '#22c55e' : theme.colors.primary,
+                    }}
+                  >
+                    {isFetchingStats ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : statsValidated ? (
+                      <CheckCircle className="w-5 h-5" />
+                    ) : (
+                      <RefreshCw className="w-5 h-5" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {statsValidated ? t('coaching.validated') : t('coaching.fetchStats')}
+                    </span>
+                  </button>
+                )}
+              </div>
+
+              {statsFetchError && (
+                <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-red-400">{statsFetchError}</p>
+                    <ul className="mt-1 text-xs text-gray-400 list-disc list-inside">
+                      <li>{t('coaching.troubleshooting.checkUrl')}</li>
+                      <li>{t('coaching.troubleshooting.checkPublic')}</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {statsValidated && (
+                <div className="mt-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <p className="text-sm text-green-400">{t('coaching.statsValidatedSuccess')}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
 

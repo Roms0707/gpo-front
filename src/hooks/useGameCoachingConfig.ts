@@ -83,6 +83,7 @@ const FALLBACK_CONFIGS: Record<string, Partial<GameCoachingConfig>> = {
     game_category: 'sports',
     character_field_label: 'Preferred Formations',
     character_field_placeholder: 'e.g., 4-3-3, 4-2-3-1',
+    stats_platforms: [],
     rank_tiers: ['Division 10', 'Division 5', 'Division 1', 'Elite'],
     quick_prompts: {
       en: ['Skill moves tips', 'Defensive tactics', 'Formation advice', 'Custom tactics setup', 'Player chemistry'],
@@ -172,7 +173,7 @@ export const useGameCoachingConfig = (gameId: string, gameName: string): UseGame
           game_category: fallback.game_category || 'default',
           character_field_label: fallback.character_field_label || 'Main Characters',
           character_field_placeholder: fallback.character_field_placeholder || null,
-          stats_platforms: DEFAULT_STATS_PLATFORMS,
+          stats_platforms: fallback.stats_platforms !== undefined ? fallback.stats_platforms : DEFAULT_STATS_PLATFORMS,
           rank_tiers: fallback.rank_tiers || DEFAULT_RANK_TIERS,
           quick_prompts: fallback.quick_prompts || DEFAULT_QUICK_PROMPTS,
         };
@@ -193,7 +194,7 @@ export const useGameCoachingConfig = (gameId: string, gameName: string): UseGame
         game_category: fallback.game_category || 'default',
         character_field_label: fallback.character_field_label || 'Main Characters',
         character_field_placeholder: fallback.character_field_placeholder || null,
-        stats_platforms: DEFAULT_STATS_PLATFORMS,
+        stats_platforms: fallback.stats_platforms !== undefined ? fallback.stats_platforms : DEFAULT_STATS_PLATFORMS,
         rank_tiers: fallback.rank_tiers || DEFAULT_RANK_TIERS,
         quick_prompts: fallback.quick_prompts || DEFAULT_QUICK_PROMPTS,
       });

@@ -68,6 +68,8 @@ export interface ProjectConfiguration {
   kliento_otp_sms_template?: string | null;
   default_phone_country_code?: string | null;
   info_section_text_color?: string | null;
+  package_id?: string | null;
+  sp_template?: string | null;
 }
 
 export interface AppConfigContextState {

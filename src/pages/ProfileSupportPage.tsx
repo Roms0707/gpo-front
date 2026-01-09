@@ -12,7 +12,10 @@ const ProfileSupportPage: React.FC = () => {
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   
-  // Redirect if not logged in
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   React.useEffect(() => {
     if (!user && !localStorage.getItem('supabase.auth.token')) {
       navigate('/login?redirect=/profile/support');

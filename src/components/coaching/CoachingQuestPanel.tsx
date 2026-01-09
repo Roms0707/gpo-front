@@ -157,11 +157,11 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4 animate-pulse">
-        <div className="h-5 bg-dark-300 rounded w-1/3 mb-3" />
+      <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4 animate-pulse">
+        <div className="h-5 bg-gray-200 dark:bg-dark-300 rounded w-1/3 mb-3" />
         <div className="space-y-2">
-          <div className="h-16 bg-dark-300 rounded" />
-          <div className="h-16 bg-dark-300 rounded" />
+          <div className="h-16 bg-gray-200 dark:bg-dark-300 rounded" />
+          <div className="h-16 bg-gray-200 dark:bg-dark-300 rounded" />
         </div>
       </div>
     );
@@ -169,19 +169,19 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
 
   if (quests.length === 0) {
     return (
-      <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4">
+      <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">
-          <Target className="w-5 h-5 text-gray-500" />
-          <h3 className="font-semibold text-white">{t('coaching.activeQuests')}</h3>
+          <Target className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+          <h3 className="font-semibold text-gray-900 dark:text-white">{t('coaching.activeQuests')}</h3>
         </div>
-        <p className="text-sm text-gray-400 mb-2">{t('coaching.noActiveQuests')}</p>
-        <p className="text-xs text-gray-500">{t('coaching.askCoachForQuest')}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{t('coaching.noActiveQuests')}</p>
+        <p className="text-xs text-gray-400 dark:text-gray-500">{t('coaching.askCoachForQuest')}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4">
+    <div className="bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div
@@ -190,7 +190,7 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
           >
             <Target className="w-4 h-4" style={{ color: theme.colors.primary }} />
           </div>
-          <h3 className="font-semibold text-white">{t('coaching.activeQuests')}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">{t('coaching.activeQuests')}</h3>
           <span
             className="px-2 py-0.5 rounded-full text-xs font-medium"
             style={{ backgroundColor: `${theme.colors.primary}20`, color: theme.colors.primary }}
@@ -211,11 +211,11 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
           return (
             <div
               key={quest.id}
-              className="bg-dark-300/50 border border-gray-700 rounded-lg overflow-hidden"
+              className="bg-gray-50 dark:bg-dark-300/50 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
             >
               <button
                 onClick={() => setExpandedQuest(isExpanded ? null : quest.id)}
-                className="w-full p-3 flex items-start gap-3 text-left hover:bg-dark-300/30 transition-colors"
+                className="w-full p-3 flex items-start gap-3 text-left hover:bg-gray-100 dark:hover:bg-dark-300/30 transition-colors"
               >
                 <div
                   className="p-2 rounded-lg flex-shrink-0"
@@ -224,12 +224,12 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
                   <IconComponent className="w-4 h-4" style={{ color: theme.colors.primary }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-white text-sm truncate">{quest.title}</h4>
+                  <h4 className="font-medium text-gray-900 dark:text-white text-sm truncate">{quest.title}</h4>
                   {!compact && (
-                    <p className="text-xs text-gray-400 line-clamp-1">{quest.description}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">{quest.description}</p>
                   )}
                   <div className="flex items-center gap-2 mt-2">
-                    <div className="flex-1 h-1.5 bg-dark-400 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-gray-200 dark:bg-dark-400 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
@@ -238,7 +238,7 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
                         }}
                       />
                     </div>
-                    <span className="text-xs text-gray-400 flex-shrink-0">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
                       {quest.progress_count}/{quest.target_count}
                     </span>
                   </div>
@@ -251,18 +251,18 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
               </button>
 
               {isExpanded && (
-                <div className="px-3 pb-3 space-y-3 border-t border-gray-700 pt-3">
-                  <p className="text-sm text-gray-300">{quest.description}</p>
+                <div className="px-3 pb-3 space-y-3 border-t border-gray-200 dark:border-gray-700 pt-3">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{quest.description}</p>
 
                   {quest.ai_reasoning && (
-                    <div className="bg-dark-400/50 rounded-lg p-2">
+                    <div className="bg-yellow-50 dark:bg-dark-400/50 rounded-lg p-2">
                       <div className="flex items-center gap-1 mb-1">
                         <Lightbulb className="w-3 h-3 text-yellow-500" />
-                        <span className="text-xs font-medium text-yellow-500">
+                        <span className="text-xs font-medium text-yellow-600 dark:text-yellow-500">
                           {t('coaching.whyThisQuest')}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400">{quest.ai_reasoning}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{quest.ai_reasoning}</p>
                     </div>
                   )}
 
@@ -303,7 +303,7 @@ const CoachingQuestPanel: React.FC<CoachingQuestPanelProps> = ({
                         e.stopPropagation();
                         handleAbandonQuest(quest.id);
                       }}
-                      className="flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-dark-300 hover:text-error-400 transition-colors"
+                      className="flex items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-dark-300 hover:text-error-400 transition-colors"
                       title={t('coaching.abandon')}
                     >
                       <X className="w-4 h-4" />

@@ -4,6 +4,7 @@ import { fetchHeroCarouselData, extractTwitchChannelName } from '../../services/
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { HeroSlide } from './HeroSlide';
 import { APP_CONFIG } from '../../constants';
+import { calculateRegistrationStatus } from '../../utils/tournamentUtils';
 
 interface SlideData {
   id: string;
@@ -66,7 +67,7 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
             const twitchUrl = trailer.tournament?.twitch_url;
             const isTwitchLive = trailer.tournament?.is_twitch_live;
 
-            let ctaText = t('heroCarousel.registerNow');
+            let ctaText = t('heroCarousel.viewTournament');
             let ctaLink = `/tournaments/${tournamentId}`;
 
             if (tournamentStatus === 'ongoing' || tournamentStatus === 'active') {
@@ -75,11 +76,28 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
                 if (channelName) {
                   ctaText = t('heroCarousel.watchNow');
                   ctaLink = `/stream/${channelName}`;
-                } else {
-                  ctaText = t('heroCarousel.viewTournament');
                 }
-              } else {
-                ctaText = t('heroCarousel.viewTournament');
+              }
+            } else if (trailer.tournament) {
+              const registrationStatus = calculateRegistrationStatus({
+                id: tournamentId,
+                title: trailer.tournament.title || '',
+                game: trailer.game?.name || '',
+                description: trailer.tournament.description || '',
+                startDate: trailer.tournament.startDate,
+                endDate: trailer.tournament.endDate,
+                registrationStartDate: trailer.tournament.registrationStartDate,
+                registrationEndDate: trailer.tournament.registrationEndDate,
+                mode: '',
+                format: '',
+                maxParticipants: 0,
+                currentParticipants: 0,
+                cashPrize: 0,
+                status: tournamentStatus || 'upcoming',
+              });
+
+              if (registrationStatus === 'open') {
+                ctaText = t('heroCarousel.registerNow');
               }
             }
 

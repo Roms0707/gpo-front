@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const TEST_MODE = false;
+const FORCE_UNSUBSCRIBED_TEST = false;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -101,6 +102,18 @@ interface KlientoAccountInfoResponse {
   }>;
 }
 
+interface SmartpagesResponse {
+  code: string;
+  result?: {
+    url_redirect: string;
+  };
+}
+
+interface SmartpagesApiConfig {
+  api_url: string;
+  api_key: string;
+}
+
 const KLIENTO_BASE_URL = "https://userv1.dv-content.io";
 
 function extractBillingInfo(offer: KlientoOffer): BillingInfo {
@@ -116,6 +129,81 @@ function extractBillingInfo(offer: KlientoOffer): BillingInfo {
     offer_mccmnc: offer.client_offer_infos?.offer_mccmnc || "",
     evt_subscription_status: offer.client_offer_infos?.evt_subscription_status || "",
   };
+}
+
+async function getSmartpagesRedirectUrl(
+  apiConfig: SmartpagesApiConfig,
+  packageId: string,
+  spTemplate: string,
+  klientoUserId: string,
+  domain: string
+): Promise<string | null> {
+  try {
+    const callbackOk = `https://${domain}/callback?espok=1`;
+    const callbackKo = `https://${domain}/callback?espok=0`;
+
+    const requestBody = {
+      package_id: packageId,
+      page: spTemplate,
+      kliento_user_id: klientoUserId,
+      transaction_id: "auto",
+      callback_ok: callbackOk,
+      callback_ko: callbackKo,
+    };
+
+    console.log(`[kliento-check-subscription-by-login] ========== SMARTPAGES API CALL ==========`);
+    console.log(`[kliento-check-subscription-by-login] URL: ${apiConfig.api_url}`);
+    console.log(`[kliento-check-subscription-by-login] Method: POST`);
+    console.log(`[kliento-check-subscription-by-login] Headers: { "Content-Type": "application/json", "x-api-key": "${apiConfig.api_key.substring(0, 8)}..." }`);
+    console.log(`[kliento-check-subscription-by-login] Request Body: ${JSON.stringify(requestBody)}`);
+    console.log(`[kliento-check-subscription-by-login] =========================================`);
+
+    const response = await fetch(apiConfig.api_url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "x-api-key": apiConfig.api_key,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    const responseText = await response.text();
+    console.log(`[kliento-check-subscription-by-login] ========== SMARTPAGES RESPONSE ==========`);
+    console.log(`[kliento-check-subscription-by-login] Status: ${response.status}`);
+    console.log(`[kliento-check-subscription-by-login] Response Body: ${responseText}`);
+    console.log(`[kliento-check-subscription-by-login] =========================================`);
+
+    if (!response.ok) {
+      console.error(`[kliento-check-subscription-by-login] Smartpages API error: ${response.status}`);
+      return null;
+    }
+
+    if (responseText.trim().startsWith("<")) {
+      console.error(`[kliento-check-subscription-by-login] Smartpages returned HTML instead of JSON. Full response:`);
+      console.error(responseText);
+      return null;
+    }
+
+    let data: SmartpagesResponse;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error(`[kliento-check-subscription-by-login] Failed to parse Smartpages response as JSON: ${parseError}`);
+      return null;
+    }
+
+    if (data.code === "ok" && data.result?.url_redirect) {
+      console.log(`[kliento-check-subscription-by-login] Got Smartpages redirect URL`);
+      return data.result.url_redirect;
+    }
+
+    console.log(`[kliento-check-subscription-by-login] Smartpages response code: ${data.code}`);
+    return null;
+  } catch (error) {
+    console.error(`[kliento-check-subscription-by-login] Smartpages API call failed:`, error);
+    return null;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -160,7 +248,12 @@ Deno.serve(async (req: Request) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     const { login, project_config_id }: CheckSubscriptionRequest = await req.json();
 
@@ -179,7 +272,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: projectConfig, error: projectConfigError } = await supabase
       .from("project_configurations")
-      .select("id, product_id, subscription_redirect_url, kliento_auth_type")
+      .select("id, product_id, kliento_auth_type, package_id, sp_template, domain, lp_redirect_no_account")
       .eq("id", project_config_id)
       .eq("is_active", true)
       .maybeSingle();
@@ -209,6 +302,23 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
+    }
+
+    let smartpagesApiConfig: SmartpagesApiConfig | null = null;
+    if (projectConfig.package_id && projectConfig.sp_template && projectConfig.domain) {
+      const { data: apiIntegration } = await supabase
+        .from("platform_api_integrations")
+        .select("api_url, api_key")
+        .eq("api_name", "smartpages")
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (apiIntegration) {
+        smartpagesApiConfig = {
+          api_url: apiIntegration.api_url,
+          api_key: apiIntegration.api_key,
+        };
+      }
     }
 
     const productId = projectConfig.product_id || "";
@@ -277,13 +387,33 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    async function getRedirectUrl(userId: string | null): Promise<string | undefined> {
+      if (smartpagesApiConfig && userId && projectConfig.package_id && projectConfig.sp_template && projectConfig.domain) {
+        const dynamicUrl = await getSmartpagesRedirectUrl(
+          smartpagesApiConfig,
+          projectConfig.package_id,
+          projectConfig.sp_template,
+          userId,
+          projectConfig.domain
+        );
+        if (dynamicUrl) {
+          return dynamicUrl;
+        }
+      }
+      return undefined;
+    }
+
     if (!klientoUserId) {
       console.log("[kliento-check-subscription-by-login] User not found in Kliento");
+      const redirectUrl = projectConfig.lp_redirect_no_account || undefined;
+      if (redirectUrl) {
+        console.log(`[kliento-check-subscription-by-login] Using lp_redirect_no_account: ${redirectUrl}`);
+      }
       return new Response(
         JSON.stringify({
           success: false,
           isSubscribed: false,
-          redirectUrl: projectConfig.subscription_redirect_url || undefined,
+          redirectUrl,
           error: "User not found",
         } as CheckSubscriptionResponse),
         {
@@ -308,11 +438,12 @@ Deno.serve(async (req: Request) => {
 
     if (!accountResponse.ok) {
       console.error(`[kliento-check-subscription-by-login] accountinfo/all API error: ${accountResponse.status}`);
+      const redirectUrl = await getRedirectUrl(klientoUserId);
       return new Response(
         JSON.stringify({
           success: false,
           isSubscribed: false,
-          redirectUrl: projectConfig.subscription_redirect_url || undefined,
+          redirectUrl,
           error: "Failed to retrieve account information",
         } as CheckSubscriptionResponse),
         {
@@ -327,11 +458,12 @@ Deno.serve(async (req: Request) => {
       accountData = JSON.parse(accountText);
     } catch {
       console.error("[kliento-check-subscription-by-login] Failed to parse accountinfo/all response");
+      const redirectUrl = await getRedirectUrl(klientoUserId);
       return new Response(
         JSON.stringify({
           success: false,
           isSubscribed: false,
-          redirectUrl: projectConfig.subscription_redirect_url || undefined,
+          redirectUrl,
           error: "Invalid response from authentication service",
         } as CheckSubscriptionResponse),
         {
@@ -343,11 +475,15 @@ Deno.serve(async (req: Request) => {
 
     if (accountData.code !== 200 || accountData.error !== 0 || !accountData.data || accountData.data.length === 0) {
       console.log("[kliento-check-subscription-by-login] No account data found:", accountData);
+      const redirectUrl = projectConfig.lp_redirect_no_account || undefined;
+      if (redirectUrl) {
+        console.log(`[kliento-check-subscription-by-login] Using lp_redirect_no_account: ${redirectUrl}`);
+      }
       return new Response(
         JSON.stringify({
           success: false,
           isSubscribed: false,
-          redirectUrl: projectConfig.subscription_redirect_url || undefined,
+          redirectUrl,
           error: "Account information not found",
         } as CheckSubscriptionResponse),
         {
@@ -358,7 +494,9 @@ Deno.serve(async (req: Request) => {
     }
 
     const accountInfo = accountData.data[0];
-    const isSubscribed = accountInfo.subscribed === true;
+    const realSubscriptionStatus = accountInfo.subscribed === true;
+    const isSubscribed = FORCE_UNSUBSCRIBED_TEST ? false : realSubscriptionStatus;
+    console.log(`[kliento-check-subscription-by-login] REAL subscription status: ${realSubscriptionStatus}, FORCED to: ${isSubscribed}`);
     const isSuspended = accountInfo.suspended === true;
     const hasValidOffer = Array.isArray(accountInfo.offer) && accountInfo.offer.length > 0;
     const firstOffer = hasValidOffer ? accountInfo.offer![0] : null;
@@ -376,11 +514,12 @@ Deno.serve(async (req: Request) => {
         errorMessage = "No active offer found";
       }
 
+      const redirectUrl = await getRedirectUrl(klientoUserId);
       return new Response(
         JSON.stringify({
           success: true,
           isSubscribed: false,
-          redirectUrl: projectConfig.subscription_redirect_url || undefined,
+          redirectUrl,
           error: errorMessage,
         } as CheckSubscriptionResponse),
         {
@@ -392,6 +531,8 @@ Deno.serve(async (req: Request) => {
 
     const billingInfo = firstOffer ? extractBillingInfo(firstOffer) : undefined;
 
+    const redirectUrl = await getRedirectUrl(klientoUserId);
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -399,6 +540,7 @@ Deno.serve(async (req: Request) => {
         phoneNumber: accountInfo.msisdn || login,
         userId: accountInfo.user_id,
         billingInfo,
+        redirectUrl,
       } as CheckSubscriptionResponse),
       {
         status: 200,

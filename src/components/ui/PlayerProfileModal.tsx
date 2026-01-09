@@ -6,6 +6,10 @@ import { fetchUserProfile, sendFriendRequest } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatDate } from '../../utils/formatters';
 import { countries } from '../../utils/countries';
+import { UserProfileCustomization, ProfileFrame, ProfileBadge } from '../../types';
+import { fetchUserCustomization } from '../../services/profileCustomizationService';
+import AvatarWithFrame from '../profile/AvatarWithFrame';
+import ProfileModalFrame from '../profile/ProfileModalFrame';
 import toast from 'react-hot-toast';
 import ChatModal from '../chat/ChatModal';
 
@@ -31,6 +35,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
   const [isSendingFriendRequest, setIsSendingFriendRequest] = useState(false);
   const [friendRequestSent, setFriendRequestSent] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [userCustomization, setUserCustomization] = useState<UserProfileCustomization | null>(null);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -45,16 +50,21 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
         setIsLoading(true);
         setError(null);
         setUserProfile(null);
+        setUserCustomization(null);
 
         console.log('[PlayerProfileModal] Loading profile for user:', userId);
-        const data = await fetchUserProfile(userId);
+        const [profileData, customizationData] = await Promise.all([
+          fetchUserProfile(userId),
+          fetchUserCustomization(userId).catch(() => null)
+        ]);
 
-        if (!data) {
+        if (!profileData) {
           throw new Error(t('profile.noProfileData'));
         }
 
-        console.log('[PlayerProfileModal] Profile data loaded:', data);
-        setUserProfile(data);
+        console.log('[PlayerProfileModal] Profile data loaded:', profileData);
+        setUserProfile(profileData);
+        setUserCustomization(customizationData);
       } catch (error: any) {
         console.error('[PlayerProfileModal] Error loading user profile:', error);
         const errorMessage = error?.message || t('profile.errorLoadingProfile');
@@ -113,55 +123,56 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
 
   return (
     <>
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
         onClick={onClose}
       >
         <div className="fixed inset-0 bg-black/75 z-49" onClick={onClose}></div>
-        
-        <div 
-          className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800 relative z-50"
-          onClick={stopPropagation}
+
+        <ProfileModalFrame
+          frame={userCustomization?.modal_frame}
+          themeColor="#3b82f6"
+          className="bg-white dark:bg-dark-100 w-full max-w-2xl max-h-[90vh] overflow-hidden relative z-50"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
-            <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
-              {t('profile.playerProfile')}
-            </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
-              aria-label={t('profile.close')}
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-          
-          {/* Content */}
-          <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center p-12">
-                <Loader className="h-10 w-10 text-primary-500 animate-spin mb-4" />
-                <p className="text-gray-600 dark:text-gray-400">{t('profile.loadingProfile')}</p>
-              </div>
-            ) : error ? (
-              <div className="flex flex-col items-center justify-center p-12">
-                <AlertTriangle className="h-12 w-12 text-error-500 mb-4" />
-                <p className="text-error-600 dark:text-error-400 font-medium mb-2">{t('profile.error')}</p>
-                <p className="text-gray-600 dark:text-gray-400">{error}</p>
-              </div>
-            ) : userProfile ? (
-              <div>
-                {/* User Header */}
-                <div className="bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-600/20 dark:to-secondary-600/20 p-6">
-                  <div className="flex items-center">
-                    <div className="w-20 h-20 bg-gray-200 dark:bg-dark-200 rounded-full flex items-center justify-center overflow-hidden mr-4">
-                      {userProfile?.avatar_url ? (
-                        <img src={userProfile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="h-10 w-10 text-gray-400" />
-                      )}
-                    </div>
+          <div onClick={stopPropagation}>
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
+              <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
+                {t('profile.playerProfile')}
+              </h2>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
+                aria-label={t('profile.close')}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center p-12">
+                  <Loader className="h-10 w-10 text-primary-500 animate-spin mb-4" />
+                  <p className="text-gray-600 dark:text-gray-400">{t('profile.loadingProfile')}</p>
+                </div>
+              ) : error ? (
+                <div className="flex flex-col items-center justify-center p-12">
+                  <AlertTriangle className="h-12 w-12 text-error-500 mb-4" />
+                  <p className="text-error-600 dark:text-error-400 font-medium mb-2">{t('profile.error')}</p>
+                  <p className="text-gray-600 dark:text-gray-400">{error}</p>
+                </div>
+              ) : userProfile ? (
+                <div>
+                  <div className="bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-600/20 dark:to-secondary-600/20 p-6">
+                    <div className="flex items-center">
+                      <AvatarWithFrame
+                        avatarUrl={userProfile?.avatar_url}
+                        username={userProfile?.username}
+                        frame={userCustomization?.avatar_frame}
+                        badge={userCustomization?.avatar_badge}
+                        size="lg"
+                        themeColor="#3b82f6"
+                        className="mr-4"
+                      />
                     <div>
                       <h3 className="font-heading font-bold text-xl text-gray-900 dark:text-white">{userProfile?.username || t('profile.unknownUser')}</h3>
                       <div className="flex items-center text-gray-600 dark:text-gray-300 mt-1">
@@ -494,9 +505,10 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
               </div>
             )}
           </div>
-        </div>
+          </div>
+        </ProfileModalFrame>
       </div>
-      
+
       {/* Chat Modal */}
       {showChatModal && userProfile && userId && (
         <ChatModal

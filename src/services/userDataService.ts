@@ -58,13 +58,16 @@ export const createUserFromData = (userData: any, sessionUser?: any): User => {
     is_fortnite_validated: userData.is_fortnite_validated || false,
     fortnite_validation_data: userData.fortnite_validation_data || null,
     discord_handle: userData.discord_handle || '',
+    discord_user_id: userData.discord_user_id || null,
     twitter_handle: userData.twitter_handle || '',
     level: userData.level || APP_CONFIG.DEFAULT_LEVEL,
     xp: userData.xp || APP_CONFIG.DEFAULT_XP,
     current_avatar_id: userData.current_avatar_id || null,
     msisdn: userData.msisdn || '',
     is_profile_public: userData.is_profile_public !== undefined ? userData.is_profile_public : true,
-    is_profile_completed: userData.is_profile_completed !== undefined ? userData.is_profile_completed : false
+    is_profile_completed: userData.is_profile_completed !== undefined ? userData.is_profile_completed : false,
+    favorite_game_id: userData.favorite_game_id || null,
+    created_at: userData.created_at || null
   };
 
   console.log('[UserDataService] createUserFromData - created user bio:', user.bio);

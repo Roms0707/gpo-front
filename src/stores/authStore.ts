@@ -53,6 +53,8 @@ const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
     auth_provider: dbUser.auth_provider as string | undefined,
     preferred_language: dbUser.preferred_language as 'en' | 'fr' | undefined,
     has_completed_onboarding: dbUser.has_completed_onboarding as boolean | undefined,
+    favorite_game_id: dbUser.favorite_game_id as string | undefined,
+    created_at: dbUser.created_at as string | undefined,
   };
 };
 

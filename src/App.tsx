@@ -17,6 +17,8 @@ const TournamentPage = React.lazy(() => import('./pages/TournamentPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const ProfileEditPage = React.lazy(() => import('./pages/ProfileEditPage'));
+const ProfileSettingsPage = React.lazy(() => import('./pages/ProfileSettingsPage'));
+const GuidedToursPage = React.lazy(() => import('./pages/GuidedToursPage'));
 const FriendsPage = React.lazy(() => import('./pages/FriendsPage'));
 const GamingStatsPage = React.lazy(() => import('./pages/GamingStatsPage'));
 const ProfileSupportPage = React.lazy(() => import('./pages/ProfileSupportPage'));
@@ -169,6 +171,16 @@ const AppContent = () => {
             <Route path="profile/edit" element={
               <Suspense fallback={<PageLoadingFallback />}>
                 <ProfileEditPage />
+              </Suspense>
+            } />
+            <Route path="profile/settings" element={
+              <Suspense fallback={<PageLoadingFallback />}>
+                <ProfileSettingsPage />
+              </Suspense>
+            } />
+            <Route path="profile/guided-tours" element={
+              <Suspense fallback={<PageLoadingFallback />}>
+                <GuidedToursPage />
               </Suspense>
             } />
             <Route path="profile/friends" element={

@@ -65,6 +65,9 @@ export interface User {
   auth_provider?: AuthProvider;
   preferred_language?: 'en' | 'fr';
   has_completed_onboarding?: boolean;
+  discord_user_id?: string;
+  favorite_game_id?: string;
+  created_at?: string;
 }
 
 export interface KlientoLoginResponse {
@@ -431,4 +434,98 @@ export interface GameTrailer {
   updated_at: string;
   tournament?: Tournament;
   game?: Game;
+}
+
+export type FrameType = 'avatar' | 'modal';
+export type FrameStyle = 'metallic' | 'neon' | 'elegant' | 'animated' | 'simple' | 'tech' | 'elemental' | 'gothic' | 'tactical' | 'cosmic' | 'seasonal';
+export type ItemRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type UnlockType = 'free' | 'xp' | 'achievement' | 'premium';
+export type BadgeType = 'corner' | 'overlay' | 'accent';
+export type BadgePosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type FrameCollection = 'default' | 'league_of_legends' | 'valorant' | 'diablo' | 'apex' | 'cs2' | 'rocket_league' | 'universal';
+export type GameAffinity = 'lol' | 'valorant' | 'apex' | 'cs' | 'rocket' | null;
+
+export interface FrameCssStyles {
+  borderWidth?: string;
+  borderStyle?: string;
+  borderColor?: string;
+  borderRadius?: string;
+  boxShadow?: string;
+}
+
+export interface BadgeCssStyles {
+  icon: string;
+  color: string;
+  size: string;
+  glow?: boolean;
+  animated?: boolean;
+}
+
+export interface UnlockRequirement {
+  xp?: number;
+  achievement?: string;
+  premium?: boolean;
+}
+
+export interface ProfileFrame {
+  id: string;
+  name: string;
+  description?: string;
+  frame_type: FrameType;
+  style: FrameStyle;
+  rarity: ItemRarity;
+  css_styles: FrameCssStyles;
+  animation_class?: string;
+  is_available: boolean;
+  is_premium: boolean;
+  unlock_type: UnlockType;
+  unlock_requirement: UnlockRequirement;
+  sort_order: number;
+  created_at: string;
+  collection?: FrameCollection;
+  game_affinity?: GameAffinity;
+}
+
+export interface ProfileBadge {
+  id: string;
+  name: string;
+  description?: string;
+  badge_type: BadgeType;
+  position: BadgePosition;
+  rarity: ItemRarity;
+  css_styles: BadgeCssStyles;
+  is_available: boolean;
+  is_premium: boolean;
+  unlock_type: UnlockType;
+  unlock_requirement: UnlockRequirement;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface UserProfileCustomization {
+  user_id: string;
+  avatar_frame_id?: string;
+  modal_frame_id?: string;
+  avatar_badge_id?: string;
+  updated_at: string;
+  avatar_frame?: ProfileFrame;
+  modal_frame?: ProfileFrame;
+  avatar_badge?: ProfileBadge;
+}
+
+export interface UserUnlockedItem {
+  id: string;
+  user_id: string;
+  item_type: 'frame' | 'badge';
+  item_id: string;
+  unlocked_at: string;
+  unlock_source?: string;
+}
+
+export interface ProfileFrameWithUnlockStatus extends ProfileFrame {
+  is_unlocked: boolean;
+}
+
+export interface ProfileBadgeWithUnlockStatus extends ProfileBadge {
+  is_unlocked: boolean;
 }

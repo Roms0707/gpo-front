@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle, XCircle, Loader, Link as LinkIcon, Unlink } from 'lucide-react';
+import { CheckCircle, XCircle, Loader, Link as LinkIcon, Unlink, Copy, Info } from 'lucide-react';
 import { discordVerificationService } from '../../services/discordVerificationService';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
@@ -116,6 +116,21 @@ const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disab
     );
   }
 
+  const maskDiscordId = (id: string): string => {
+    if (id.length <= 6) return id;
+    return `${id.slice(0, 3)}...${id.slice(-3)}`;
+  };
+
+  const handleCopyDiscordId = async () => {
+    if (!discordInfo?.id) return;
+    try {
+      await navigator.clipboard.writeText(discordInfo.id);
+      toast.success(t('discord.oauth.userIdCopied'));
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
   if (isLinked && discordInfo) {
     return (
       <div className="space-y-4">
@@ -132,6 +147,34 @@ const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disab
             </div>
           </div>
         </div>
+
+        {discordInfo.id && (
+          <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {t('discord.oauth.userId')}:
+                </span>
+                <code className="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded">
+                  {maskDiscordId(discordInfo.id)}
+                </code>
+                <button
+                  onClick={handleCopyDiscordId}
+                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  title={t('discord.oauth.userId')}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="group relative">
+                <Info className="w-4 h-4 text-gray-400" />
+                <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                  {t('discord.oauth.userIdTooltip')}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleUnlink}

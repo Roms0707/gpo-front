@@ -9,6 +9,7 @@ interface DiscordConnectionRequiredProps {
   onClose?: () => void;
   onConnectClick?: () => void | Promise<void>;
   isConnecting?: boolean;
+  message?: string;
 }
 
 export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps> = ({
@@ -16,6 +17,7 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
   onClose,
   onConnectClick,
   isConnecting = false,
+  message,
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -101,7 +103,7 @@ export const DiscordConnectionRequired: React.FC<DiscordConnectionRequiredProps>
             className={`text-sm mb-3 ${!infoSectionTextColor ? 'text-accent-800 dark:text-accent-200' : ''}`}
             style={infoSectionTextColor ? { color: infoSectionTextColor } : undefined}
           >
-            {t('discord.required.description')}
+            {message || t('discord.required.description')}
           </p>
           <button
             onClick={handleConnect}

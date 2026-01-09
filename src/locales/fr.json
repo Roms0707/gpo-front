@@ -40,7 +40,10 @@
     "solo": "Solo",
     "add": "Ajouter",
     "saving": "Enregistrement...",
-    "minutes": "minutes"
+    "minutes": "minutes",
+    "sampleButton": "Bouton exemple",
+    "keepEditing": "Continuer l'édition",
+    "discardChanges": "Annuler les modifications"
   },
   "countries": {
     "BF": "Burkina Faso",
@@ -705,6 +708,7 @@
   "profile": {
     "title": "Profil",
     "editProfile": "Modifier le profil",
+    "preview": "Apercu",
     "myStats": "Mes stats de jeu",
     "friends": "Amis",
     "information": "Informations",
@@ -730,6 +734,10 @@
     "phoneNumber": "Numéro de téléphone",
     "dateOfBirth": "Date de naissance",
     "favoriteGame": "Jeu préféré",
+    "favoriteGameDescription": "Sélectionnez votre jeu préféré pour personnaliser le thème de votre profil",
+    "profileTheme": "Thème du profil",
+    "autoDetect": "Auto-détection",
+    "basedOnActivity": "Basé sur l'activité",
     "playStyle": "Style de jeu",
     "achievements": "Succès",
     "stats": "Statistiques",
@@ -875,7 +883,50 @@
     "accountValidatedSuccessGeneric": "Compte validé avec succès !",
     "errorValidatingAccount": "Erreur lors de la validation du compte",
     "profileUpdatedSuccess": "Profil mis à jour avec succès !",
-    "errorUpdatingProfile": "Erreur lors de la mise à jour du profil"
+    "errorUpdatingProfile": "Erreur lors de la mise à jour du profil",
+    "settingsTitle": "Parametres du compte",
+    "settingsDescription": "Gerez vos connexions de comptes de jeu et integrations",
+    "settingsSavedSuccess": "Parametres sauvegardes avec succes!",
+    "errorSavingSettings": "Erreur lors de la sauvegarde des parametres",
+    "saveSettings": "Enregistrer les parametres",
+    "tip": "Astuce",
+    "guidedTours": "Visites guidees",
+    "dragDropOrClick": "Glissez-deposez une image ou cliquez pour parcourir",
+    "socialConnections": "Connexions sociales",
+    "selectGameToCustomize": "Selectionnez un jeu pour personnaliser les couleurs de votre profil",
+    "themePreview": "Apercu du theme",
+    "tournamentInfoNote": "Ces informations peuvent etre requises pour certains tournois avec des restrictions geographiques ou des distributions de prix.",
+    "livePreview": "Apercu en direct",
+    "unsavedChanges": "Modifications non enregistrees",
+    "unsavedChangesTitle": "Abandonner les modifications ?",
+    "unsavedChangesDescription": "Vous avez des modifications non enregistrees. Etes-vous sur de vouloir quitter ?",
+    "previewAsOthersSeeYou": "Apercu tel que les autres vous voient",
+    "previewDescription": "Voyez exactement ce que les autres joueurs voient lorsqu'ils consultent votre profil",
+    "previewMode": "Mode Apercu",
+    "howOthersSeeYou": "C'est ainsi que les autres voient votre profil",
+    "selectYourFavoriteGame": "Selectionnez votre jeu favori",
+    "themeColors": "Couleurs du theme",
+    "noSocialLinksYet": "Aucun lien social ajoute pour le moment",
+    "sampleDataNotice": "Ceci represente des donnees d'exemple pour l'apercu. Vos statistiques reelles seront affichees ici.",
+    "customization": {
+      "title": "Personnalisation du profil",
+      "subtitle": "Personnalisez votre avatar et votre profil",
+      "avatarFrame": "Cadre d'avatar",
+      "modalFrame": "Cadre de fenetre",
+      "badges": "Badges",
+      "preview": "Apercu",
+      "noFrame": "Aucun cadre",
+      "none": "Aucun",
+      "achievementRequired": "Succes requis pour debloquer",
+      "premiumRequired": "Article premium",
+      "equipped": "Equipe",
+      "locked": "Verrouille",
+      "unlockAt": "Debloquer a {{xp}} XP",
+      "common": "Commun",
+      "rare": "Rare",
+      "epic": "Epique",
+      "legendary": "Legendaire"
+    }
   },
   "friends": {
     "title": "Amis",
@@ -890,6 +941,7 @@
     "noRequests": "Aucune demande d'ami en attente",
     "online": "En ligne",
     "offline": "Hors ligne",
+    "away": "Absent",
     "sendMessage": "Envoyer un message",
     "viewProfile": "Voir le profil",
     "pending": "En attente",
@@ -935,7 +987,18 @@
     "requestSentError": "Erreur lors de l'envoi de la demande d'ami",
     "requestCancelledSuccess": "Demande annulée",
     "requestCancelledError": "Erreur lors de l'annulation de la demande",
-    "removeFromFriends": "Retirer des amis"
+    "removeFromFriends": "Retirer des amis",
+    "friends": "Amis",
+    "sent": "Envoyées",
+    "add": "Ajouter",
+    "accept": "Accepter",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "daysAgo": "Il y a {{count}} jours",
+    "receivedTime": "Reçue {{time}}",
+    "allCaughtUp": "Tout est à jour !",
+    "noSentRequestsTitle": "Aucune demande envoyée",
+    "findFriends": "Trouver des amis"
   },
   "messages": {
     "title": "Messages",
@@ -1222,9 +1285,9 @@
   "communitiesPage": {
     "title": "Communautés",
     "subtitle": "Rejoignez des communautés thématiques, discutez avec d'autres joueurs et partagez votre passion pour les jeux vidéo.",
-    "search": "Rechercher...",
-    "myCommunities": "Mes communautés",
-    "publicCommunities": "Communautés publiques",
+    "search": "Rechercher des communautés...",
+    "myCommunities": "Mes Communautés",
+    "publicCommunities": "Découvrir",
     "loading": "Chargement...",
     "noCommunities": "Vous n'avez pas encore rejoint de communauté",
     "noCommunitiesDesc": "Rejoignez une communauté existante ou créez la vôtre pour commencer à discuter avec d'autres joueurs.",
@@ -1232,19 +1295,91 @@
     "signIn": "Se connecter",
     "noCommunitiesFound": "Aucune communauté trouvée pour cette recherche",
     "noPublicCommunities": "Aucune communauté publique disponible",
-    "by": "Par",
+    "by": "par",
     "members": "membres",
     "open": "Ouvrir",
     "join": "Rejoindre",
-    "joining": "Rejointe...",
+    "joining": "En cours...",
     "community": "Communauté",
     "private": "Privé",
+    "online": "en ligne",
+    "active": "Actif",
     "aboutTitle": "À propos des communautés",
     "aboutDesc": "Les communautés sont des espaces de discussion thématiques où vous pouvez échanger avec d'autres joueurs partageant les mêmes intérêts.",
     "openCommunitiesLabel": "Communautés ouvertes",
     "openCommunitiesDesc": "Accessibles à tous, n'importe qui peut rejoindre sans invitation.",
     "privateChannelsLabel": "Canaux privés",
     "privateChannelsDesc": "Accessibles uniquement sur invitation, pour des discussions plus restreintes.",
+    "hero": {
+      "badge": "Hub Gaming",
+      "createCommunity": "Créer une Communauté",
+      "totalCommunities": "Communautés",
+      "totalMembers": "Membres",
+      "onlineNow": "En Ligne"
+    },
+    "categories": {
+      "all": "Tout",
+      "gaming": "Gaming",
+      "casual": "Casual",
+      "tournament": "Tournoi",
+      "social": "Social"
+    },
+    "featured": {
+      "title": "Communautés en Vedette",
+      "trending": "Tendance",
+      "online": "en ligne"
+    },
+    "sort": {
+      "members": "Plus de Membres",
+      "activity": "Plus Actif",
+      "newest": "Plus Récent",
+      "alphabetical": "A-Z"
+    },
+    "roles": {
+      "admin": "Admin",
+      "moderator": "Mod"
+    },
+    "tips": {
+      "title": "Conseils & Info",
+      "public": {
+        "title": "Communautés Publiques",
+        "description": "Ouvertes à tous - rejoignez librement et discutez avec d'autres joueurs."
+      },
+      "private": {
+        "title": "Communautés Privées",
+        "description": "Espaces sur invitation pour des discussions exclusives et coordination d'équipe."
+      },
+      "guidelines": {
+        "title": "Règles de la Communauté",
+        "description": "Soyez respectueux, évitez le spam et contribuez à un environnement positif."
+      },
+      "featured": {
+        "title": "Être en Vedette",
+        "description": "Les communautés actives avec des membres engagés peuvent être mises en avant."
+      }
+    },
+    "empty": {
+      "noResults": {
+        "title": "Aucune Communauté Trouvée",
+        "description": "Essayez d'ajuster votre recherche ou créez une nouvelle communauté.",
+        "action": "Créer une Communauté"
+      },
+      "noPublic": {
+        "title": "Pas Encore de Communautés",
+        "description": "Soyez le premier à créer une communauté et à construire votre réseau gaming.",
+        "action": "Créer la Première"
+      },
+      "notJoined": {
+        "title": "Aucune Communauté Rejointe",
+        "description": "Explorez et rejoignez des communautés pour vous connecter avec d'autres joueurs.",
+        "action": "Parcourir"
+      },
+      "signIn": {
+        "title": "Connexion Requise",
+        "description": "Connectez-vous pour voir vos communautés et en rejoindre de nouvelles.",
+        "action": "Se Connecter"
+      }
+    },
     "errors": {
       "loadError": "Erreur lors du chargement des communautés",
       "mustBeLoggedIn": "Vous devez être connecté pour rejoindre une communauté",
@@ -2163,6 +2298,8 @@
     "questCompleted": "Quete terminee avec succes !",
     "questAbandoned": "Quete abandonnee",
     "questUpdateError": "Erreur lors de la mise a jour de la quete",
+    "noPlatformAvailable": "Aucune plateforme de suivi disponible",
+    "noPlatformAvailableDesc": "Le suivi des statistiques externes n'est pas encore disponible pour ce jeu. Vous pouvez quand meme utiliser les autres champs du profil.",
     "profileConnected": "Profil Connecte",
     "manualProfile": "Profil Manuel",
     "apiConnected": "API Connectee",
@@ -2800,13 +2937,17 @@
       "notLinked": "Discord non lié",
       "notLinkedHelp": "Liez votre compte Discord pour participer aux tournois qui nécessitent l'adhésion au serveur Discord.",
       "linkedHelp": "Votre compte Discord est connecté. Vous pouvez vérifier votre adhésion au serveur pour les tournois qui le requièrent.",
+      "linkHelp": "Liez votre compte Discord pour participer aux tournois qui nécessitent l'adhésion au serveur Discord.",
       "linkError": "Erreur lors de la liaison du compte Discord",
       "unlinkError": "Erreur lors de la suppression du lien Discord",
       "unlinkSuccess": "Compte Discord délié avec succès",
       "unlinkConfirm": "Êtes-vous sûr de vouloir délier votre compte Discord ?",
       "connecting": "Connexion en cours...",
       "unlinking": "Suppression du lien...",
-      "connectedSuccess": "Compte Discord connecté avec succès ! Vous pouvez maintenant continuer votre inscription."
+      "connectedSuccess": "Compte Discord connecté avec succès ! Vous pouvez maintenant continuer votre inscription.",
+      "userId": "ID Discord",
+      "userIdCopied": "ID Discord copié dans le presse-papiers",
+      "userIdTooltip": "Cet ID est utilisé pour vérifier votre appartenance aux serveurs Discord des tournois"
     },
     "status": {
       "loading": "Vérification du statut Discord...",
@@ -2830,7 +2971,11 @@
     },
     "registration": {
       "notLinked": "Veuillez connecter votre compte Discord pour vous inscrire à ce tournoi",
-      "notMember": "Vous devez être membre du serveur Discord du tournoi pour vous inscrire"
+      "notMember": "Vous devez être membre du serveur Discord du tournoi pour vous inscrire",
+      "noDiscordUserId": "Vous devez lier votre compte Discord pour vous inscrire a ce tournoi. Veuillez d'abord connecter Discord.",
+      "linkDiscordFirst": "Ce tournoi necessite une adhesion Discord. Veuillez connecter votre compte Discord pour continuer l'inscription.",
+      "verificationUnavailable": "La verification Discord est temporairement indisponible. Vous pouvez toujours vous inscrire, mais assurez-vous d'avoir rejoint le serveur Discord du tournoi.",
+      "verificationTemporarilyUnavailable": "La verification de l'adhesion Discord est temporairement indisponible en raison de problemes techniques. Vous pouvez continuer l'inscription, mais assurez-vous d'avoir rejoint le serveur Discord du tournoi."
     },
     "sidebar": {
       "title": "Vérification Discord"
@@ -2982,7 +3127,7 @@
     "welcomeSubtitle": "Configurons votre profil pour commencer",
     "chooseUsername": "Choisissez votre pseudo",
     "usernamePlaceholder": "Entrez votre pseudo",
-    "usernameHelp": "C'est ainsi que les autres joueurs vous verront. Choisissez un nom unique !",
+    "usernameHelp": "C'est ainsi que les autres joueurs vous verront. Choisissez un pseudo unique !",
     "usernameRequired": "Le pseudo est requis",
     "usernameCannotBeAutoGenerated": "Veuillez choisir un pseudo personnalise",
     "usernameTooShort": "Le pseudo doit contenir au moins 3 caracteres",
@@ -2998,7 +3143,10 @@
   "subscription": {
     "expiredTitle": "Votre abonnement a expire",
     "expiredMessage": "Vous n'avez plus acces a ce contenu car votre abonnement n'est plus actif. Reabonnez-vous pour acceder aux tournois, aux videos d'entrainement et aux jeux d'entrainement.",
-    "resubscribe": "Se reabonner"
+    "resubscribe": "Se reabonner",
+    "suspendedTitle": "Compte suspendu",
+    "suspendedMessage": "Veuillez recharger votre telephone avec du credit pour reactiver votre compte et reessayer.",
+    "tryAgain": "Reessayer"
   },
   "contactPage": {
     "title": "Contactez-nous",
@@ -3494,6 +3642,7 @@
     "guidedTours": {
       "title": "Visites Guidees",
       "description": "Rejouez la visite guidee pour n'importe quelle section de la plateforme.",
+      "pageDescription": "Explorez les fonctionnalites de la plateforme avec des visites guidees interactives. Rejouez n'importe quelle visite pour vous rafraichir la memoire.",
       "home": "Visite Page d'Accueil",
       "gameHub": "Visite Game Hub",
       "tournament": "Visite Tournoi",

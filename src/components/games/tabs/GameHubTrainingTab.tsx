@@ -113,13 +113,13 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 max-w-md bg-dark-300 rounded-lg animate-pulse" />
+        <div className="h-10 max-w-md bg-gray-200 dark:bg-dark-300 rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
             <div key={i} className="space-y-3">
-              <div className="h-40 bg-dark-300 rounded-xl animate-pulse" />
-              <div className="h-4 bg-dark-300 rounded animate-pulse" />
-              <div className="h-3 w-2/3 bg-dark-300 rounded animate-pulse" />
+              <div className="h-40 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+              <div className="h-4 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
+              <div className="h-3 w-2/3 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
             </div>
           ))}
         </div>
@@ -136,15 +136,15 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
           placeholder={t('gameHub.searchVideos')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-dark-200 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-600 transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-300 dark:focus:border-gray-600 transition-colors"
         />
       </div>
 
       {filteredVideos.length === 0 && !isLoadingMore ? (
-        <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-12 text-center">
-          <Play className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-          <h3 className="text-lg font-semibold text-white mb-2">{t('gameHub.noTrainingContent')}</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
+        <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+          <Play className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('gameHub.noTrainingContent')}</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             {t('gameHub.noTrainingContentDesc')}
           </p>
         </div>
@@ -157,7 +157,7 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
                 onClick={() => navigate(`/video/${video.id}`)}
                 className="group cursor-pointer"
               >
-                <div className="relative rounded-xl overflow-hidden mb-3 bg-dark-300">
+                <div className="relative rounded-xl overflow-hidden mb-3 bg-gray-200 dark:bg-dark-300">
                   <img
                     src={video.playlist_image_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=600'}
                     alt={video.title}
@@ -180,16 +180,16 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
                   )}
                 </div>
 
-                <h4 className="font-medium text-white line-clamp-2 group-hover:text-primary-400 transition-colors mb-1">
+                <h4 className="font-medium text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors mb-1">
                   {video.title}
                 </h4>
 
                 {video.description && (
-                  <p className="text-sm text-gray-400 line-clamp-1">{video.description}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{video.description}</p>
                 )}
 
                 {video.view_count !== undefined && (
-                  <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-1 mt-2 text-xs text-gray-400 dark:text-gray-500">
                     <Eye className="w-3 h-3" />
                     <span>{video.view_count.toLocaleString()} {t('gameHub.views')}</span>
                   </div>
@@ -201,7 +201,7 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
           {hasMore && !searchQuery && (
             <div ref={loaderRef} className="flex justify-center py-8">
               {isLoadingMore && (
-                <div className="flex items-center gap-3 text-gray-400">
+                <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
                   <Loader2 className="w-5 h-5 animate-spin" style={{ color: theme.colors.primary }} />
                   <span>{t('common.loading')}</span>
                 </div>

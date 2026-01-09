@@ -162,16 +162,16 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="h-10 flex-1 bg-dark-300 rounded-lg animate-pulse" />
+          <div className="h-10 flex-1 bg-gray-200 dark:bg-dark-300 rounded-lg animate-pulse" />
           <div className="flex gap-2">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-10 w-24 bg-dark-300 rounded-lg animate-pulse" />
+              <div key={i} className="h-10 w-24 bg-gray-200 dark:bg-dark-300 rounded-lg animate-pulse" />
             ))}
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-64 bg-dark-300 rounded-xl animate-pulse" />
+            <div key={i} className="h-64 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -188,7 +188,7 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
             placeholder={t('tournamentFilters.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-dark-200 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-600 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-300 dark:focus:border-gray-600 transition-colors"
           />
         </div>
 
@@ -202,7 +202,7 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
                 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all
                 ${statusFilter === filter.id
                   ? 'text-white'
-                  : 'text-gray-400 hover:text-white bg-dark-200 hover:bg-dark-300'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-dark-300'
                 }
               `}
               style={statusFilter === filter.id ? {
@@ -217,10 +217,10 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
       </div>
 
       {filteredTournaments.length === 0 ? (
-        <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-12 text-center">
-          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-          <h3 className="text-lg font-semibold text-white mb-2">{t('tournamentList.noTournamentsAvailable')}</h3>
-          <p className="text-gray-400 max-w-md mx-auto">
+        <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+          <Trophy className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('tournamentList.noTournamentsAvailable')}</h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
             {statusFilter !== 'all'
               ? t('tournamentList.noTournamentsStatus', { status: t(`tournamentList.status${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`) })
               : t('gameHub.noTournamentsAvailable')
@@ -245,7 +245,7 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
                 transitionDuration={250}
                 onClick={() => navigate(`/tournaments/${tournament.id}`)}
               >
-                <div className="group relative bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:border-gray-700">
+                <div className="group relative bg-white dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:border-gray-300 dark:hover:border-gray-700 shadow-sm dark:shadow-none">
                   <div className="relative h-36 overflow-hidden">
                     <img
                       src={tournament.header_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=600'}
@@ -274,11 +274,11 @@ const GameHubTournamentsTab: React.FC<GameHubTournamentsTabProps> = ({
                   </div>
 
                   <div className="p-4">
-                    <h3 className="font-bold text-white mb-2 line-clamp-1 group-hover:text-primary-400 transition-colors">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-2 line-clamp-1 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
                       {tournament.title}
                     </h3>
 
-                    <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-4 h-4" />
                         <span>{format(new Date(tournament.start_date), 'MMM d, yyyy')}</span>

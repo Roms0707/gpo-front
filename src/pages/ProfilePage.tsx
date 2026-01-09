@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { User, CreditCard as Edit, Users, Gamepad2, Globe } from 'lucide-react';
 import { useProfileData } from '../hooks/useProfileData';
 import { useProfileVisibility } from '../hooks/useProfileVisibility';
-import ProfileVisibilityControl from '../components/profile/ProfileVisibilityControl';
-import ProfileInformation from '../components/profile/ProfileInformation';
-import FriendsPreview from '../components/profile/FriendsPreview';
-import SupportTicketsPreview from '../components/profile/SupportTicketsPreview';
-import TournamentSection from '../components/profile/TournamentSection';
-import GamingAccountsSection from '../components/profile/GamingAccountsSection';
-import GamingStatsPreview from '../components/profile/GamingStatsPreview';
+import { usePlayerPrimaryGame, calculateXpFromActivity } from '../hooks/usePlayerPrimaryGame';
+import { supabase } from '../lib/supabase';
+import { Game } from '../types';
+import ProfileHeroBanner from '../components/profile/ProfileHeroBanner';
+import ActiveTournamentCard from '../components/profile/ActiveTournamentCard';
+import ProfileTournamentHub from '../components/profile/ProfileTournamentHub';
+import ProfileFriendsRow from '../components/profile/ProfileFriendsRow';
+import ProfileSidebar from '../components/profile/ProfileSidebar';
+import AchievementBadgesRow from '../components/profile/AchievementBadgesRow';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
-import LanguageSwitcher from '../components/ui/LanguageSwitcher';
-import GuidedToursSection from '../components/profile/GuidedToursSection';
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  category: string;
+  xp_reward: number;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  unlocked?: boolean;
+  unlocked_at?: string;
+}
 
 const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
@@ -26,8 +36,7 @@ const ProfilePage: React.FC = () => {
     gamingAccounts,
     isLoading,
     isLoadingFriends,
-    isLoadingTickets,
-    error
+    isLoadingTickets
   } = useProfileData();
 
   const {
@@ -38,98 +47,266 @@ const ProfilePage: React.FC = () => {
 
   const [isPlayerProfileModalOpen, setIsPlayerProfileModalOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [isLoadingAchievements, setIsLoadingAchievements] = useState(true);
+  const [playerRankings, setPlayerRankings] = useState<any[]>([]);
+  const [favoriteGame, setFavoriteGame] = useState<Game | null>(() => {
+    if (!user?.favorite_game_id) return null;
+    try {
+      const cached = localStorage.getItem('favorite_game_cache');
+      if (cached) {
+        const { gameId, gameName } = JSON.parse(cached);
+        if (gameId === user.favorite_game_id) {
+          return { id: gameId, name: gameName } as Game;
+        }
+      }
+    } catch {
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    const loadFavoriteGame = async () => {
+      if (!user?.favorite_game_id) {
+        setFavoriteGame(null);
+        localStorage.removeItem('favorite_game_cache');
+        return;
+      }
+
+      try {
+        const cached = localStorage.getItem('favorite_game_cache');
+        if (cached) {
+          const { gameId, gameName } = JSON.parse(cached);
+          if (gameId === user.favorite_game_id && !favoriteGame) {
+            setFavoriteGame({ id: gameId, name: gameName } as Game);
+          }
+        }
+
+        const { data } = await supabase
+          .from('games')
+          .select('*')
+          .eq('id', user.favorite_game_id)
+          .maybeSingle();
+
+        if (data) {
+          setFavoriteGame(data);
+          localStorage.setItem('favorite_game_cache', JSON.stringify({
+            gameId: data.id,
+            gameName: data.name
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading favorite game:', error);
+      }
+    };
+
+    loadFavoriteGame();
+  }, [user?.favorite_game_id]);
+
+  const { primaryGame, theme, gameActivities } = usePlayerPrimaryGame({
+    playerRankings: userProfile?.player_rankings || playerRankings,
+    registrations: registrations,
+    gamingAccounts: gamingAccounts,
+    favoriteGameId: user?.favorite_game_id || null,
+    favoriteGameName: favoriteGame?.name || null
+  });
+
+  useEffect(() => {
+    const loadAchievements = async () => {
+      if (!user?.id) return;
+
+      try {
+        setIsLoadingAchievements(true);
+
+        const { data: allAchievements } = await supabase
+          .from('achievements')
+          .select('*');
+
+        const { data: userAchievements } = await supabase
+          .from('user_achievements')
+          .select('achievement_id, unlocked_at')
+          .eq('user_id', user.id);
+
+        const unlockedMap = new Map(
+          userAchievements?.map((ua) => [ua.achievement_id, ua.unlocked_at]) || []
+        );
+
+        const mergedAchievements = (allAchievements || []).map((achievement) => ({
+          id: achievement.id,
+          name: achievement.name,
+          description: achievement.description,
+          icon: achievement.icon || 'trophy',
+          category: achievement.category || 'milestone',
+          xp_reward: achievement.xp_reward || 0,
+          rarity: (achievement.rarity || 'common') as Achievement['rarity'],
+          unlocked: unlockedMap.has(achievement.id),
+          unlocked_at: unlockedMap.get(achievement.id)
+        }));
+
+        setAchievements(mergedAchievements);
+      } catch (error) {
+        console.error('Error loading achievements:', error);
+      } finally {
+        setIsLoadingAchievements(false);
+      }
+    };
+
+    const loadPlayerRankings = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data } = await supabase
+          .from('player_rankings')
+          .select(`
+            id,
+            elo_rating,
+            wins,
+            losses,
+            rank_tier,
+            games:game_id (id, name)
+          `)
+          .eq('user_id', user.id);
+
+        setPlayerRankings(data || []);
+      } catch (error) {
+        console.error('Error loading player rankings:', error);
+      }
+    };
+
+    loadAchievements();
+    loadPlayerRankings();
+  }, [user?.id]);
+
+  const stats = useMemo(() => {
+    const validatedAccounts = gamingAccounts.filter((a) => a.is_validated).length;
+    const tournamentsPlayed = registrations.length;
+
+    let wins = 0;
+    let losses = 0;
+    playerRankings.forEach((ranking) => {
+      wins += ranking.wins || 0;
+      losses += ranking.losses || 0;
+    });
+    const totalGames = wins + losses;
+    const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+
+    return {
+      tournamentsPlayed,
+      winRate,
+      friendsCount: friends.length,
+      connectedAccounts: gamingAccounts.length,
+      validatedAccounts
+    };
+  }, [registrations, friends, gamingAccounts, playerRankings]);
+
+  const xp = useMemo(() => {
+    const tournamentsWon = 0;
+    return calculateXpFromActivity(
+      stats.tournamentsPlayed,
+      tournamentsWon,
+      stats.validatedAccounts,
+      user?.is_profile_completed || false,
+      stats.friendsCount
+    );
+  }, [stats, user?.is_profile_completed]);
+
+  const activeTournament = useMemo(() => {
+    const now = new Date();
+    return registrations.find((reg) => {
+      const tournament = reg.tournament;
+      if (!tournament) return false;
+      if (tournament.status === 'ongoing') return true;
+      const startDate = tournament.startDate ? new Date(tournament.startDate) : null;
+      const endDate = tournament.endDate ? new Date(tournament.endDate) : null;
+      return startDate && endDate && now >= startDate && now <= endDate;
+    }) || null;
+  }, [registrations]);
+
+  const upcomingTournament = useMemo(() => {
+    const now = new Date();
+    return registrations
+      .filter((reg) => {
+        const tournament = reg.tournament;
+        if (!tournament) return false;
+        const startDate = tournament.startDate ? new Date(tournament.startDate) : null;
+        return startDate && now < startDate;
+      })
+      .sort((a, b) => {
+        const dateA = a.tournament?.startDate ? new Date(a.tournament.startDate).getTime() : 0;
+        const dateB = b.tournament?.startDate ? new Date(b.tournament.startDate).getTime() : 0;
+        return dateA - dateB;
+      })[0] || null;
+  }, [registrations]);
+
+  const openTicketsCount = useMemo(() => {
+    return tickets.filter((t) => t.status === 'open' || t.status === 'pending').length;
+  }, [tickets]);
 
   return (
-    <div className="min-h-screen pt-28 pb-16">
+    <div
+      className="min-h-screen pt-28 pb-16"
+      style={{
+        background: `linear-gradient(180deg, ${theme.colors.primary}08 0%, transparent 30%)`
+      }}
+    >
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800">
-            <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-12 border-b border-gray-800">
-              <div className="flex flex-col items-center">
-                <div className="w-24 h-24 bg-gray-200 dark:bg-dark-200 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="h-12 w-12 text-gray-400" />
-                  )}
-                </div>
-                <h1 className="font-heading font-bold text-2xl mb-1">
-                  {user?.username}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400">{user?.email}</p>
+        <div className="max-w-7xl mx-auto">
+          <ProfileHeroBanner
+            user={user}
+            theme={theme}
+            primaryGameName={primaryGame}
+            xp={xp}
+            stats={stats}
+            onPreviewClick={() => {
+              if (user?.id) {
+                setSelectedPlayerId(user.id);
+                setIsPlayerProfileModalOpen(true);
+              }
+            }}
+          />
 
-                <div className="flex space-x-3 mt-4">
-                  <Link to="/profile/edit" className="inline-flex items-center text-sm bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg">
-                    <Edit className="h-4 w-4 mr-1" />
-                    {t('profile.editProfile')}
-                  </Link>
+          <div className="mt-6">
+            <AchievementBadgesRow
+              achievements={achievements}
+              theme={theme}
+              isLoading={isLoadingAchievements}
+            />
+          </div>
 
-                  <Link to="/profile/friends" className="inline-flex items-center text-sm bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg">
-                    <Users className="h-4 w-4 mr-1" />
-                    {t('profile.friends')}
-                    {friends.length > 0 && (
-                      <span className="ml-1 bg-primary-600 text-white text-xs px-1.5 rounded-full">
-                        {friends.length}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link to="/profile/gaming-stats" className="inline-flex items-center text-sm bg-secondary-600 hover:bg-secondary-700 text-white px-3 py-1.5 rounded-lg transition-colors">
-                    <Gamepad2 className="h-4 w-4 mr-1" />
-                    {t('profile.myStats')}
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6">
-              <ProfileVisibilityControl
-                isProfilePublic={isProfilePublic}
-                isUpdatingVisibility={isUpdatingVisibility}
-                onToggle={handleVisibilityToggle}
+          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <ActiveTournamentCard
+                activeTournament={activeTournament}
+                upcomingTournament={upcomingTournament}
+                theme={theme}
               />
 
-              {/* Language Settings Section */}
-              <div className="bg-gray-50 dark:bg-dark-200 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Globe className="h-5 w-5 text-primary-500" />
-                    <div>
-                      <h2 className="font-heading font-semibold text-lg text-gray-900 dark:text-white">
-                        {t('profile.languageSettings')}
-                      </h2>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                        {t('profile.selectLanguage')}
-                      </p>
-                    </div>
-                  </div>
-                  <LanguageSwitcher />
-                </div>
-              </div>
-
-              <GuidedToursSection />
-
-              <ProfileInformation user={user} />
-
-              <FriendsPreview friends={friends} isLoading={isLoadingFriends} />
-
-              <SupportTicketsPreview tickets={tickets} isLoading={isLoadingTickets} />
-
-              <TournamentSection
+              <ProfileTournamentHub
                 registrations={registrations}
+                theme={theme}
                 isLoading={isLoading}
-                error={error}
+              />
+
+              <ProfileFriendsRow
+                friends={friends}
+                theme={theme}
+                isLoading={isLoadingFriends}
+              />
+            </div>
+
+            <div className="lg:col-span-1">
+              <ProfileSidebar
+                gamingAccounts={gamingAccounts}
+                playerRankings={playerRankings}
+                theme={theme}
+                isProfilePublic={isProfilePublic}
+                isUpdatingVisibility={isUpdatingVisibility}
+                onVisibilityToggle={handleVisibilityToggle}
+                ticketCount={openTicketsCount}
+                isLoading={isLoading}
               />
             </div>
           </div>
-
-          <GamingAccountsSection
-            userProfile={userProfile}
-            gamingAccounts={gamingAccounts}
-            isLoading={isLoading}
-          />
-
-          <GamingStatsPreview />
         </div>
       </div>
 

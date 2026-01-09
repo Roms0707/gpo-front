@@ -86,6 +86,9 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const [isCheckingDiscord, setIsCheckingDiscord] = useState(false);
   const [showDiscordRequired, setShowDiscordRequired] = useState(false);
   const [isConnectingDiscord, setIsConnectingDiscord] = useState(false);
+  const [hasDiscordUserId, setHasDiscordUserId] = useState(false);
+  const [discordVerificationError, setDiscordVerificationError] = useState<string | null>(null);
+  const [isTechnicalDiscordError, setIsTechnicalDiscordError] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const isTeamTournament = tournament?.mode?.toLowerCase().includes('team');
@@ -116,6 +119,9 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
     if (!tournament?.id || !user?.id) return;
 
     setIsCheckingDiscord(true);
+    setDiscordVerificationError(null);
+    setIsTechnicalDiscordError(false);
+
     try {
       const { data, error } = await supabase
         .from('tournaments')
@@ -127,16 +133,57 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       setRequiresDiscord(hasDiscordUrl);
 
       if (hasDiscordUrl) {
+        const userHasDiscordId = !!user.discord_user_id;
+        setHasDiscordUserId(userHasDiscordId);
+
+        if (!userHasDiscordId) {
+          console.log('[RegistrationModal] User does not have discord_user_id - hard block required');
+          setIsDiscordLinked(false);
+          setIsDiscordMember(false);
+          return;
+        }
+
         const linked = await discordVerificationService.isDiscordLinked();
         setIsDiscordLinked(linked);
 
         if (linked) {
-          const status = await discordVerificationService.checkVerificationStatus(user.id, tournament.id);
-          setIsDiscordMember(status.isMember);
+          try {
+            const status = await discordVerificationService.checkVerificationStatus(user.id, tournament.id);
+            if (status.error) {
+              const errorLower = status.error.toLowerCase();
+              const isTechnical = errorLower.includes('rate limit') ||
+                                  errorLower.includes('timeout') ||
+                                  errorLower.includes('network') ||
+                                  errorLower.includes('unavailable') ||
+                                  errorLower.includes('500') ||
+                                  errorLower.includes('502') ||
+                                  errorLower.includes('503') ||
+                                  errorLower.includes('504');
+
+              if (isTechnical) {
+                console.warn('[RegistrationModal] Technical error during Discord verification (soft-fail):', status.error);
+                setIsTechnicalDiscordError(true);
+                setDiscordVerificationError(status.error);
+                setIsDiscordMember(false);
+              } else {
+                setIsDiscordMember(false);
+                setDiscordVerificationError(status.error);
+              }
+            } else {
+              setIsDiscordMember(status.isMember);
+            }
+          } catch (verificationError: any) {
+            console.error('[RegistrationModal] Discord verification threw exception (soft-fail):', verificationError);
+            setIsTechnicalDiscordError(true);
+            setDiscordVerificationError(verificationError?.message || 'Verification service unavailable');
+            setIsDiscordMember(false);
+          }
         }
       }
     } catch (error) {
       console.error('Error checking Discord requirements:', error);
+      setIsTechnicalDiscordError(true);
+      setDiscordVerificationError('Unable to check Discord requirements');
     } finally {
       setIsCheckingDiscord(false);
     }
@@ -1115,8 +1162,14 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       return;
     }
 
-    // Check Discord requirements
     if (requiresDiscord) {
+      if (!hasDiscordUserId) {
+        console.log('[RegistrationModal:handleConfirm] HARD BLOCK: User has no discord_user_id');
+        setShowDiscordRequired(true);
+        toast.error(t('discord.registration.noDiscordUserId'));
+        return;
+      }
+
       if (!isDiscordLinked) {
         console.log('[RegistrationModal:handleConfirm] Validation failed: Discord not linked');
         setShowDiscordRequired(true);
@@ -1124,10 +1177,22 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
         return;
       }
 
-      if (!isDiscordMember) {
+      if (!isDiscordMember && !isTechnicalDiscordError) {
         console.log('[RegistrationModal:handleConfirm] Validation failed: Not a Discord server member');
         toast.error(t('discord.registration.notMember'));
         return;
+      }
+
+      if (isTechnicalDiscordError) {
+        console.warn('[RegistrationModal:handleConfirm] SOFT FAIL: Technical error during Discord verification, proceeding with warning');
+        toast(t('discord.registration.verificationUnavailable'), {
+          icon: '!',
+          duration: 5000,
+          style: {
+            background: '#F59E0B',
+            color: '#FFF',
+          },
+        });
       }
     }
 
@@ -1393,13 +1458,32 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
             </div>
           </div>
 
-          {/* Discord Connection Required Banner */}
-          {requiresDiscord && !isDiscordLinked && (
+          {/* Discord Connection Required Banner - Hard Block for missing discord_user_id */}
+          {requiresDiscord && !hasDiscordUserId && (
+            <DiscordConnectionRequired
+              variant="banner"
+              onConnectClick={handleDiscordConnect}
+              isConnecting={isConnectingDiscord}
+              message={t('discord.registration.linkDiscordFirst')}
+            />
+          )}
+
+          {/* Discord Connection Required Banner - Discord not linked but has user id */}
+          {requiresDiscord && hasDiscordUserId && !isDiscordLinked && (
             <DiscordConnectionRequired
               variant="banner"
               onConnectClick={handleDiscordConnect}
               isConnecting={isConnectingDiscord}
             />
+          )}
+
+          {/* Technical Error Warning Banner */}
+          {requiresDiscord && hasDiscordUserId && isDiscordLinked && isTechnicalDiscordError && (
+            <div className="bg-warning-100 dark:bg-warning-500/20 border border-warning-300 dark:border-warning-600/30 p-4 rounded-lg">
+              <p className="text-warning-700 dark:text-warning-300 text-sm">
+                {t('discord.registration.verificationTemporarilyUnavailable')}
+              </p>
+            </div>
           )}
 
           {/* Team Name Input for Team Tournaments */}

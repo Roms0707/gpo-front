@@ -370,6 +370,7 @@ interface CheckSubscriptionResponse {
 export interface CheckSubscriptionResult {
   success: boolean;
   isSubscribed: boolean;
+  isSuspended: boolean;
   phoneNumber: string | null;
   userId: string | null;
   redirectUrl: string | null;
@@ -492,10 +493,13 @@ export const checkKlientoSubscription = async (
 
     const data: CheckSubscriptionResponse = await response.json();
 
+    const isSuspended = data.error === 'Account is suspended';
+
     if (!data.success) {
       return {
         success: false,
         isSubscribed: false,
+        isSuspended,
         phoneNumber: null,
         userId: null,
         redirectUrl: data.redirectUrl || null,
@@ -506,7 +510,8 @@ export const checkKlientoSubscription = async (
 
     return {
       success: true,
-      isSubscribed: data.isSubscribed || false,
+      isSubscribed: data.isSubscribed ?? false,
+      isSuspended,
       phoneNumber: data.phoneNumber || null,
       userId: data.userId || null,
       redirectUrl: data.redirectUrl || null,
@@ -518,6 +523,7 @@ export const checkKlientoSubscription = async (
     return {
       success: false,
       isSubscribed: false,
+      isSuspended: false,
       phoneNumber: null,
       userId: null,
       redirectUrl: null,

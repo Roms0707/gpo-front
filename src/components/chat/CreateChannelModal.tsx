@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, MessageSquare, Plus, Info, Globe, Lock, Upload, Image } from 'lucide-react';
+import { X, MessageSquare, Plus, Info, Globe, Lock, Upload, Image, Sparkles } from 'lucide-react';
 import { createChannel } from '../../services/channelService';
 import toast from 'react-hot-toast';
 import { supabase } from '../../lib/supabase';
+import { useAppConfig } from '../../contexts/AppConfigContext';
 
 interface CreateChannelModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   onChannelCreated
 }) => {
   const { t } = useTranslation();
+  const { primaryColor } = useAppConfig();
   const [channelName, setChannelName] = useState('');
   const [channelDescription, setChannelDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
@@ -25,6 +27,9 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isImageHovered, setIsImageHovered] = useState(false);
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isDescFocused, setIsDescFocused] = useState(false);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -169,51 +174,99 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-auto">
-      <div 
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-auto">
+      <div
         ref={modalRef}
-        className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md max-h-[90vh] flex flex-col border border-gray-200 dark:border-gray-800"
+        className="relative bg-white dark:bg-dark-100 rounded-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden"
+        style={{
+          boxShadow: `0 0 60px ${primaryColor}15, 0 25px 50px -12px rgba(0, 0, 0, 0.5)`,
+        }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{
+            border: `1px solid`,
+            borderImage: `linear-gradient(135deg, ${primaryColor}40, transparent 40%, transparent 60%, ${primaryColor}20) 1`,
+          }}
+        />
+        <div className="absolute inset-0 rounded-2xl border border-gray-700/30 pointer-events-none" />
+
+        <div
+          className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl pointer-events-none opacity-30"
+          style={{ background: `radial-gradient(circle, ${primaryColor}30 0%, transparent 70%)` }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-24 h-24 rounded-full blur-2xl pointer-events-none opacity-20"
+          style={{ background: `radial-gradient(circle, ${primaryColor}25 0%, transparent 70%)` }}
+        />
+
+        <div className="relative flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center">
-            <Plus className="text-primary-500 h-5 w-5 mr-2" />
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center mr-3"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}20 0%, ${primaryColor}10 100%)`,
+              }}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: primaryColor }} />
+            </div>
             <h2 className="font-heading font-semibold text-xl text-gray-900 dark:text-white">
               {t('chat.createNewChannel')}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
+            className="p-2 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors"
             aria-label={t('common.close')}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+        <form onSubmit={handleSubmit} className="relative flex flex-col flex-1">
           <div className="p-6 space-y-4 overflow-y-auto flex-1">
             <div>
-              {/* Channel Image */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('chat.communityImage')}
                 </label>
                 <div className="flex items-center">
-                  <div 
-                    className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-dark-300 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-gray-300 dark:hover:bg-dark-400 transition-colors border border-gray-300 dark:border-gray-700"
+                  <div
+                    className="relative w-20 h-20 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300"
                     onClick={() => fileInputRef.current?.click()}
+                    onMouseEnter={() => setIsImageHovered(true)}
+                    onMouseLeave={() => setIsImageHovered(false)}
+                    style={{
+                      background: imagePreview ? 'transparent' : `linear-gradient(135deg, ${primaryColor}10 0%, ${primaryColor}05 100%)`,
+                      border: `2px dashed ${isImageHovered ? primaryColor : '#4B5563'}`,
+                      boxShadow: isImageHovered ? `0 0 20px ${primaryColor}20` : 'none',
+                    }}
                   >
                     {imagePreview ? (
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <Image className="h-8 w-8 text-gray-500 dark:text-gray-500" />
+                      <Image
+                        className="h-8 w-8 transition-colors duration-300"
+                        style={{ color: isImageHovered ? primaryColor : '#6B7280' }}
+                      />
+                    )}
+                    {isImageHovered && !imagePreview && (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl"
+                      >
+                        <Upload className="h-5 w-5 text-white" />
+                      </div>
                     )}
                   </div>
                   <div className="ml-4 flex-1">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-300 dark:hover:bg-dark-400 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-colors flex items-center"
+                      className="px-3 py-2 rounded-lg text-sm transition-all duration-200 flex items-center"
+                      style={{
+                        backgroundColor: `${primaryColor}15`,
+                        color: primaryColor,
+                      }}
                     >
                       <Upload className="h-4 w-4 mr-2" />
                       {t('chat.chooseImage')}
@@ -236,7 +289,17 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 {t('chat.channelNameLabel')} <span className="text-error-500">*</span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-500">
+                <div
+                  className="absolute inset-0 rounded-lg transition-all duration-300 pointer-events-none"
+                  style={{
+                    opacity: isNameFocused ? 1 : 0,
+                    boxShadow: `0 0 0 2px ${primaryColor}40, 0 0 20px ${primaryColor}15`,
+                  }}
+                />
+                <span
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 transition-colors duration-200"
+                  style={{ color: isNameFocused ? primaryColor : '#6B7280' }}
+                >
                   #
                 </span>
                 <input
@@ -245,7 +308,9 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   id="channelName"
                   value={channelName}
                   onChange={(e) => setChannelName(e.target.value)}
-                  className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  onFocus={() => setIsNameFocused(true)}
+                  onBlur={() => setIsNameFocused(false)}
+                  className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg pl-8 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none transition-all duration-200"
                   placeholder={t('chat.channelNamePlaceholder')}
                   required
                 />
@@ -259,16 +324,33 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               <label htmlFor="channelDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('chat.descriptionLabel')}
               </label>
-              <textarea
-                id="channelDescription"
-                value={channelDescription}
-                onChange={(e) => setChannelDescription(e.target.value)}
-                className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 min-h-[80px]"
-                placeholder={t('chat.descriptionPlaceholder')}
-              />
+              <div className="relative">
+                <div
+                  className="absolute inset-0 rounded-lg transition-all duration-300 pointer-events-none"
+                  style={{
+                    opacity: isDescFocused ? 1 : 0,
+                    boxShadow: `0 0 0 2px ${primaryColor}40, 0 0 20px ${primaryColor}15`,
+                  }}
+                />
+                <textarea
+                  id="channelDescription"
+                  value={channelDescription}
+                  onChange={(e) => setChannelDescription(e.target.value)}
+                  onFocus={() => setIsDescFocused(true)}
+                  onBlur={() => setIsDescFocused(false)}
+                  className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2.5 text-gray-900 dark:text-white focus:outline-none transition-all duration-200 min-h-[80px] resize-none"
+                  placeholder={t('chat.descriptionPlaceholder')}
+                />
+              </div>
             </div>
             
-            <div className="space-y-3 bg-gray-100 dark:bg-dark-200 p-4 rounded-lg">
+            <div
+              className="space-y-3 p-4 rounded-xl border"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor}05 0%, transparent 100%)`,
+                borderColor: `${primaryColor}15`,
+              }}
+            >
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -276,16 +358,18 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   checked={isCommunity}
                   onChange={(e) => {
                     setIsCommunity(e.target.checked);
-                    // If it's a community, it can't be private
                     if (e.target.checked) {
                       setIsPrivate(false);
                     }
                   }}
-                  className="mr-2 rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-dark-300 text-primary-600 focus:ring-primary-500"
+                  className="mr-3 w-4 h-4 rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-dark-300 focus:ring-2 transition-colors"
+                  style={{
+                    accentColor: primaryColor,
+                  }}
                 />
                 <div>
-                  <label htmlFor="isCommunity" className="text-sm text-gray-700 dark:text-gray-300 flex items-center">
-                    <Globe className="h-4 w-4 mr-1 text-primary-400" />
+                  <label htmlFor="isCommunity" className="text-sm text-gray-700 dark:text-gray-300 flex items-center cursor-pointer">
+                    <Globe className="h-4 w-4 mr-1.5" style={{ color: primaryColor }} />
                     {t('chat.openCommunity')}
                   </label>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -293,7 +377,9 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   </p>
                 </div>
               </div>
-              
+
+              <div className="w-full h-px bg-gray-200 dark:bg-gray-700/50" />
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -301,17 +387,19 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   checked={isPrivate}
                   onChange={(e) => {
                     setIsPrivate(e.target.checked);
-                    // If it's private, it can't be a community
                     if (e.target.checked) {
                       setIsCommunity(false);
                     }
                   }}
                   disabled={isCommunity}
-                  className="mr-2 rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-dark-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50"
+                  className="mr-3 w-4 h-4 rounded border-gray-400 dark:border-gray-600 bg-white dark:bg-dark-300 focus:ring-2 disabled:opacity-50 transition-colors"
+                  style={{
+                    accentColor: primaryColor,
+                  }}
                 />
                 <div>
-                  <label htmlFor="isPrivate" className={`text-sm ${isPrivate ? 'text-gray-700 dark:text-gray-300' : isCommunity ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'} flex items-center`}>
-                    <Lock className="h-4 w-4 mr-1 text-primary-400" />
+                  <label htmlFor="isPrivate" className={`text-sm ${isPrivate ? 'text-gray-700 dark:text-gray-300' : isCommunity ? 'text-gray-500 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'} flex items-center cursor-pointer`}>
+                    <Lock className="h-4 w-4 mr-1.5" style={{ color: isCommunity ? '#6B7280' : primaryColor }} />
                     {t('chat.privateChannel')}
                   </label>
                   <p className={`text-xs ${isCommunity ? 'text-gray-500 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'} mt-0.5`}>
@@ -340,22 +428,26 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
             )}
           </div>
           
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end space-x-3 flex-shrink-0 bg-white dark:bg-dark-100">
+          <div className="relative p-4 border-t border-gray-200 dark:border-gray-700/50 flex justify-end space-x-3 flex-shrink-0 bg-white dark:bg-dark-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white rounded-lg transition-colors"
+              className="px-4 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white rounded-lg transition-all duration-200"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isCreating || isUploading || !channelName.trim()}
-              className="px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center"
+              className="px-5 py-2.5 text-white rounded-lg transition-all duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] disabled:hover:scale-100"
+              style={{
+                background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}CC 100%)`,
+                boxShadow: `0 0 20px ${primaryColor}30`,
+              }}
             >
               {isCreating || isUploading ? (
                 <>
-                  <span className="animate-spin mr-2">⟳</span>
+                  <span className="animate-spin mr-2">&#8635;</span>
                   {isUploading ? t('chat.uploading') : t('chat.creating')}
                 </>
               ) : (

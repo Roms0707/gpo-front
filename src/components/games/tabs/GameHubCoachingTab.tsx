@@ -184,10 +184,10 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="bg-dark-200/50 rounded-xl p-8">
+        <div className="bg-gray-50 dark:bg-dark-200/50 rounded-xl p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-dark-300 rounded-xl animate-pulse" />
+              <div key={i} className="h-32 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
             ))}
           </div>
         </div>
@@ -213,7 +213,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
 
   if (!user) {
     return (
-      <div className="relative bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="relative bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div
           className="absolute inset-0 opacity-5"
           style={{
@@ -226,13 +226,13 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             <div className="flex-1 text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                 <Lock className="w-5 h-5 text-gray-400" />
-                <span className="text-sm text-gray-400">{t('gameHub.coaching.loginRequired')}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{t('gameHub.coaching.loginRequired')}</span>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-3">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {t('coaching.unlockAICoaching')}
               </h3>
-              <p className="text-gray-400 mb-6 max-w-lg">
+              <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-lg">
                 {t('coaching.unlockDesc', { gameName })}
               </p>
 
@@ -250,18 +250,18 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             </div>
 
             <div className="flex-shrink-0 w-full lg:w-80">
-              <div className="bg-dark-300/50 rounded-xl p-4 border border-gray-700">
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
+              <div className="bg-gray-100 dark:bg-dark-300/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
                   {t('gameHub.coaching.previewInsights')}
                 </p>
                 <div className="space-y-3 opacity-60 blur-[2px]">
                   {previewInsights.map((insight, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">{insight.label}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{insight.label}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-white">{insight.value}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{insight.value}</span>
                         {insight.trend && (
-                          <span className="text-xs text-success-400">{insight.trend}</span>
+                          <span className="text-xs text-success-500 dark:text-success-400">{insight.trend}</span>
                         )}
                       </div>
                     </div>
@@ -290,7 +290,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
     }
 
     return (
-      <div id="walkthrough-gamehub-coaching" className="relative bg-dark-200/50 border border-gray-800 rounded-xl overflow-hidden">
+      <div id="walkthrough-gamehub-coaching" className="relative bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden">
         <div
           className="absolute inset-0 opacity-5"
           style={{
@@ -303,26 +303,26 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             <div className="flex-1 text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-2 mb-4">
                 <Brain className="w-5 h-5" style={{ color: theme.colors.primary }} />
-                <span className="text-sm text-gray-400">{t('coaching.setupRequired')}</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{t('coaching.setupRequired')}</span>
               </div>
 
-              <h3 className="text-2xl font-bold text-white mb-3">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
                 {t('coaching.getStarted')}
               </h3>
-              <p className="text-gray-400 mb-6 max-w-lg">
+              <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-lg">
                 {t('coaching.getStartedDesc', { gameName })}
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Brain className="w-4 h-4" style={{ color: theme.colors.primary }} />
                   {t('coaching.feature.aiAnalysis')}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <BarChart3 className="w-4 h-4" style={{ color: theme.colors.primary }} />
                   {t('coaching.feature.personalizedTips')}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Target className="w-4 h-4" style={{ color: theme.colors.primary }} />
                   {t('coaching.feature.practiceQuests')}
                 </div>
@@ -343,7 +343,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
                 {hasApiSupport && (
                   <button
                     onClick={() => navigate('/profile/edit')}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold border border-gray-700 text-white hover:bg-dark-300 transition-all duration-300"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-dark-300 transition-all duration-300"
                   >
                     <Link2 className="w-5 h-5" />
                     {t('gameHub.coaching.connectAccount')}
@@ -353,18 +353,18 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             </div>
 
             <div className="flex-shrink-0 w-full lg:w-80">
-              <div className="bg-dark-300/50 rounded-xl p-4 border border-gray-700">
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-3">
+              <div className="bg-gray-100 dark:bg-dark-300/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">
                   {t('gameHub.coaching.previewInsights')}
                 </p>
                 <div className="space-y-3 opacity-60 blur-[2px]">
                   {previewInsights.map((insight, index) => (
                     <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">{insight.label}</span>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">{insight.label}</span>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-white">{insight.value}</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{insight.value}</span>
                         {insight.trend && (
-                          <span className="text-xs text-success-400">{insight.trend}</span>
+                          <span className="text-xs text-success-500 dark:text-success-400">{insight.trend}</span>
                         )}
                       </div>
                     </div>
@@ -395,7 +395,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
               </div>
             </div>
           ) : hasManualProfile && manualProfile ? (
-            <div className="flex items-center gap-3 p-3 bg-dark-300/50 border border-gray-700 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-gray-100 dark:bg-dark-300/50 border border-gray-200 dark:border-gray-700 rounded-xl">
               <div
                 className="p-2 rounded-full"
                 style={{ backgroundColor: `${theme.colors.primary}20` }}
@@ -403,16 +403,16 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
                 <User className="w-4 h-4" style={{ color: theme.colors.primary }} />
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-400">
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {t('coaching.manualProfile')}
                 </p>
-                <p className="text-white font-bold text-sm">
+                <p className="text-gray-900 dark:text-white font-bold text-sm">
                   {manualProfile.self_reported_rank || t('coaching.profileSet')}
                 </p>
               </div>
               <button
                 onClick={() => setShowProfileSetup(true)}
-                className="p-1.5 rounded-lg hover:bg-dark-300 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors"
                 title={t('coaching.editProfile')}
               >
                 <Edit3 className="w-4 h-4 text-gray-400" />
@@ -426,7 +426,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             <button
               onClick={handleRefreshAccount}
               disabled={isRefreshing}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-dark-300 disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-dark-300 disabled:opacity-50"
               style={{ color: theme.colors.primary }}
               title={t('gameHub.coaching.refreshAccount')}
             >
@@ -436,7 +436,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
           )}
           <button
             onClick={() => setShowSidebar(!showSidebar)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-dark-300"
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-dark-300"
             style={{ color: theme.colors.primary }}
           >
             <History className="w-4 h-4" />
@@ -476,7 +476,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             <div className="w-72 flex-shrink-0 relative">
               <button
                 onClick={() => setShowSidebar(false)}
-                className="absolute -right-2 -top-2 z-10 p-1 bg-dark-300 rounded-full border border-gray-700 lg:hidden"
+                className="absolute -right-2 -top-2 z-10 p-1 bg-white dark:bg-dark-300 rounded-full border border-gray-200 dark:border-gray-700 lg:hidden"
               >
                 <X className="w-4 h-4 text-gray-400" />
               </button>
@@ -535,8 +535,8 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
             />
 
             {hasManualProfile && manualProfile?.external_stats_url && (
-              <div className="bg-dark-200/50 border border-gray-800 rounded-xl p-4">
-                <h3 className="font-semibold text-white text-sm mb-2">{t('coaching.externalStats')}</h3>
+              <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-4">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm mb-2">{t('coaching.externalStats')}</h3>
                 <a
                   href={manualProfile.external_stats_url}
                   target="_blank"
