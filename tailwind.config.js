@@ -142,6 +142,11 @@ export default {
       animation: {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'bounce-slow': 'bounce 2s infinite',
+        'border-beam': 'border-beam var(--duration, 4s) linear infinite',
+        'border-beam-fast': 'border-beam 1.5s linear infinite',
+        'border-beam-slow': 'border-beam 5s linear infinite',
+        'border-glow-pulse': 'border-glow-pulse 2s ease-in-out infinite',
+        'border-shimmer': 'border-shimmer 3s linear infinite',
         'hextech-pulse': 'hextech-pulse 2.5s ease-in-out infinite',
         'radianite-flow': 'radianite-flow 3s linear infinite',
         'ember-dance': 'ember-dance 1.5s ease-in-out infinite',
@@ -167,6 +172,18 @@ export default {
         'diamond-sparkle': 'diamond-sparkle 2s ease-in-out infinite',
       },
       keyframes: {
+        'border-beam': {
+          '0%': { 'offset-distance': '0%' },
+          '100%': { 'offset-distance': '100%' }
+        },
+        'border-glow-pulse': {
+          '0%, 100%': { opacity: '0.5', transform: 'scale(1)' },
+          '50%': { opacity: '1', transform: 'scale(1.02)' }
+        },
+        'border-shimmer': {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' }
+        },
         'hextech-pulse': {
           '0%, 100%': {
             boxShadow: '0 0 15px #00d4ff, 0 0 30px rgba(0, 212, 255, 0.3), inset 0 0 10px rgba(0, 212, 255, 0.1)',

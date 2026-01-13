@@ -241,11 +241,9 @@ export const discordVerificationService = {
         teamId,
       });
 
-      // Construct the redirect URL to return to the tournament page
       const baseUrl = window.location.origin;
       const tournamentUrl = `${baseUrl}/tournaments/${tournamentId}`;
 
-      // Add query parameters to indicate OAuth return and reopen modal
       const urlParams = new URLSearchParams();
       urlParams.set('fromDiscordOAuth', 'true');
       urlParams.set('openModal', 'true');
@@ -257,7 +255,6 @@ export const discordVerificationService = {
 
       console.log('[DiscordVerificationService] Redirect URL:', redirectTo);
 
-      // Initiate OAuth with linkIdentity for existing users
       const { data, error } = await supabase.auth.linkIdentity({
         provider: 'discord',
         options: {
@@ -276,7 +273,6 @@ export const discordVerificationService = {
 
       if (data?.url) {
         console.log('[DiscordVerificationService] Redirecting to Discord OAuth URL');
-        // Redirect to Discord OAuth
         window.location.href = data.url;
         return { success: true };
       }
@@ -287,6 +283,272 @@ export const discordVerificationService = {
       };
     } catch (err) {
       console.error('[DiscordVerificationService] Unexpected error initiating Discord OAuth:', err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      };
+    }
+  },
+
+  /**
+   * Initiate Discord OAuth for Kliento users via popup window
+   * This method opens a popup for Discord authorization without disrupting the Kliento session
+   */
+  async initiateKlientoDiscordOAuth(
+    userId: string
+  ): Promise<{ success: boolean; error?: string; discord_user?: { id: string; username: string; handle: string } }> {
+    return new Promise(async (resolve) => {
+      try {
+        console.log('[DiscordVerificationService] Initiating Kliento Discord OAuth for user:', userId);
+
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        const clientIdResponse = await fetch(`${supabaseUrl}/functions/v1/get-discord-client-id`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'apikey': supabaseKey,
+          },
+        });
+
+        const clientIdResult = await clientIdResponse.json();
+
+        if (!clientIdResult.success || !clientIdResult.client_id) {
+          console.error('[DiscordVerificationService] Failed to get Discord client_id');
+          resolve({
+            success: false,
+            error: clientIdResult.error || 'Failed to get Discord configuration',
+          });
+          return;
+        }
+
+        const clientId = clientIdResult.client_id;
+        const redirectUri = `${supabaseUrl}/functions/v1/discord-oauth-callback`;
+        const state = encodeURIComponent(JSON.stringify({
+          user_id: userId,
+          timestamp: Date.now(),
+          origin_url: window.location.origin,
+        }));
+
+        const discordOAuthUrl = new URL('https://discord.com/oauth2/authorize');
+        discordOAuthUrl.searchParams.set('client_id', clientId);
+        discordOAuthUrl.searchParams.set('redirect_uri', redirectUri);
+        discordOAuthUrl.searchParams.set('response_type', 'code');
+        discordOAuthUrl.searchParams.set('scope', 'identify');
+        discordOAuthUrl.searchParams.set('state', state);
+
+        const width = 500;
+        const height = 700;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+
+        const popup = window.open(
+          discordOAuthUrl.toString(),
+          'discord_oauth_popup',
+          `width=${width},height=${height},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no`
+        );
+
+        if (!popup) {
+          console.error('[DiscordVerificationService] Failed to open popup - likely blocked');
+          resolve({
+            success: false,
+            error: 'Popup blocked. Please allow popups and try again.',
+          });
+          return;
+        }
+
+        const handleMessage = (event: MessageEvent) => {
+          const supabaseOrigin = new URL(import.meta.env.VITE_SUPABASE_URL).origin;
+          const allowedOrigins = [window.location.origin, supabaseOrigin];
+
+          if (!allowedOrigins.includes(event.origin)) {
+            console.log('[DiscordVerificationService] Ignoring message from unknown origin:', event.origin);
+            return;
+          }
+          if (event.data?.type !== 'DISCORD_OAUTH_RESULT') return;
+
+          console.log('[DiscordVerificationService] Received OAuth result:', event.data);
+
+          window.removeEventListener('message', handleMessage);
+          clearInterval(popupCheckInterval);
+
+          if (event.data.success) {
+            resolve({
+              success: true,
+              discord_user: event.data.discord_user,
+            });
+          } else {
+            resolve({
+              success: false,
+              error: event.data.error || 'OAuth failed',
+            });
+          }
+        };
+
+        window.addEventListener('message', handleMessage);
+
+        const popupCheckInterval = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(popupCheckInterval);
+            window.removeEventListener('message', handleMessage);
+            resolve({
+              success: false,
+              error: 'Authorization window was closed',
+            });
+          }
+        }, 500);
+
+        setTimeout(() => {
+          clearInterval(popupCheckInterval);
+          window.removeEventListener('message', handleMessage);
+          if (!popup.closed) {
+            popup.close();
+          }
+          resolve({
+            success: false,
+            error: 'Authorization timed out',
+          });
+        }, 300000);
+      } catch (err) {
+        console.error('[DiscordVerificationService] Unexpected error in Kliento Discord OAuth:', err);
+        resolve({
+          success: false,
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    });
+  },
+
+  /**
+   * Check if user is authenticated via Kliento (non-Supabase auth)
+   */
+  isKlientoUser(user?: { auth_provider?: string } | null): boolean {
+    if (user?.auth_provider === 'kliento') {
+      return true;
+    }
+
+    try {
+      const klientoUserJson = sessionStorage.getItem('kliento_user');
+      if (klientoUserJson) {
+        const klientoUser = JSON.parse(klientoUserJson);
+        return klientoUser?.auth_provider === 'kliento';
+      }
+    } catch {
+      // Ignore parse errors
+    }
+
+    return false;
+  },
+
+  /**
+   * Record when the Discord join modal was shown to start the 24-hour countdown
+   */
+  async recordDiscordJoinShown(
+    tournamentId: string,
+    userId: string
+  ): Promise<{ success: boolean; deadlineAt?: Date; error?: string }> {
+    try {
+      const now = new Date();
+      const deadlineAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      const { data: existingReg } = await supabase
+        .from('tournament_registrations')
+        .select('discord_join_shown_at')
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existingReg?.discord_join_shown_at) {
+        const existingDeadline = new Date(
+          new Date(existingReg.discord_join_shown_at).getTime() + 24 * 60 * 60 * 1000
+        );
+        return { success: true, deadlineAt: existingDeadline };
+      }
+
+      const { error } = await supabase
+        .from('tournament_registrations')
+        .update({ discord_join_shown_at: now.toISOString() })
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error recording discord join shown:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, deadlineAt };
+    } catch (err) {
+      console.error('Unexpected error recording discord join shown:', err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'Unknown error',
+      };
+    }
+  },
+
+  /**
+   * Get Discord join deadline status for a registration
+   */
+  async getDiscordJoinDeadline(
+    tournamentId: string,
+    userId: string
+  ): Promise<{ hasDeadline: boolean; deadlineAt?: Date; discordJoinShownAt?: string }> {
+    try {
+      const { data, error } = await supabase
+        .from('tournament_registrations')
+        .select('discord_join_shown_at')
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error || !data?.discord_join_shown_at) {
+        return { hasDeadline: false };
+      }
+
+      const deadlineAt = new Date(
+        new Date(data.discord_join_shown_at).getTime() + 24 * 60 * 60 * 1000
+      );
+
+      return {
+        hasDeadline: true,
+        deadlineAt,
+        discordJoinShownAt: data.discord_join_shown_at,
+      };
+    } catch (err) {
+      console.error('Error getting discord join deadline:', err);
+      return { hasDeadline: false };
+    }
+  },
+
+  /**
+   * Unlink Discord account from user profile
+   * Removes discord_user_id and discord_handle from the users table
+   */
+  async unlinkDiscordAccount(userId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      console.log('[DiscordVerificationService] Unlinking Discord account for user:', userId);
+
+      const { error } = await supabase
+        .from('users')
+        .update({
+          discord_user_id: null,
+          discord_handle: null,
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('[DiscordVerificationService] Error unlinking Discord account:', error);
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+
+      console.log('[DiscordVerificationService] Discord account unlinked successfully');
+      return { success: true };
+    } catch (err) {
+      console.error('[DiscordVerificationService] Unexpected error unlinking Discord account:', err);
       return {
         success: false,
         error: err instanceof Error ? err.message : 'Unknown error',

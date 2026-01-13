@@ -15,7 +15,7 @@ const TransactionWaitingPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { loginTransactionUser, user } = useAuthStore();
-  const { brandName, accentColor } = useAppConfig();
+  const { brandName, accentColor, configId } = useAppConfig();
 
   const [status, setStatus] = useState<VerificationStatus>('verifying');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -27,7 +27,6 @@ const TransactionWaitingPage: React.FC = () => {
   const isPollingRef = useRef(false);
 
   const operationId = searchParams.get('operationId');
-  const offerId = searchParams.get('offerId');
 
   useEffect(() => {
     if (user) {
@@ -48,10 +47,10 @@ const TransactionWaitingPage: React.FC = () => {
   }, []);
 
   const verifyTransaction = useCallback(async () => {
-    if (!operationId || !offerId) return;
+    if (!operationId || !configId) return;
 
     try {
-      const result = await loginTransactionUser(operationId, offerId);
+      const result = await loginTransactionUser(operationId, configId);
 
       if (result.isPending) {
         const elapsed = Date.now() - startTimeRef.current;
@@ -76,7 +75,7 @@ const TransactionWaitingPage: React.FC = () => {
       setStatus('error');
       setErrorMessage(err instanceof Error ? err.message : 'Unknown error');
     }
-  }, [operationId, offerId, loginTransactionUser, navigate, clearIntervals]);
+  }, [operationId, configId, loginTransactionUser, navigate, clearIntervals]);
 
   const startPolling = useCallback(() => {
     if (isPollingRef.current) return;
@@ -103,7 +102,7 @@ const TransactionWaitingPage: React.FC = () => {
   }, [verifyTransaction, clearIntervals]);
 
   useEffect(() => {
-    if (!operationId || !offerId) {
+    if (!operationId || !configId) {
       setStatus('missing_params');
       return;
     }
@@ -113,7 +112,7 @@ const TransactionWaitingPage: React.FC = () => {
     return () => {
       clearIntervals();
     };
-  }, [operationId, offerId, startPolling, clearIntervals]);
+  }, [operationId, configId, startPolling, clearIntervals]);
 
   const handleRetry = () => {
     startPolling();

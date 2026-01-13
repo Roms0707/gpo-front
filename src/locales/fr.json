@@ -458,7 +458,27 @@
     "dataError": "Erreur de données - veuillez réessayer",
     "registrationError": "Erreur lors de l'inscription",
     "enterPhoneNumber": "Entrez votre numéro de téléphone",
-    "errorConnectingDiscord": "Erreur lors de la connexion du compte Discord. Veuillez réessayer."
+    "errorConnectingDiscord": "Erreur lors de la connexion du compte Discord. Veuillez réessayer.",
+    "discordConnected": "Compte Discord connecte : {{username}}",
+    "discordAccountLinked": "Compte Discord lie",
+    "unlinkDiscord": "Dissocier",
+    "discordUnlinked": "Compte Discord dissocie avec succes",
+    "errorUnlinkingDiscord": "Erreur lors de la dissociation du compte Discord. Veuillez reessayer."
+  },
+  "discordCallback": {
+    "processing": "Connexion Discord",
+    "processingDescription": "Veuillez patienter pendant que nous lions votre compte Discord...",
+    "success": "Discord connecte !",
+    "successDescription": "Votre compte Discord a ete lie avec succes.",
+    "windowClosing": "Cette fenetre se fermera automatiquement...",
+    "error": "Echec de la connexion",
+    "errorDescription": "Nous n'avons pas pu lier votre compte Discord.",
+    "missingParams": "Parametres d'autorisation manquants",
+    "invalidState": "Etat d'autorisation invalide",
+    "missingUserId": "Identification utilisateur manquante",
+    "stateExpired": "La demande d'autorisation a expire",
+    "linkFailed": "Echec de la liaison du compte Discord",
+    "unknownError": "Une erreur inattendue s'est produite"
   },
   "teamInvite": {
     "title": "Inviter des joueurs",
@@ -573,9 +593,35 @@
     "congratulations": "Félicitations !",
     "nowRegistered": "Vous êtes maintenant inscrit au tournoi <strong>{{tournamentTitle}}</strong>.",
     "joinDiscordMessage": "Rejoins le discord pour être listé parmi les participants au tournoi",
-    "joinDiscordButton": "Rejoindre le Discord",
+    "joinDiscordButton": "Rejoindre le serveur Discord",
     "tipTitle": "Astuce :",
-    "tipMessage": "Assurez-vous de lire les règles du serveur et de vous présenter dans le canal approprié."
+    "tipMessage": "Assurez-vous de lire les règles du serveur et de vous présenter dans le canal approprié.",
+    "mandatory": {
+      "title": "Action requise",
+      "disqualificationWarning": "AVERTISSEMENT DE DISQUALIFICATION",
+      "warning": "Vous devez rejoindre notre serveur Discord dans les 24 heures",
+      "warningDetails": "Le non-respect de ce délai entraînera une disqualification automatique du tournoi.",
+      "willBeDisqualified": "Vous SEREZ disqualifié de ce tournoi si vous ne rejoignez pas le serveur Discord avant la date limite",
+      "timeRemaining": "Temps restant pour rejoindre",
+      "hours": "Heures",
+      "minutes": "Minutes",
+      "seconds": "Secondes",
+      "expired": "Le délai est dépassé. Vous risquez d'être disqualifié.",
+      "remindLater": "J'ai compris, me rappeler plus tard",
+      "tipMessage": "Après avoir rejoint le serveur, cliquez sur 'Vérifier maintenant' sur la page du tournoi pour confirmer votre adhésion.",
+      "acknowledgeCheckbox": "Je comprends que je serai disqualifié si je ne rejoins pas le serveur Discord avant la date limite",
+      "mustJoinFirst": "Veuillez d'abord cliquer sur 'Rejoindre le serveur Discord'",
+      "mustAcknowledge": "Veuillez cocher la case de confirmation",
+      "joinedButton": "Discord ouvert - Rejoignez le serveur"
+    }
+  },
+  "discordBanner": {
+    "title": "Rejoindre le serveur Discord requis",
+    "description": "Vous devez rejoindre le serveur Discord du tournoi pour participer.",
+    "expired": "Le délai est dépassé. Vous risquez d'être disqualifié de ce tournoi.",
+    "timeRemaining": "{{hours}}h {{minutes}}m restantes",
+    "joinButton": "Rejoindre Discord",
+    "verifyButton": "Vérifier maintenant"
   },
   "joinTournament": {
     "title": "Rejoindre le tournoi",
@@ -1546,6 +1592,8 @@
     "rejectedTooltip": "Votre inscription a été refusée par les organisateurs",
     "refusedTooltip": "Votre inscription a été refusée par les organisateurs",
     "backupTooltip": "Vous êtes sur liste d'attente. Vous serez notifié si une place se libère",
+    "disqualified": "Disqualifié",
+    "disqualifiedTooltip": "Vous avez été disqualifié de ce tournoi",
     "unknownTooltip": "Statut inconnu"
   },
   "dates": {
@@ -2802,6 +2850,7 @@
       "closed": "Fermées",
       "openingSoon": "Bientôt ouvertes",
       "open": "Ouvertes",
+      "registered": "Inscrit",
       "confirmedRegistration": "Inscription confirmée",
       "joinedRegistration": "Vous êtes inscrit !",
       "joinTournament": "Rejoignez le tournoi",

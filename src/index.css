@@ -1942,3 +1942,34 @@ a:focus, button:focus, [tabindex="0"]:focus {
 .rarity-glow-legendary {
   box-shadow: 0 0 25px rgba(249, 115, 22, 0.6), 0 0 50px rgba(249, 115, 22, 0.3);
 }
+
+/* Customization Card Border Beam Effects */
+.customization-card-border {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.customization-card-border svg {
+  will-change: stroke-dashoffset;
+}
+
+.customization-card-border-glow {
+  will-change: opacity, box-shadow;
+}
+
+/* GPU acceleration for animated borders */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Reduced motion for customization borders */
+@media (prefers-reduced-motion: reduce) {
+  .customization-card-border,
+  .customization-card-border svg,
+  .customization-card-border-glow {
+    animation: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+}

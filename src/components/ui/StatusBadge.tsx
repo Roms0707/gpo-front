@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Clock, CheckCircle, XCircle, AlertTriangle, Users } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, AlertTriangle, Users, Ban } from 'lucide-react';
 
 interface StatusBadgeProps {
   status: string;
@@ -53,6 +53,13 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status, showTooltip = false }
           label: t('status.backup'),
           color: 'bg-blue-500',
           tooltip: t('status.backupTooltip')
+        };
+      case 'disqualified':
+        return {
+          icon: Ban,
+          label: t('status.disqualified'),
+          color: 'bg-red-600',
+          tooltip: t('status.disqualifiedTooltip')
         };
       default:
         return {

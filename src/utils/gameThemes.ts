@@ -352,6 +352,32 @@ const gameThemes: Record<string, GameTheme> = {
     borderStyle: 'solid',
     animation: 'flash',
   },
+  fcmobile: {
+    shape: 'stadium',
+    icon: Goal,
+    colors: {
+      primary: '#2E7D32',
+      secondary: '#4CAF50',
+      glow: 'rgba(46, 125, 50, 0.5)',
+      text: '#FFFFFF',
+      border: '#FFFFFF',
+    },
+    borderStyle: 'double',
+    animation: 'kick',
+  },
+  eafcmobile: {
+    shape: 'stadium',
+    icon: Goal,
+    colors: {
+      primary: '#2E7D32',
+      secondary: '#4CAF50',
+      glow: 'rgba(46, 125, 50, 0.5)',
+      text: '#FFFFFF',
+      border: '#FFFFFF',
+    },
+    borderStyle: 'double',
+    animation: 'kick',
+  },
 };
 
 const defaultTheme: GameTheme = {

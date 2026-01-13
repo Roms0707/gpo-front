@@ -9,35 +9,25 @@ const corsHeaders = {
 
 interface TransactionVerifyRequest {
   billing_transaction_id: string;
-  bizoffer_id: string;
+  project_config_id: string;
 }
 
 interface TransactionVerifyResponse {
   success: boolean;
   user_id?: string;
-  msisdn?: string;
-  account_info?: {
-    user_id: string;
-    msisdn?: string;
-    email?: string;
-    country?: string;
-    subscribed?: boolean;
-  };
   error?: string;
   status?: string;
 }
 
-interface KlientoTransactionResponse {
-  code: number;
-  error: number;
-  data?: {
-    user_id: string;
-    msisdn?: string;
-    email?: string;
-    country?: string;
-    subscribed?: boolean;
-  };
+interface KlientoAccountGetResponse {
+  success: boolean;
+  auth_token?: boolean;
+  data?: Array<{
+    id: number;
+  }>;
 }
+
+const KLIENTO_ACCOUNT_GET_URL = "https://kliento.dv-content.io/123/account/get";
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -52,13 +42,13 @@ Deno.serve(async (req: Request) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { billing_transaction_id, bizoffer_id }: TransactionVerifyRequest = await req.json();
+    const { billing_transaction_id, project_config_id }: TransactionVerifyRequest = await req.json();
 
-    if (!billing_transaction_id || !bizoffer_id) {
+    if (!billing_transaction_id || !project_config_id) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Missing required fields: billing_transaction_id or bizoffer_id",
+          error: "Missing required fields: billing_transaction_id or project_config_id",
         } as TransactionVerifyResponse),
         {
           status: 400,
@@ -67,18 +57,19 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: klientoConfig, error: configError } = await supabase
-      .from("platform_api_integrations")
-      .select("api_url, api_key, is_active")
-      .eq("api_name", "kliento")
+    const { data: projectConfig, error: configError } = await supabase
+      .from("project_configurations")
+      .select("service_id")
+      .eq("config_id", project_config_id)
+      .eq("is_active", true)
       .maybeSingle();
 
-    if (configError || !klientoConfig) {
-      console.error("Failed to fetch Kliento config:", configError);
+    if (configError || !projectConfig) {
+      console.error("[kliento-verify-transaction] Failed to fetch project config:", configError);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Kliento service is not configured",
+          error: "Project configuration not found",
         } as TransactionVerifyResponse),
         {
           status: 500,
@@ -87,35 +78,29 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    if (!klientoConfig.is_active) {
+    if (!projectConfig.service_id) {
+      console.error("[kliento-verify-transaction] service_id not configured for project:", project_config_id);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Kliento service is currently disabled",
+          error: "Kliento service_id is not configured for this project",
         } as TransactionVerifyResponse),
         {
-          status: 503,
+          status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
-    const klientoBaseUrl = klientoConfig.api_url;
-    const transactionUrl = `${klientoBaseUrl}/accountinfo/getuserbytransaction`;
+    const transactionUrl = `${KLIENTO_ACCOUNT_GET_URL}?service_id=${encodeURIComponent(projectConfig.service_id)}&i_subscription_id=${encodeURIComponent(billing_transaction_id)}`;
 
-    console.log(`[kliento-verify-transaction] Verifying transaction: ${billing_transaction_id}`);
-
-    const formData = new URLSearchParams();
-    formData.append("billing_transaction_id", billing_transaction_id);
-    formData.append("bizoffer_id", bizoffer_id);
+    console.log(`[kliento-verify-transaction] Verifying transaction: ${billing_transaction_id} with service_id: ${projectConfig.service_id}`);
 
     const response = await fetch(transactionUrl, {
-      method: "POST",
+      method: "GET",
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        ...(klientoConfig.api_key ? { "Authorization": `Bearer ${klientoConfig.api_key}` } : {}),
+        "Content-Type": "application/json",
       },
-      body: formData.toString(),
     });
 
     if (!response.ok) {
@@ -147,9 +132,9 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const data: KlientoTransactionResponse = await response.json();
+    const data: KlientoAccountGetResponse = await response.json();
 
-    if (data.code !== 200 || data.error !== 0 || !data.data?.user_id) {
+    if (!data.success || !data.data || data.data.length === 0 || !data.data[0].id) {
       console.log("[kliento-verify-transaction] Invalid response or transaction pending:", data);
       return new Response(
         JSON.stringify({
@@ -164,8 +149,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userId = String(data.data.user_id);
-    const msisdn = data.data.msisdn || "";
+    const userId = String(data.data[0].id);
 
     console.log(`[kliento-verify-transaction] Transaction verified for user: ${userId}`);
 
@@ -173,14 +157,6 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({
         success: true,
         user_id: userId,
-        msisdn,
-        account_info: {
-          user_id: userId,
-          msisdn: data.data.msisdn,
-          email: data.data.email,
-          country: data.data.country,
-          subscribed: data.data.subscribed,
-        },
       } as TransactionVerifyResponse),
       {
         status: 200,

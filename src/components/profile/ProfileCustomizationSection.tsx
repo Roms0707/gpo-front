@@ -1,30 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Image,
-  Layout,
-  Award,
-  Lock,
-  Check,
-  Sparkles,
-  Star,
-  CheckCircle,
-  TrendingUp,
-  Crown,
-  Trophy,
-  Flame,
-  Loader,
-  X,
-  ChevronDown,
-  ChevronUp,
-  Swords,
-  Target,
-  Skull,
-  Rocket,
-  Crosshair,
-  Zap,
-  Globe
-} from 'lucide-react';
+import { Image, LayoutGrid as Layout, Award, Lock, Check, Sparkles, Star, CheckCircle, TrendingUp, Crown, Trophy, Flame, Loader, X, ChevronDown, ChevronUp, Swords, Target, Skull, Rocket, Crosshair, Zap, Globe } from 'lucide-react';
 import type {
   ProfileFrame,
   ProfileBadge,
@@ -34,6 +10,7 @@ import type {
   FrameCollection
 } from '../../types';
 import AvatarWithFrame from './AvatarWithFrame';
+import CustomizationCardBorder from './CustomizationCardBorder';
 
 type CustomizationTab = 'avatar' | 'modal' | 'badges';
 type CollectionFilter = 'all' | FrameCollection;
@@ -216,73 +193,79 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
     const CollectionIcon = collection.icon;
 
     return (
-      <button
+      <CustomizationCardBorder
         key={frame.id}
-        onClick={isLocked ? undefined : onClick}
-        onMouseEnter={() => setHoveredFrame(frame)}
-        onMouseLeave={() => setHoveredFrame(null)}
-        disabled={isLocked}
-        className={`relative p-3 rounded-xl border transition-all group ${
-          isSelected
-            ? 'border-2'
-            : isLocked
-            ? 'border-gray-800/50 opacity-60 cursor-not-allowed'
-            : 'border-gray-700/50 hover:border-gray-600'
-        } ${!isLocked && !isSelected ? 'hover:bg-dark-200/30' : ''}`}
-        style={{
-          borderColor: isSelected ? themeColor || getRarityColor(frame.rarity) : undefined,
-          backgroundColor: isSelected ? `${themeColor || getRarityColor(frame.rarity)}10` : undefined,
-        }}
+        rarity={frame.rarity}
+        isSelected={isSelected}
+        isLocked={isLocked}
       >
-        <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${getRarityGradient(frame.rarity)} flex items-center justify-center mb-2 relative overflow-hidden`}>
-          {frame.rarity === 'legendary' && !isLocked && (
-            <div className="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent animate-pulse" />
-          )}
-          <div
-            className={`w-12 h-12 rounded-lg ${frame.animation_class && !isLocked ? frame.animation_class : ''}`}
-            style={{
-              ...frame.css_styles,
-              borderWidth: frame.css_styles.borderWidth || '3px',
-              borderStyle: (frame.css_styles.borderStyle as React.CSSProperties['borderStyle']) || 'solid',
-            }}
-          />
-
-          {isLocked && (
-            <div className="absolute inset-0 bg-dark-100/80 flex items-center justify-center">
-              <Lock className="w-5 h-5 text-gray-500" />
-            </div>
-          )}
-
-          {isSelected && !isLocked && (
-            <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: themeColor || getRarityColor(frame.rarity) }}
-            >
-              <Check className="w-3 h-3 text-white" />
-            </div>
-          )}
-
-          {frame.collection && frame.collection !== 'default' && (
+        <button
+          onClick={isLocked ? undefined : onClick}
+          onMouseEnter={() => setHoveredFrame(frame)}
+          onMouseLeave={() => setHoveredFrame(null)}
+          disabled={isLocked}
+          className={`relative w-full p-3 rounded-xl border transition-all group ${
+            isSelected
+              ? 'border-transparent'
+              : isLocked
+              ? 'border-gray-800/30 cursor-not-allowed'
+              : 'border-gray-700/30 hover:border-transparent'
+          }`}
+          style={{
+            backgroundColor: isSelected ? `${themeColor || getRarityColor(frame.rarity)}15` : undefined,
+          }}
+        >
+          <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${getRarityGradient(frame.rarity)} flex items-center justify-center mb-2 relative overflow-hidden`}>
+            {frame.rarity === 'legendary' && (
+              <div className={`absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent animate-pulse ${isLocked ? 'opacity-40' : ''}`} />
+            )}
             <div
-              className="absolute top-1 left-1 w-4 h-4 rounded flex items-center justify-center"
-              style={{ backgroundColor: `${collection.color}30` }}
-              title={collection.name}
-            >
-              <CollectionIcon className="w-2.5 h-2.5" style={{ color: collection.color }} />
-            </div>
-          )}
-        </div>
+              className={`w-12 h-12 rounded-lg ${frame.animation_class ? frame.animation_class : ''}`}
+              style={{
+                ...frame.css_styles,
+                borderWidth: frame.css_styles.borderWidth || '3px',
+                borderStyle: (frame.css_styles.borderStyle as React.CSSProperties['borderStyle']) || 'solid',
+                filter: isLocked ? 'grayscale(0.5) brightness(0.7)' : undefined,
+              }}
+            />
 
-        <p className="text-xs font-medium text-white truncate">{frame.name}</p>
-        <div className="flex items-center gap-1 mt-0.5">
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: getRarityColor(frame.rarity) }}
-          />
-          <span className="text-xs text-gray-500 capitalize">{frame.rarity}</span>
-        </div>
+            {isLocked && (
+              <div className="absolute inset-0 bg-dark-100/50 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-gray-500" />
+              </div>
+            )}
 
-        {isLocked && renderUnlockRequirement(frame)}
-      </button>
+            {isSelected && !isLocked && (
+              <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: themeColor || getRarityColor(frame.rarity) }}
+              >
+                <Check className="w-3 h-3 text-white" />
+              </div>
+            )}
+
+            {frame.collection && frame.collection !== 'default' && (
+              <div
+                className="absolute top-1 left-1 w-4 h-4 rounded flex items-center justify-center"
+                style={{ backgroundColor: `${collection.color}30` }}
+                title={collection.name}
+              >
+                <CollectionIcon className="w-2.5 h-2.5" style={{ color: isLocked ? '#6b7280' : collection.color }} />
+              </div>
+            )}
+          </div>
+
+          <p className={`text-xs font-medium truncate ${isLocked ? 'text-gray-500' : 'text-white'}`}>{frame.name}</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: isLocked ? '#6b7280' : getRarityColor(frame.rarity) }}
+            />
+            <span className="text-xs text-gray-500 capitalize">{frame.rarity}</span>
+          </div>
+
+          {isLocked && renderUnlockRequirement(frame)}
+        </button>
+      </CustomizationCardBorder>
     );
   };
 
@@ -295,64 +278,70 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
     const BadgeIcon = getBadgeIcon(badge.css_styles?.icon || 'star');
 
     return (
-      <button
+      <CustomizationCardBorder
         key={badge.id}
-        onClick={isLocked ? undefined : onClick}
-        onMouseEnter={() => setHoveredBadge(badge)}
-        onMouseLeave={() => setHoveredBadge(null)}
-        disabled={isLocked}
-        className={`relative p-3 rounded-xl border transition-all group ${
-          isSelected
-            ? 'border-2'
-            : isLocked
-            ? 'border-gray-800/50 opacity-60 cursor-not-allowed'
-            : 'border-gray-700/50 hover:border-gray-600'
-        } ${!isLocked && !isSelected ? 'hover:bg-dark-200/30' : ''}`}
-        style={{
-          borderColor: isSelected ? themeColor || getRarityColor(badge.rarity) : undefined,
-          backgroundColor: isSelected ? `${themeColor || getRarityColor(badge.rarity)}10` : undefined,
-        }}
+        rarity={badge.rarity}
+        isSelected={isSelected}
+        isLocked={isLocked}
       >
-        <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${getRarityGradient(badge.rarity)} flex items-center justify-center mb-2 relative`}>
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center"
-            style={{
-              backgroundColor: '#1a1a2e',
-              boxShadow: badge.css_styles?.glow ? `0 0 15px ${badge.css_styles.color}50` : undefined,
-            }}
-          >
-            <BadgeIcon
-              className="w-5 h-5"
-              style={{ color: badge.css_styles?.color || '#FFD700' }}
-            />
+        <button
+          onClick={isLocked ? undefined : onClick}
+          onMouseEnter={() => setHoveredBadge(badge)}
+          onMouseLeave={() => setHoveredBadge(null)}
+          disabled={isLocked}
+          className={`relative w-full p-3 rounded-xl border transition-all group ${
+            isSelected
+              ? 'border-transparent'
+              : isLocked
+              ? 'border-gray-800/30 cursor-not-allowed'
+              : 'border-gray-700/30 hover:border-transparent'
+          }`}
+          style={{
+            backgroundColor: isSelected ? `${themeColor || getRarityColor(badge.rarity)}15` : undefined,
+          }}
+        >
+          <div className={`w-full aspect-square rounded-lg bg-gradient-to-br ${getRarityGradient(badge.rarity)} flex items-center justify-center mb-2 relative`}>
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{
+                backgroundColor: '#1a1a2e',
+                boxShadow: badge.css_styles?.glow && !isLocked ? `0 0 15px ${badge.css_styles.color}50` : undefined,
+                filter: isLocked ? 'grayscale(0.7) brightness(0.6)' : undefined,
+              }}
+            >
+              <BadgeIcon
+                className="w-5 h-5"
+                style={{ color: isLocked ? '#6b7280' : (badge.css_styles?.color || '#FFD700') }}
+              />
+            </div>
+
+            {isLocked && (
+              <div className="absolute inset-0 bg-dark-100/70 flex items-center justify-center rounded-lg">
+                <Lock className="w-5 h-5 text-gray-500" />
+              </div>
+            )}
+
+            {isSelected && !isLocked && (
+              <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: themeColor || getRarityColor(badge.rarity) }}
+              >
+                <Check className="w-3 h-3 text-white" />
+              </div>
+            )}
           </div>
 
-          {isLocked && (
-            <div className="absolute inset-0 bg-dark-100/80 flex items-center justify-center rounded-lg">
-              <Lock className="w-5 h-5 text-gray-500" />
-            </div>
-          )}
+          <p className={`text-xs font-medium truncate ${isLocked ? 'text-gray-500' : 'text-white'}`}>{badge.name}</p>
+          <div className="flex items-center gap-1 mt-0.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: isLocked ? '#6b7280' : getRarityColor(badge.rarity) }}
+            />
+            <span className="text-xs text-gray-500 capitalize">{badge.rarity}</span>
+          </div>
 
-          {isSelected && !isLocked && (
-            <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: themeColor || getRarityColor(badge.rarity) }}
-            >
-              <Check className="w-3 h-3 text-white" />
-            </div>
-          )}
-        </div>
-
-        <p className="text-xs font-medium text-white truncate">{badge.name}</p>
-        <div className="flex items-center gap-1 mt-0.5">
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ backgroundColor: getRarityColor(badge.rarity) }}
-          />
-          <span className="text-xs text-gray-500 capitalize">{badge.rarity}</span>
-        </div>
-
-        {isLocked && renderUnlockRequirement(badge)}
-      </button>
+          {isLocked && renderUnlockRequirement(badge)}
+        </button>
+      </CustomizationCardBorder>
     );
   };
 

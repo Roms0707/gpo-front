@@ -12,6 +12,7 @@ import { DiscordConnectionRequired } from '../components/tournaments/DiscordConn
 import { discordVerificationService } from '../services/discordVerificationService';
 import { DiscordVerificationStatus as DiscordStatus } from '../types';
 import { modalStateManager } from '../utils/modalStateManager';
+import { supabase } from '../lib/supabase';
 
 // Components
 import TournamentHero from '../components/tournaments/TournamentHero';
@@ -22,6 +23,7 @@ import RegistrationModal from '../components/tournaments/RegistrationModal';
 import TeamInvitePopup from '../components/tournaments/TeamInvitePopup';
 import LookingForPeopleModal from '../components/tournaments/LookingForPeopleModal';
 import DiscordInviteModal from '../components/tournaments/DiscordInviteModal';
+import DiscordJoinBanner from '../components/tournaments/DiscordJoinBanner';
 import JoinTournamentModal from '../components/tournaments/JoinTournamentModal';
 import QuickRegisterBar from '../components/tournaments/QuickRegisterBar';
 import TeamManagementCard from '../components/tournaments/TeamManagementCard';
@@ -63,6 +65,8 @@ const TournamentPage: React.FC = () => {
     isMember: false,
   });
   const [showDiscordBanner, setShowDiscordBanner] = useState(false);
+  const [discordJoinDeadline, setDiscordJoinDeadline] = useState<Date | null>(null);
+  const [currentRegistrationId, setCurrentRegistrationId] = useState<string | null>(null);
 
   // Get query params for team invitation and tab selection
   const params = new URLSearchParams(location.search);
@@ -172,18 +176,23 @@ const TournamentPage: React.FC = () => {
     isLoadingRankings
   } = useTournamentRankings(activeTab, tournament);
 
-  // Check Discord verification status
+  // Check Discord verification status and deadline
   useEffect(() => {
     const checkDiscordStatus = async () => {
       if (!user || !tournament?.id || !tournament?.discord_url || !registrationStatus.registered) {
         setShowDiscordBanner(false);
+        setDiscordJoinDeadline(null);
         return;
       }
 
       const status = await discordVerificationService.checkVerificationStatus(user.id, tournament.id);
       setDiscordStatus(status);
 
-      // Show banner if Discord is required but user is not connected or not a member
+      const deadlineInfo = await discordVerificationService.getDiscordJoinDeadline(tournament.id, user.id);
+      if (deadlineInfo.hasDeadline && deadlineInfo.deadlineAt) {
+        setDiscordJoinDeadline(deadlineInfo.deadlineAt);
+      }
+
       setShowDiscordBanner(
         tournament.discord_url && (!status.isConnected || !status.isMember)
       );
@@ -191,7 +200,6 @@ const TournamentPage: React.FC = () => {
 
     checkDiscordStatus();
 
-    // Subscribe to real-time updates if Discord is required
     if (user && tournament?.id && tournament?.discord_url && registrationStatus.registered) {
       const unsubscribe = discordVerificationService.subscribeToVerificationUpdates(
         user.id,
@@ -350,32 +358,48 @@ const TournamentPage: React.FC = () => {
   
   const handleRegistrationConfirm = async (newRegistrationStatus: { registered: boolean, status: string }) => {
     if (!tournament?.id || !user?.id) return;
-    
+
     try {
       setIsRegistering(true);
-      
+
       // Update local state with the new registration status
       setRegistrationStatus(newRegistrationStatus);
       toast.success(t('tournamentPage.success.registrationSuccess'));
       setShowRegistrationModal(false);
-      
+
       // Reload participants count with tournament mode
       await loadParticipantsCount(tournament.id, tournament.mode);
-      
+
       // Load team info if this is a team tournament
       if (tournament.mode?.toLowerCase().includes('team')) {
         await loadUserTeamInfo(tournament.id, user.id);
       }
-      
+
       // Clear team ID from URL after successful registration
       if (teamIdFromUrl) {
         const newUrl = location.pathname;
         window.history.replaceState({}, '', newUrl);
         setTeamIdFromUrl(null);
       }
-      
-      // Show Discord invite modal if tournament has a Discord URL
-      if (tournament.discord_url) {
+
+      // Fetch the registration ID for Discord tracking
+      const { data: registrationData } = await supabase
+        .from('tournament_registrations')
+        .select('id')
+        .eq('tournament_id', tournament.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (registrationData?.id) {
+        setCurrentRegistrationId(registrationData.id);
+      }
+
+      // Show Discord invite modal if tournament has a Discord URL and server ID
+      if (tournament.discord_url && tournament.discord_server_id) {
+        const result = await discordVerificationService.recordDiscordJoinShown(tournament.id, user.id);
+        if (result.success && result.deadlineAt) {
+          setDiscordJoinDeadline(result.deadlineAt);
+        }
         setShowDiscordInviteModal(true);
       }
     } catch (error) {
@@ -581,10 +605,22 @@ const TournamentPage: React.FC = () => {
         tournamentGameId={tournament?.game_id}
       />
 
-      {/* Discord Verification Banner */}
-      {showDiscordBanner && (
+      {/* Discord Join Banner with Countdown */}
+      {showDiscordBanner && tournament?.discord_url && tournament?.discord_server_id && user && (
         <div className="container mx-auto px-4 pt-6">
-          <DiscordConnectionRequired variant="banner" />
+          <DiscordJoinBanner
+            discordUrl={tournament.discord_url}
+            deadlineAt={discordJoinDeadline}
+            tournamentId={tournament.id}
+            userId={user.id}
+            isMember={discordStatus.isMember}
+            onVerify={() => {
+              discordVerificationService.checkVerificationStatus(user.id, tournament.id).then(status => {
+                setDiscordStatus(status);
+                setShowDiscordBanner(!status.isMember);
+              });
+            }}
+          />
         </div>
       )}
 
@@ -924,6 +960,10 @@ const TournamentPage: React.FC = () => {
         onClose={() => setShowDiscordInviteModal(false)}
         discordUrl={tournament?.discord_url}
         tournamentTitle={tournament?.title || ''}
+        deadlineAt={discordJoinDeadline}
+        isMandatory={!!tournament?.discord_server_id}
+        registrationId={currentRegistrationId}
+        userId={user?.id}
       />
       
       {/* Join Tournament Modal */}

@@ -27,7 +27,8 @@ export const APP_CONFIG = {
   REACTION_TIME_ONLY_GAME_IDS: [
     '614e99e6-40b0-48e6-9dcd-d8c3f1981f52',
     '7759f604-0199-4c42-8a04-81c9b10978b2',
-    'a41e04cb-bded-4867-9474-555ba247ef50'
+    'a41e04cb-bded-4867-9474-555ba247ef50',
+    'ca9408a6-94b1-4744-9177-834c2b63fa10'
   ],
   
   // Validation

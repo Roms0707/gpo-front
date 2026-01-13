@@ -27,6 +27,7 @@ export interface Tournament {
   backup?: number;
   game_id?: string;
   discord_url?: string;
+  discord_server_id?: string;
   twitch_url?: string;
   is_twitch_live?: boolean;
   twitch_last_checked?: string;
@@ -104,14 +105,19 @@ export interface AuthContextType {
   isLoading: boolean;
 }
 
+export type TournamentRegistrationStatus = 'pending' | 'approved' | 'rejected' | 'validated' | 'refused' | 'backup' | 'disqualified';
+
 export interface TournamentRegistration {
   id: string;
   tournament_id: string;
   user_id: string;
   team_id?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'validated' | 'refused' | 'backup';
+  status: TournamentRegistrationStatus;
   created_at: string;
   tournament?: Tournament;
+  discord_join_shown_at?: string;
+  discord_warning_sent_at?: string;
+  disqualification_reason?: string;
 }
 
 export interface Game {
@@ -528,4 +534,13 @@ export interface ProfileFrameWithUnlockStatus extends ProfileFrame {
 
 export interface ProfileBadgeWithUnlockStatus extends ProfileBadge {
   is_unlocked: boolean;
+}
+
+export interface DiscordJoinDeadlineStatus {
+  hasDeadline: boolean;
+  deadlineAt?: Date;
+  hoursRemaining?: number;
+  minutesRemaining?: number;
+  isExpired?: boolean;
+  warningShown?: boolean;
 }

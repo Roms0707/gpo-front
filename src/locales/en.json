@@ -458,7 +458,27 @@
     "dataError": "Data error - please try again",
     "registrationError": "Error during registration",
     "enterPhoneNumber": "Enter your phone number",
-    "errorConnectingDiscord": "Error connecting Discord account. Please try again."
+    "errorConnectingDiscord": "Error connecting Discord account. Please try again.",
+    "discordConnected": "Discord account connected: {{username}}",
+    "discordAccountLinked": "Discord account linked",
+    "unlinkDiscord": "Unlink",
+    "discordUnlinked": "Discord account unlinked successfully",
+    "errorUnlinkingDiscord": "Error unlinking Discord account. Please try again."
+  },
+  "discordCallback": {
+    "processing": "Connecting Discord",
+    "processingDescription": "Please wait while we link your Discord account...",
+    "success": "Discord Connected!",
+    "successDescription": "Your Discord account has been successfully linked.",
+    "windowClosing": "This window will close automatically...",
+    "error": "Connection Failed",
+    "errorDescription": "We couldn't link your Discord account.",
+    "missingParams": "Missing authorization parameters",
+    "invalidState": "Invalid authorization state",
+    "missingUserId": "User identification missing",
+    "stateExpired": "Authorization request has expired",
+    "linkFailed": "Failed to link Discord account",
+    "unknownError": "An unexpected error occurred"
   },
   "teamInvite": {
     "title": "Invite players",
@@ -573,9 +593,35 @@
     "congratulations": "Congratulations!",
     "nowRegistered": "You are now registered for the tournament <strong>{{tournamentTitle}}</strong>.",
     "joinDiscordMessage": "Join the Discord to be listed among tournament participants",
-    "joinDiscordButton": "Join Discord",
+    "joinDiscordButton": "Join Discord Server",
     "tipTitle": "Tip:",
-    "tipMessage": "Make sure to read the server rules and introduce yourself in the appropriate channel."
+    "tipMessage": "Make sure to read the server rules and introduce yourself in the appropriate channel.",
+    "mandatory": {
+      "title": "Action Required",
+      "disqualificationWarning": "DISQUALIFICATION WARNING",
+      "warning": "You must join our Discord server within 24 hours",
+      "warningDetails": "Failure to join the Discord server before the deadline will result in automatic disqualification from the tournament.",
+      "willBeDisqualified": "You WILL be disqualified from this tournament if you do not join the Discord server before the deadline",
+      "timeRemaining": "Time remaining to join",
+      "hours": "Hours",
+      "minutes": "Minutes",
+      "seconds": "Seconds",
+      "expired": "The deadline has passed. You may be disqualified.",
+      "remindLater": "I Understand, Remind Me Later",
+      "tipMessage": "After joining the server, click 'Verify Now' on the tournament page to confirm your membership.",
+      "acknowledgeCheckbox": "I understand I will be disqualified if I don't join the Discord server before the deadline",
+      "mustJoinFirst": "Please click 'Join Discord Server' first",
+      "mustAcknowledge": "Please check the acknowledgment box",
+      "joinedButton": "Discord Opened - Join the Server"
+    }
+  },
+  "discordBanner": {
+    "title": "Join Discord Server Required",
+    "description": "You must join the tournament's Discord server to participate.",
+    "expired": "The deadline has passed. You may be disqualified from this tournament.",
+    "timeRemaining": "{{hours}}h {{minutes}}m remaining",
+    "joinButton": "Join Discord",
+    "verifyButton": "Verify Now"
   },
   "joinTournament": {
     "title": "Join Tournament",
@@ -1546,6 +1592,8 @@
     "rejectedTooltip": "Your registration has been rejected by the organizers",
     "refusedTooltip": "Your registration has been rejected by the organizers",
     "backupTooltip": "You are on the waiting list. You will be notified if a spot becomes available",
+    "disqualified": "Disqualified",
+    "disqualifiedTooltip": "You have been disqualified from this tournament",
     "unknownTooltip": "Unknown status"
   },
   "dates": {
@@ -2779,6 +2827,7 @@
       "closed": "Closed",
       "openingSoon": "Opening Soon",
       "open": "Open",
+      "registered": "Registered",
       "confirmedRegistration": "Registration confirmed",
       "joinedRegistration": "You are registered!",
       "joinTournament": "Join the tournament",

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle, XCircle, Loader, Link as LinkIcon, Unlink, Copy, Info } from 'lucide-react';
 import { discordVerificationService } from '../../services/discordVerificationService';
+import { useAuth } from '../../contexts/AuthContext';
+import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
 import toast from 'react-hot-toast';
 
@@ -11,25 +13,39 @@ interface DiscordOAuthIntegrationProps {
 
 const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disabled }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { refreshKlientoUser } = useAuthStore();
   const [isLinked, setIsLinked] = useState(false);
   const [discordInfo, setDiscordInfo] = useState<{ username?: string; id?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isUnlinking, setIsUnlinking] = useState(false);
+  const [isKlientoLinked, setIsKlientoLinked] = useState(false);
 
   useEffect(() => {
     checkDiscordLink();
-  }, []);
+  }, [user?.discord_user_id, user?.discord_handle]);
 
   const checkDiscordLink = async () => {
     setIsLoading(true);
     try {
-      const linked = await discordVerificationService.isDiscordLinked();
+      const hasDiscordInUsersTable = !!(user?.discord_user_id || user?.discord_handle);
+      const linkedViaSupabaseAuth = await discordVerificationService.isDiscordLinked();
+      const linked = hasDiscordInUsersTable || linkedViaSupabaseAuth;
+
       setIsLinked(linked);
+      setIsKlientoLinked(hasDiscordInUsersTable && !linkedViaSupabaseAuth);
 
       if (linked) {
-        const info = await discordVerificationService.getDiscordIdentity();
-        setDiscordInfo(info);
+        if (hasDiscordInUsersTable) {
+          setDiscordInfo({
+            username: user?.discord_handle || undefined,
+            id: user?.discord_user_id || undefined,
+          });
+        } else {
+          const info = await discordVerificationService.getDiscordIdentity();
+          setDiscordInfo(info);
+        }
       }
     } catch (error) {
       console.error('Error checking Discord link:', error);
@@ -66,40 +82,56 @@ const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disab
   };
 
   const handleUnlink = async () => {
-    if (!discordInfo?.id) return;
+    if (!discordInfo?.id && !isKlientoLinked) return;
 
     const confirmed = window.confirm(t('discord.oauth.unlinkConfirm'));
     if (!confirmed) return;
 
     setIsUnlinking(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      if (isKlientoLinked && user?.id) {
+        const result = await discordVerificationService.unlinkDiscordAccount(user.id);
 
-      if (!user) {
-        toast.error(t('discord.oauth.unlinkError'));
-        return;
+        if (!result.success) {
+          console.error('Error unlinking Discord from users table:', result.error);
+          toast.error(t('discord.oauth.unlinkError'));
+          return;
+        }
+
+        await refreshKlientoUser();
+        toast.success(t('discord.oauth.unlinkSuccess'));
+        setIsLinked(false);
+        setDiscordInfo(null);
+        setIsKlientoLinked(false);
+      } else {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          toast.error(t('discord.oauth.unlinkError'));
+          return;
+        }
+
+        const discordIdentity = authUser.identities?.find(
+          (identity) => identity.provider === 'discord'
+        );
+
+        if (!discordIdentity) {
+          toast.error(t('discord.oauth.notLinked'));
+          return;
+        }
+
+        const { error } = await supabase.auth.unlinkIdentity(discordIdentity);
+
+        if (error) {
+          console.error('Error unlinking Discord:', error);
+          toast.error(t('discord.oauth.unlinkError'));
+          return;
+        }
+
+        toast.success(t('discord.oauth.unlinkSuccess'));
+        setIsLinked(false);
+        setDiscordInfo(null);
       }
-
-      const discordIdentity = user.identities?.find(
-        (identity) => identity.provider === 'discord'
-      );
-
-      if (!discordIdentity) {
-        toast.error(t('discord.oauth.notLinked'));
-        return;
-      }
-
-      const { error } = await supabase.auth.unlinkIdentity(discordIdentity);
-
-      if (error) {
-        console.error('Error unlinking Discord:', error);
-        toast.error(t('discord.oauth.unlinkError'));
-        return;
-      }
-
-      toast.success(t('discord.oauth.unlinkSuccess'));
-      setIsLinked(false);
-      setDiscordInfo(null);
     } catch (error) {
       console.error('Error unlinking Discord:', error);
       toast.error(t('discord.oauth.unlinkError'));
@@ -131,7 +163,7 @@ const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disab
     }
   };
 
-  if (isLinked && discordInfo) {
+  if (isLinked) {
     return (
       <div className="space-y-4">
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
@@ -142,13 +174,13 @@ const DiscordOAuthIntegration: React.FC<DiscordOAuthIntegrationProps> = ({ disab
                 {t('discord.oauth.linkedAs')}
               </p>
               <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                {discordInfo.username}
+                {discordInfo?.username || t('discord.oauth.discordConnected')}
               </p>
             </div>
           </div>
         </div>
 
-        {discordInfo.id && (
+        {discordInfo?.id && (
           <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">

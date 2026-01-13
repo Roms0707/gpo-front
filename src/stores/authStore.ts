@@ -43,6 +43,7 @@ const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
     is_fortnite_validated: dbUser.is_fortnite_validated as boolean | undefined,
     fortnite_validation_data: dbUser.fortnite_validation_data as Record<string, unknown> | null | undefined,
     discord_handle: dbUser.discord_handle as string | null | undefined,
+    discord_user_id: dbUser.discord_user_id as string | undefined,
     twitter_handle: dbUser.twitter_handle as string | null | undefined,
     level: dbUser.level as number | undefined,
     xp: dbUser.xp as number | undefined,
@@ -88,13 +89,14 @@ interface AuthState {
   checkSubscription: (login: string, projectConfigId: string) => Promise<CheckSubscriptionResult>;
   sendOtp: (phone: string, projectConfigId: string, billingInfo?: BillingInfo | null, defaultCountryCode?: string | null) => Promise<SendOtpResult>;
   verifyOtp: (phone: string, otpCode: string, projectConfigId: string, defaultCountryCode?: string | null, klientoUserId?: string | null) => Promise<VerifyOtpResult>;
-  loginTransactionUser: (operationId: string, offerId: string) => Promise<TransactionVerificationResult>;
+  loginTransactionUser: (operationId: string, projectConfigId: string) => Promise<TransactionVerificationResult>;
   signup: (username: string, email: string, password: string, dateOfBirth: string, country: string, parentalConsent?: File) => Promise<void>;
   logout: () => Promise<void>;
   checkSession: () => Promise<void>;
   clearError: () => void;
   openGamingStatsModal: () => void;
   closeGamingStatsModal: () => void;
+  refreshKlientoUser: () => Promise<User | null>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -179,8 +181,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     };
   },
 
-  loginTransactionUser: async (operationId: string, offerId: string): Promise<TransactionVerificationResult> => {
-    const result = await verifyTransactionUser(operationId, offerId);
+  loginTransactionUser: async (operationId: string, projectConfigId: string): Promise<TransactionVerificationResult> => {
+    const result = await verifyTransactionUser(operationId, projectConfigId);
 
     if (result.error === 'pending') {
       return {
@@ -278,5 +280,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       error: result.error,
       isLoading: false
     });
+  },
+
+  refreshKlientoUser: async (): Promise<User | null> => {
+    const currentUser = get().user;
+    if (!currentUser?.kliento_user_id) {
+      console.log('[AuthStore] Cannot refresh - no Kliento user ID');
+      return null;
+    }
+
+    const freshUser = await fetchFreshKlientoUserData(currentUser.kliento_user_id);
+
+    if (freshUser) {
+      console.log('[AuthStore] Kliento user refreshed:', freshUser.username);
+      setKlientoSession(freshUser);
+      set({ user: freshUser });
+      return freshUser;
+    }
+
+    return null;
   }
 }));

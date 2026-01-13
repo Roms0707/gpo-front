@@ -190,6 +190,7 @@ const mapDatabaseUserToUser = (dbUser: any): User => {
     is_fortnite_validated: dbUser.is_fortnite_validated,
     fortnite_validation_data: dbUser.fortnite_validation_data,
     discord_handle: dbUser.discord_handle,
+    discord_user_id: dbUser.discord_user_id,
     twitter_handle: dbUser.twitter_handle,
     level: dbUser.level,
     xp: dbUser.xp,
@@ -223,7 +224,7 @@ export const clearKlientoSession = (): void => {
 
 export const verifyTransactionUser = async (
   operationId: string,
-  offerId: string
+  projectConfigId: string
 ): Promise<KlientoAuthResult> => {
   try {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -244,7 +245,7 @@ export const verifyTransactionUser = async (
       },
       body: JSON.stringify({
         billing_transaction_id: operationId,
-        bizoffer_id: offerId,
+        project_config_id: projectConfigId,
       }),
     });
 

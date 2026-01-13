@@ -319,6 +319,7 @@ export const fetchTournamentById = async (id: string) => {
         twitch_url,
         compatible_devices,
         discord_url,
+        discord_server_id,
         tournament_format,
         location_type,
         location_name,
@@ -384,6 +385,7 @@ export const fetchTournamentById = async (id: string) => {
     max_nb_players: tournament.max_nb_players,
     game_id: tournament.game_id,
     discord_url: tournament.discord_url,
+    discord_server_id: tournament.discord_server_id,
     twitch_url: tournament.twitch_url,
     created_at: tournament.created_at
   };

@@ -15,6 +15,8 @@ import { useDynamicFavicon } from './hooks/useDynamicFavicon';
 const HomePage = React.lazy(() => import('./pages/HomePage'));
 const TournamentPage = React.lazy(() => import('./pages/TournamentPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
+const DiscordOAuthCallbackPage = React.lazy(() => import('./pages/auth/DiscordOAuthCallbackPage'));
+const DiscordOAuthPopupCallback = React.lazy(() => import('./pages/DiscordOAuthPopupCallback'));
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 const ProfileEditPage = React.lazy(() => import('./pages/ProfileEditPage'));
 const ProfileSettingsPage = React.lazy(() => import('./pages/ProfileSettingsPage'));
@@ -70,6 +72,20 @@ const AppContent = () => {
         <Route path="/callback" element={
           <Suspense fallback={<PageLoadingFallback />}>
             <TransactionWaitingPage />
+          </Suspense>
+        } />
+
+        {/* Discord OAuth callback page - standalone popup for Kliento users */}
+        <Route path="/auth/discord-callback" element={
+          <Suspense fallback={<PageLoadingFallback />}>
+            <DiscordOAuthCallbackPage />
+          </Suspense>
+        } />
+
+        {/* Discord OAuth popup callback - receives redirect from edge function */}
+        <Route path="/discord-oauth-popup-callback" element={
+          <Suspense fallback={<PageLoadingFallback />}>
+            <DiscordOAuthPopupCallback />
           </Suspense>
         } />
 
