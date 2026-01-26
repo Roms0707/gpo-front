@@ -52,46 +52,46 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
   const [newMemberUsername, setNewMemberUsername] = useState('');
   const [isAddingMember, setIsAddingMember] = useState(false);
   const [pendingInvitations, setPendingInvitations] = useState<ChannelMember[]>([]);
-  
+
   // Notification preferences
   const [notifyAllMessages, setNotifyAllMessages] = useState(true);
   const [notifyMentions, setNotifyMentions] = useState(true);
   const [notifyNothing, setNotifyNothing] = useState(false);
-  
+
   const modalRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   useEffect(() => {
     if (isOpen) {
       setName(channelName);
       setDescription(channelDescription);
       loadMembers();
-      
+
       // Load channel image
       loadChannelImage();
-      
+
       // Set focus to the modal when it opens
       if (modalRef.current) {
         modalRef.current.focus();
       }
     }
   }, [isOpen, channelName, channelDescription]);
-  
+
   const loadChannelImage = async () => {
     if (!channelId) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('channels')
         .select('image_url')
         .eq('id', channelId)
         .single();
-      
+
       if (error) {
         console.error('Error loading channel image:', error);
         return;
       }
-      
+
       if (data?.image_url) {
         setImageUrl(data.image_url);
         setImagePreview(data.image_url);
@@ -100,41 +100,41 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       console.error('Error loading channel image:', error);
     }
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      
+
       // Validate file type
       const validFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!validFileTypes.includes(file.type)) {
         toast.error(t('channelSettings.unsupportedFileType'));
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error(t('channelSettings.fileTooLarge'));
         return;
       }
-      
+
       setImageFile(file);
       // Create a temporary URL for preview
       const objectUrl = URL.createObjectURL(file);
       setImagePreview(objectUrl);
     }
   };
-  
+
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile) return imageUrl; // Return existing URL if no new file
-    
+
     try {
       setIsUploading(true);
-      
+
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `community-${channelId}-${Date.now()}.${fileExt}`;
       const filePath = `community-images/${fileName}`;
-      
+
       // Upload the image
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -142,16 +142,16 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
           cacheControl: '3600',
           upsert: false
         });
-      
+
       if (uploadError) {
         throw uploadError;
       }
-      
+
       // Get the public URL
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
-      
+
       return data.publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -161,23 +161,23 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       setIsUploading(false);
     }
   };
-  
+
   const loadMembers = async () => {
     if (!channelId) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       const allMembers = await getChannelMembers(channelId);
       console.log("Loaded members:", allMembers);
 
       // Separate accepted members from pending invitations
       const accepted = allMembers.filter(member => member.status === 'accepted');
       const pending = allMembers.filter(member => member.status === 'pending');
-      
+
       setMembers(accepted);
       setPendingInvitations(pending);
-      
+
       // Check if current user is an admin
       if (user) {
         const currentUserMember = accepted.find(member => member.user_id === user.id);
@@ -190,19 +190,19 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       setIsLoading(false);
     }
   };
-  
+
   const handleSaveGeneral = async () => {
     if (!channelId || !name.trim()) return;
-    
+
     try {
       setIsSaving(true);
-      
+
       // Upload image if there's a new one
       let newImageUrl = imageUrl;
       if (imageFile) {
         newImageUrl = await uploadImage();
       }
-      
+
       const { error } = await supabase
         .from('channels')
         .update({
@@ -211,13 +211,13 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
           image_url: newImageUrl
         })
         .eq('id', channelId);
-      
+
       if (error) {
         console.error('Error updating channel:', error);
         toast.error(t('channelSettings.channelUpdateError'));
         return;
       }
-      
+
       toast.success(t('channelSettings.channelUpdated'));
       onChannelUpdated(name.trim(), description.trim());
     } catch (error) {
@@ -227,32 +227,32 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       setIsSaving(false);
     }
   };
-  
+
   const handleAddMember = async () => {
     if (!channelId || !newMemberUsername.trim()) return;
-    
+
     try {
       setIsAddingMember(true);
-      
+
       // First, find the user by username
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('id')
         .eq('username', newMemberUsername.trim())
         .single();
-      
+
       if (userError || !userData) {
         toast.error(t('channelSettings.userNotFound'));
         return;
       }
-      
+
       // Check if user is already a member
       const existingMember = members.find(member => member.user_id === userData.id);
       if (existingMember) {
         toast.error(t('channelSettings.alreadyMember'));
         return;
       }
-      
+
       // Add user to channel
       const { error } = await supabase
         .from('channel_members')
@@ -262,7 +262,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
           role: 'member',
           status: 'pending'
         }]);
-      
+
       if (error) {
         console.error('Error adding member:', error);
         toast.error(t('channelSettings.memberAddError'));
@@ -280,16 +280,16 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       setIsAddingMember(false);
     }
   };
-  
+
   const handleRemoveMember = async (memberId: string) => {
     if (!channelId) return;
-    
+
     try {
       const { error } = await supabase
         .from('channel_members')
         .delete()
         .eq('id', memberId);
-      
+
       if (error) {
         console.error('Error removing member:', error);
         toast.error(t('channelSettings.memberRemoveError'));
@@ -303,16 +303,16 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       toast.error(t('channelSettings.memberRemoveError'));
     }
   };
-  
+
   const handlePromoteToAdmin = async (memberId: string) => {
     if (!channelId) return;
-    
+
     try {
       const { error } = await supabase
         .from('channel_members')
         .update({ role: 'admin' })
         .eq('id', memberId);
-      
+
       if (error) {
         console.error('Error promoting member:', error);
         toast.error(t('channelSettings.promoteError'));
@@ -326,11 +326,11 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       toast.error(t('channelSettings.promoteError'));
     }
   };
-  
+
   const handleSaveNotifications = () => {
     // In a real implementation, this would save to a user_channel_preferences table
     toast.success(t('channelSettings.preferencesUpdated'));
-    
+
     // For now, we'll just simulate saving
     localStorage.setItem(`channel_${channelId}_notifications`, JSON.stringify({
       notifyAllMessages,
@@ -338,7 +338,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       notifyNothing
     }));
   };
-  
+
   // Handle notification radio button changes
   const handleNotificationChange = (type: 'all' | 'mentions' | 'none') => {
     if (type === 'all') {
@@ -355,12 +355,12 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
       setNotifyNothing(true);
     }
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div 
+      <div
         ref={modalRef}
         className="bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
         tabIndex={-1}
@@ -377,14 +377,14 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
           <button
             onClick={() => setActiveTab('general')}
             className={`flex-1 py-3 px-4 text-sm font-medium ${
-              activeTab === 'general' 
-                ? 'text-primary-500 border-b-2 border-primary-500' 
+              activeTab === 'general'
+                ? 'text-primary-500 border-b-2 border-primary-500'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
@@ -394,8 +394,8 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
           <button
             onClick={() => setActiveTab('members')}
             className={`flex-1 py-3 px-4 text-sm font-medium ${
-              activeTab === 'members' 
-                ? 'text-primary-500 border-b-2 border-primary-500' 
+              activeTab === 'members'
+                ? 'text-primary-500 border-b-2 border-primary-500'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
@@ -405,8 +405,8 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
           <button
             onClick={() => setActiveTab('notifications')}
             className={`flex-1 py-3 px-4 text-sm font-medium ${
-              activeTab === 'notifications' 
-                ? 'text-primary-500 border-b-2 border-primary-500' 
+              activeTab === 'notifications'
+                ? 'text-primary-500 border-b-2 border-primary-500'
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
@@ -414,7 +414,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
             {t('channelSettings.notifications')}
           </button>
         </div>
-        
+
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto p-6">
           {/* General Settings */}
@@ -425,7 +425,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   {t('channelSettings.channelImage')}
                 </label>
                 <div className="flex items-center">
-                  <div 
+                  <div
                     className="w-20 h-20 rounded-lg bg-dark-300 flex items-center justify-center overflow-hidden cursor-pointer hover:bg-dark-400 transition-colors border border-gray-700"
                     onClick={() => isAdmin && fileInputRef.current?.click()}
                   >
@@ -466,7 +466,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label htmlFor="channelName" className="block text-sm font-medium text-gray-300 mb-1">
                   {t('channelSettings.channelName')}
@@ -486,7 +486,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <label htmlFor="channelDescription" className="block text-sm font-medium text-gray-300 mb-1">
                   {t('channelSettings.description')}
@@ -505,7 +505,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   </p>
                 )}
               </div>
-              
+
               {isAdmin && (
                 <div className="flex justify-end">
                   <button
@@ -529,7 +529,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
               )}
             </div>
           )}
-          
+
           {/* Members Management */}
           {activeTab === 'members' && (
             <div className="space-y-6">
@@ -565,7 +565,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   </p>
                 )}
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-medium mb-4">{t('channelSettings.channelMembers', { count: members.length })}</h3>
                 {isLoading ? (
@@ -580,9 +580,9 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                         <div className="flex items-center">
                           <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3">
                             {member.users.avatar_url ? (
-                              <img 
-                                src={member.users.avatar_url} 
-                                alt={member.users.username} 
+                              <img
+                                src={member.users.avatar_url}
+                                alt={member.users.username}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -604,7 +604,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                             </p>
                           </div>
                         </div>
-                        
+
                         {isAdmin && member.user_id !== user?.id && (
                           <div className="flex space-x-2">
                             {member.role !== 'admin' && (
@@ -634,7 +634,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                     <p className="text-gray-400">{t('channelSettings.noMembers')}</p>
                   </div>
                 )}
-                
+
                 {/* Pending Invitations */}
                 {pendingInvitations.length > 0 && (
                   <div className="mt-4">
@@ -644,9 +644,9 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                         <div key={member.id} className="flex items-center p-2 rounded-lg hover:bg-dark-300">
                           <div className="w-8 h-8 rounded-full bg-dark-300 overflow-hidden mr-2">
                             {member.users.avatar_url ? (
-                              <img 
-                                src={member.users.avatar_url} 
-                                alt="" 
+                              <img
+                                src={member.users.avatar_url}
+                                alt=""
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -674,12 +674,12 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
               </div>
             </div>
           )}
-          
+
           {/* Notification Settings */}
           {activeTab === 'notifications' && (
             <div className="space-y-6">
               <h3 className="text-lg font-medium mb-4">{t('channelSettings.notificationPreferences')}</h3>
-              
+
               <div className="space-y-4 bg-dark-200 p-4 rounded-lg">
                 <div className="flex items-start">
                   <input
@@ -697,7 +697,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <input
                     type="radio"
@@ -714,7 +714,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <input
                     type="radio"
@@ -732,7 +732,7 @@ const ChannelSettingsModal: React.FC<ChannelSettingsModalProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex justify-end">
                 <button
                   onClick={handleSaveNotifications}

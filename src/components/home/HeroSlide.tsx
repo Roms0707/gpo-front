@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAppConfig } from '../../contexts/AppConfigContext';
 import { GlitchPhrases } from '../ui/GlitchPhrases';
 import { GameThemedButton } from '../ui/GameThemedButton';
+import { FilmGrain } from '../ui/FilmGrain';
 
 const isYouTubeUrl = (url: string): boolean => {
   return /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/)|youtu\.be\/)/.test(url);
@@ -139,8 +140,15 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         </video>
       )}
 
+      <FilmGrain
+        opacity={0.11}
+        blendMode="overlay"
+        animated={true}
+        className="z-[2]"
+      />
+
       <div
-        className="absolute inset-0 z-[2] pointer-events-none"
+        className="absolute inset-0 z-[3] pointer-events-none"
         style={{
           background: `linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 40%, ${primaryColor}20 100%)`,
         }}

@@ -138,7 +138,26 @@
     "discoverCompleteStats": "Discover your complete statistics for all your connected games",
     "viewMyGameStats": "View my game stats",
     "gamingStatistics": "Gaming Statistics",
-    "loadingStatistics": "Loading statistics..."
+    "loadingStatistics": "Loading statistics...",
+    "loginRequired": "Login required",
+    "unlockContent": "Unlock this content",
+    "loginToAccess": "Login to access exclusive content and features",
+    "trainingLocked": {
+      "title": "Unlock Training Content",
+      "description": "Login to access video tutorials and track your progress"
+    },
+    "skillLabLocked": {
+      "title": "Unlock Skills Lab",
+      "description": "Login to train your aim and reaction time with personalized tracking"
+    },
+    "contentLocked": {
+      "title": "Unlock Content",
+      "description": "Login to access exclusive videos and content"
+    },
+    "articlesLocked": {
+      "title": "Unlock Articles",
+      "description": "Login to access exclusive articles and guides"
+    }
   },
   "validation": {
     "required": "This field is required",
@@ -218,6 +237,7 @@
     "messages": "Messages",
     "matchNotifications": "Match Notifications",
     "profile": "Profile",
+    "gameHub": "Game Hub",
     "lightMode": "Light mode",
     "darkMode": "Dark mode"
   },
@@ -318,7 +338,10 @@
       "viewTournaments": "View All",
       "browseGames": "Browse",
       "watchLive": "Watch Now"
-    }
+    },
+    "viewAll": "View all",
+    "showMore": "+ {{count}} more",
+    "showLess": "Show less"
   },
   "heroCarousel": {
     "exploreTournaments": "Explore Tournaments",
@@ -561,6 +584,7 @@
     "lossesColumn": "L",
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right",
+    "swipeToNavigate": "Swipe to navigate",
     "bye": "Bye",
     "tbd": "TBD",
     "tournament": "Tournament",
@@ -2213,6 +2237,23 @@
       "benefit3Title": "Tournament Ready",
       "benefit3Desc": "Warm up before matches for peak performance"
     }
+  },
+  "othersHub": {
+    "tabs": {
+      "articles": "Articles"
+    },
+    "moreVideos": "More Videos",
+    "videoCount": "{{count}} video",
+    "videoCount_plural": "{{count}} videos",
+    "totalVideos": "{{count}} video total",
+    "totalVideos_plural": "{{count}} videos total",
+    "loadingContent": "Loading content...",
+    "errorLoadingContent": "Error loading content. Please try again.",
+    "noContent": "No Content Available",
+    "noContentDescription": "There is no content available for {{rubricName}} at this time.",
+    "articlesComingSoon": "Articles Coming Soon",
+    "articlesDescription": "Stay tuned! We are preparing exciting articles and content about various games for you.",
+    "stayTuned": "Stay Tuned"
   },
   "error": {
     "oopsErrorOccurred": "Oops! An error occurred",

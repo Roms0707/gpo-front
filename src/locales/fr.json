@@ -138,7 +138,26 @@
     "discoverCompleteStats": "Découvrez vos statistiques complètes pour tous vos jeux connectés",
     "viewMyGameStats": "Voir mes statistiques de jeu",
     "gamingStatistics": "Statistiques de jeu",
-    "loadingStatistics": "Chargement des statistiques..."
+    "loadingStatistics": "Chargement des statistiques...",
+    "loginRequired": "Connexion requise",
+    "unlockContent": "Débloquez ce contenu",
+    "loginToAccess": "Connectez-vous pour accéder au contenu exclusif et aux fonctionnalités",
+    "trainingLocked": {
+      "title": "Débloquez le contenu d'entraînement",
+      "description": "Connectez-vous pour accéder aux tutoriels vidéo et suivre votre progression"
+    },
+    "skillLabLocked": {
+      "title": "Débloquez le Skills Lab",
+      "description": "Connectez-vous pour entraîner votre visée et votre temps de réaction avec un suivi personnalisé"
+    },
+    "contentLocked": {
+      "title": "Débloquez le contenu",
+      "description": "Connectez-vous pour accéder aux vidéos et contenus exclusifs"
+    },
+    "articlesLocked": {
+      "title": "Débloquez les articles",
+      "description": "Connectez-vous pour accéder aux articles et guides exclusifs"
+    }
   },
   "validation": {
     "required": "Ce champ est requis",
@@ -218,6 +237,7 @@
     "messages": "Messages",
     "matchNotifications": "Notifications de match",
     "profile": "Profil",
+    "gameHub": "Hub de Jeux",
     "lightMode": "Mode clair",
     "darkMode": "Mode sombre"
   },
@@ -318,7 +338,10 @@
       "viewTournaments": "Voir tout",
       "browseGames": "Parcourir",
       "watchLive": "Regarder"
-    }
+    },
+    "viewAll": "Voir tout",
+    "showMore": "+ {{count}} autres",
+    "showLess": "Voir moins"
   },
   "heroCarousel": {
     "exploreTournaments": "Explorer les tournois",
@@ -561,6 +584,7 @@
     "lossesColumn": "D",
     "scrollLeft": "Défiler à gauche",
     "scrollRight": "Défiler à droite",
+    "swipeToNavigate": "Balayez pour naviguer",
     "bye": "Bye",
     "tbd": "TBD",
     "tournament": "Tournoi",
@@ -2213,6 +2237,23 @@
       "benefit3Title": "Pret pour les Tournois",
       "benefit3Desc": "Echauffez-vous avant les matchs pour des performances optimales"
     }
+  },
+  "othersHub": {
+    "tabs": {
+      "articles": "Articles"
+    },
+    "moreVideos": "Plus de Vidéos",
+    "videoCount": "{{count}} vidéo",
+    "videoCount_plural": "{{count}} vidéos",
+    "totalVideos": "{{count}} vidéo au total",
+    "totalVideos_plural": "{{count}} vidéos au total",
+    "loadingContent": "Chargement du contenu...",
+    "errorLoadingContent": "Erreur lors du chargement du contenu. Veuillez réessayer.",
+    "noContent": "Aucun Contenu Disponible",
+    "noContentDescription": "Il n'y a pas de contenu disponible pour {{rubricName}} pour le moment.",
+    "articlesComingSoon": "Articles à Venir",
+    "articlesDescription": "Restez connectés ! Nous préparons des articles passionnants et du contenu sur différents jeux pour vous.",
+    "stayTuned": "Restez Connectés"
   },
   "error": {
     "oopsErrorOccurred": "Oups ! Une erreur est survenue",

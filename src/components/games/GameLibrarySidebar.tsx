@@ -44,7 +44,12 @@ const GameLibrarySidebar: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await fetchGames();
-        setGames(data || []);
+        const sortedGames = (data || []).sort((a: Game, b: Game) => {
+          if (a.slug === 'other-games') return 1;
+          if (b.slug === 'other-games') return -1;
+          return 0;
+        });
+        setGames(sortedGames);
       } catch (error) {
         console.error('Error loading games:', error);
         setGames([]);

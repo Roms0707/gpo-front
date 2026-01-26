@@ -78,10 +78,10 @@ Deno.serve(async (req: Request) => {
 
     if (!registrations || registrations.length === 0) {
       return new Response(
-        JSON.stringify({ 
-          success: true, 
+        JSON.stringify({
+          success: true,
           message: 'No participants to notify',
-          notified_count: 0 
+          notified_count: 0
         }),
         {
           status: 200,
@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
   } catch (error) {
     console.error('Unexpected error:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
         details: error instanceof Error ? error.message : 'Unknown error'
       }),

@@ -42,10 +42,10 @@ const SteamAccountIntegration: React.FC<SteamAccountIntegrationProps> = ({
       toast.error(t('gaming.steamId64MustBe17Digits'));
       return;
     }
-    
+
     try {
       setIsValidating(true);
-      
+
       // Call the Steam profile Edge Function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-steam-profile`, {
         method: 'POST',
@@ -59,9 +59,9 @@ const SteamAccountIntegration: React.FC<SteamAccountIntegrationProps> = ({
           includeGames: false
         })
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.profile) {
         setIsValidated(true);
         setValidationData(result.profile);
@@ -113,7 +113,7 @@ const SteamAccountIntegration: React.FC<SteamAccountIntegrationProps> = ({
             disabled={isValidating || !steamId64 || steamId64.length !== 17 || disabled}
             className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
               isValidated
-                ? 'bg-success-600 text-white cursor-default' 
+                ? 'bg-success-600 text-white cursor-default'
                 : isValidating
                   ? 'bg-primary-600/50 text-white cursor-wait'
                   : 'bg-primary-600 hover:bg-primary-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed'

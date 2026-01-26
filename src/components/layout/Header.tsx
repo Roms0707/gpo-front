@@ -8,9 +8,6 @@ import {
   User,
   Award,
   Swords,
-  Home,
-  Trophy,
-  Users,
   LogIn,
   LogOut,
   Sun,
@@ -29,7 +26,6 @@ import MatchNotificationPanel from '../notifications/MatchNotificationPanel';
 import MatchNotificationModal from '../notifications/MatchNotificationModal';
 import { PlayerMatchNotification } from '../../types';
 import PillNav, { PillNavItem } from '../navigation/PillNav';
-import Dock, { DockItem } from '../navigation/Dock';
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -247,54 +243,6 @@ const Header: React.FC = () => {
     });
   }
 
-  const dockItems: DockItem[] = [
-    {
-      label: t('header.tournaments'),
-      href: '/',
-      icon: <Home className="w-full h-full" />,
-    },
-    {
-      label: t('header.leaderboards'),
-      href: '/leaderboards',
-      icon: <Trophy className="w-full h-full" />,
-    },
-    {
-      label: t('header.communities'),
-      href: '/communities',
-      icon: <Users className="w-full h-full" />,
-    },
-  ];
-
-  if (user) {
-    dockItems.push({
-      label: t('navigation.notifications'),
-      href: '#notifications',
-      icon: <Bell className="w-full h-full" />,
-      badge: totalUnreadItems,
-      onClick: () => setShowNotifications(true),
-    });
-
-    dockItems.push({
-      label: t('header.profile'),
-      href: '/profile',
-      icon: user.avatar_url ? (
-        <img
-          src={user.avatar_url}
-          alt=""
-          className="w-full h-full rounded-lg object-cover"
-        />
-      ) : (
-        <User className="w-full h-full" />
-      ),
-    });
-  } else {
-    dockItems.push({
-      label: t('header.login'),
-      href: '/login',
-      icon: <LogIn className="w-full h-full" />,
-    });
-  }
-
   return (
     <header
       className={`fixed w-full z-50 transition-all duration-300 ${getHeaderStyling()}`}
@@ -396,8 +344,6 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <Dock items={dockItems} />
 
       <NotificationsModal
         isOpen={showNotifications}

@@ -37,11 +37,11 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
   useEffect(() => {
     const loadTeamProfile = async () => {
       if (!isOpen || !teamId) return;
-      
+
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Fetch team data
         const { data: teamData, error: teamError } = await supabase
           .from('teams')
@@ -63,14 +63,14 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
           `)
           .eq('id', teamId)
           .single();
-        
+
         if (teamError) {
           console.error('Error loading team profile:', teamError);
           throw new Error(t('teamProfileModal.errorLoadingTeam'));
         }
-        
+
         setTeamProfile(teamData);
-        
+
         // Fetch team members
         const { data: membersData, error: membersError } = await supabase
           .from('team_members')
@@ -88,12 +88,12 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
           `)
           .eq('team_id', teamId)
           .eq('status', 'accepted');
-        
+
         if (membersError) {
           console.error('Error loading team members:', membersError);
           throw new Error(t('teamProfileModal.errorLoadingMembers'));
         }
-        
+
         // Transform members data
         const transformedMembers = membersData.map(member => ({
           id: member.id,
@@ -105,16 +105,16 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
           country: member.users.country,
           is_captain: member.user_id === teamData.captain_id
         }));
-        
+
         // Sort members (captain first, then alphabetically)
         const sortedMembers = transformedMembers.sort((a, b) => {
           if (a.is_captain && !b.is_captain) return -1;
           if (!a.is_captain && b.is_captain) return 1;
           return a.username.localeCompare(b.username);
         });
-        
+
         setTeamMembers(sortedMembers);
-        
+
       } catch (error) {
         console.error('Error loading team profile:', error);
         setError(error instanceof Error ? error.message : t('teamProfileModal.unknownError'));
@@ -122,7 +122,7 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
         setIsLoading(false);
       }
     };
-    
+
     loadTeamProfile();
   }, [isOpen, teamId]);
 
@@ -140,11 +140,11 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-y-auto"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -153,7 +153,7 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
           <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
             {t('teamProfileModal.title')}
           </h2>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
             aria-label={t('teamProfileModal.close')}
@@ -161,7 +161,7 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
             <X className="h-6 w-6" />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           {isLoading ? (
@@ -196,14 +196,14 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                   </div>
                 </div>
               </div>
-              
+
               {/* Tabs Navigation */}
               <div className="flex border-b border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setActiveTab('members')}
                   className={`flex-1 py-3 px-4 text-sm font-medium ${
-                    activeTab === 'members' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'members'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
@@ -213,8 +213,8 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                 <button
                   onClick={() => setActiveTab('stats')}
                   className={`flex-1 py-3 px-4 text-sm font-medium ${
-                    activeTab === 'stats' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'stats'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
@@ -222,14 +222,14 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                   {t('teamProfileModal.statsTab')}
                 </button>
               </div>
-              
+
               {/* Tab Content */}
               <div className="p-6">
                 {/* Members Tab */}
                 {activeTab === 'members' && (
                   <div>
                     <h4 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('teamProfileModal.teamMembers')}</h4>
-                    
+
                     {teamMembers.length > 0 ? (
                       <div className="space-y-4">
                         {teamMembers.map(member => (
@@ -272,12 +272,12 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                     )}
                   </div>
                 )}
-                
+
                 {/* Stats Tab */}
                 {activeTab === 'stats' && (
                   <div>
                     <h4 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">{t('teamProfileModal.teamStats')}</h4>
-                    
+
                     <div className="grid grid-cols-2 gap-4 mb-6">
                       <div className="bg-gray-50 dark:bg-dark-200 p-4 rounded-lg text-center">
                         <div className="text-2xl font-bold text-primary-400">
@@ -304,7 +304,7 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                         <div className="text-sm text-gray-600 dark:text-gray-400">{t('teamProfileModal.victories')}</div>
                       </div>
                     </div>
-                    
+
                     <div className="bg-gray-50 dark:bg-dark-200 p-4 rounded-lg">
                       <h5 className="font-medium mb-3 flex items-center text-gray-900 dark:text-white">
                         <Trophy className="h-4 w-4 mr-2 text-warning-400" />

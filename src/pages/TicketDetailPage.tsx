@@ -4,7 +4,7 @@ import TicketDetail from '../components/support/TicketDetail';
 
 const TicketDetailPage: React.FC = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
-  
+
   return (
     <div className="min-h-screen pt-28 pb-16">
       <div className="container mx-auto px-4">

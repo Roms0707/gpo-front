@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchGames, fetchGameBySlug } from '../services/api';
+import { fetchRubricsForGame, isOthersGame, RubricInfo } from '../services/othersService';
 import { getGameTheme } from '../utils/gameThemes';
 import GameHubCarousel from '../components/games/GameHubCarousel';
 import GameHubTabs, { GameHubTabId } from '../components/games/GameHubTabs';
@@ -11,6 +12,9 @@ import GameHubLeaderboardTab from '../components/games/tabs/GameHubLeaderboardTa
 import GameHubTrainingTab from '../components/games/tabs/GameHubTrainingTab';
 import GameHubSkillLabTab from '../components/games/tabs/GameHubSkillLabTab';
 import GameHubCoachingTab from '../components/games/tabs/GameHubCoachingTab';
+import OthersHubDynamicTabs from '../components/others/OthersHubDynamicTabs';
+import OthersRubricContentTab from '../components/others/OthersRubricContentTab';
+import OthersArticlesTab from '../components/others/OthersArticlesTab';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
@@ -21,6 +25,7 @@ interface Game {
   image_url: string;
   slug: string;
   twitch_cover_url?: string;
+  is_collection?: boolean;
 }
 
 const GameHubPage: React.FC = () => {
@@ -31,6 +36,9 @@ const GameHubPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<GameHubTabId>('overview');
+  const [rubrics, setRubrics] = useState<RubricInfo[]>([]);
+  const [othersActiveTab, setOthersActiveTab] = useState<string>('');
+  const [rubricsLoading, setRubricsLoading] = useState(false);
 
   useEffect(() => {
     const loadGame = async () => {
@@ -48,6 +56,24 @@ const GameHubPage: React.FC = () => {
           setSelectedGame(game);
           setActiveTab('overview');
           window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          if (isOthersGame(game)) {
+            setRubricsLoading(true);
+            try {
+              const gameRubrics = await fetchRubricsForGame(game.id);
+              setRubrics(gameRubrics);
+              if (gameRubrics.length > 0) {
+                setOthersActiveTab(gameRubrics[0].rubric_id);
+              } else {
+                setOthersActiveTab('articles');
+              }
+            } catch (rubricErr) {
+              console.error('Error loading rubrics:', rubricErr);
+              setOthersActiveTab('articles');
+            } finally {
+              setRubricsLoading(false);
+            }
+          }
         } else {
           const games = await fetchGames();
           if (games && games.length > 0) {
@@ -99,7 +125,30 @@ const GameHubPage: React.FC = () => {
     );
   }
 
-  const theme = selectedGame ? getGameTheme(selectedGame.name) : null;
+  const theme = selectedGame ? getGameTheme(selectedGame.slug || selectedGame.name) : null;
+  const isCollectionGame = selectedGame ? isOthersGame(selectedGame) : false;
+
+  const renderOthersTabContent = () => {
+    if (!selectedGame || !theme) return null;
+
+    if (othersActiveTab === 'articles') {
+      return <OthersArticlesTab theme={theme} />;
+    }
+
+    const activeRubric = rubrics.find((r) => r.rubric_id === othersActiveTab);
+    if (activeRubric) {
+      return (
+        <OthersRubricContentTab
+          gameId={selectedGame.id}
+          rubricId={activeRubric.rubric_id}
+          rubricName={activeRubric.rubric_name || activeRubric.rubric_id}
+          theme={theme}
+        />
+      );
+    }
+
+    return null;
+  };
 
   const renderTabContent = () => {
     if (!selectedGame || !theme) return null;
@@ -179,11 +228,21 @@ const GameHubPage: React.FC = () => {
         {selectedGame && theme && (
           <>
             <div className="sticky top-0 z-20">
-              <GameHubTabs
-                activeTab={activeTab}
-                onTabChange={handleTabChange}
-                theme={theme}
-              />
+              {isCollectionGame ? (
+                <OthersHubDynamicTabs
+                  rubrics={rubrics}
+                  activeTab={othersActiveTab}
+                  onTabChange={setOthersActiveTab}
+                  theme={theme}
+                  isLoading={rubricsLoading}
+                />
+              ) : (
+                <GameHubTabs
+                  activeTab={activeTab}
+                  onTabChange={handleTabChange}
+                  theme={theme}
+                />
+              )}
             </div>
 
             <div className="relative">
@@ -197,7 +256,7 @@ const GameHubPage: React.FC = () => {
               />
 
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {renderTabContent()}
+                {isCollectionGame ? renderOthersTabContent() : renderTabContent()}
               </div>
             </div>
           </>

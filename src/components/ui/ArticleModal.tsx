@@ -27,11 +27,11 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -48,23 +48,23 @@ const ArticleModal: React.FC<ArticleModalProps> = ({
             <X className="h-6 w-6" />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
           {/* Article image if available */}
           {imageUrl && (
             <div className="w-full h-64 overflow-hidden">
-              <img 
-                src={imageUrl} 
-                alt={title} 
+              <img
+                src={imageUrl}
+                alt={title}
                 className="w-full h-full object-cover"
               />
             </div>
           )}
-          
+
           {/* Article content */}
           <div className="p-6">
-            <div 
+            <div
               className="prose prose-gray dark:prose-invert prose-lg max-w-none"
               dangerouslySetInnerHTML={{ __html: content }}
             />

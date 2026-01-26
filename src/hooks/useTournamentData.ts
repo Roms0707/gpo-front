@@ -9,13 +9,13 @@ import { calculateTotalPrizePool } from '../utils/prizePoolUtils';
 export const useTournamentData = (user: any) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [prizes, setPrizes] = useState<TournamentPrize[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [registrationStatus, setRegistrationStatus] = useState<{ registered: boolean, status: string | null }>({ 
-    registered: false, 
-    status: null 
+  const [registrationStatus, setRegistrationStatus] = useState<{ registered: boolean, status: string | null }>({
+    registered: false,
+    status: null
   });
   const [gameName, setGameName] = useState<string>('');
   const [currentParticipants, setCurrentParticipants] = useState<number>(0);
@@ -90,20 +90,20 @@ export const useTournamentData = (user: any) => {
   useEffect(() => {
     const loadTournament = async () => {
       if (!id) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         const { data } = await fetchTournamentById(id);
-        
+
         if (!data) {
           toast.error('Tournoi non trouvé');
           navigate('/');
           return;
         }
-        
+
         setTournament(data);
-        
+
         // Use max_nb_players from the tournament database field for the Inscription section
         if (data.max_nb_players && data.max_nb_players > 0) {
           setMaxParticipants(data.max_nb_players);
@@ -117,7 +117,7 @@ export const useTournamentData = (user: any) => {
         } else {
           setBackupSlots(0);
         }
-        
+
         // Load game name if game_id exists
         if (data.game_id) {
           try {
@@ -126,7 +126,7 @@ export const useTournamentData = (user: any) => {
               .select('name')
               .eq('id', data.game_id)
               .single();
-            
+
             if (!gameError && gameData) {
               setGameName(gameData.name);
             }
@@ -134,10 +134,10 @@ export const useTournamentData = (user: any) => {
             console.error('Error loading game name:', error);
           }
         }
-        
+
         // Load current participants count with tournament mode
         await loadParticipantsCount(id, data.mode);
-        
+
         // Load tournament prizes
         try {
           const prizesData = await fetchTournamentPrizes(id);
@@ -152,7 +152,7 @@ export const useTournamentData = (user: any) => {
         } catch (error) {
           console.error('Error loading prizes:', error);
         }
-        
+
         // Check registration status if user is logged in
         if (user?.id) {
           try {
@@ -170,7 +170,7 @@ export const useTournamentData = (user: any) => {
         setIsLoading(false);
       }
     };
-    
+
     loadTournament();
   }, [id, navigate, user?.id]);
 

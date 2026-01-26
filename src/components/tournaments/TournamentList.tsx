@@ -33,7 +33,7 @@ const TournamentList: React.FC<TournamentListProps> = ({
   // Debug logs
   console.log('1. Tournaments prop received:', tournaments);
   console.log('2. Selected status prop:', selectedStatus);
-  
+
   // Process tournaments with calculated status
   const tournamentsWithCalculatedStatus = tournaments.map(tournament => {
     const calculatedStatus = calculateTournamentStatus(tournament);
@@ -48,7 +48,7 @@ const TournamentList: React.FC<TournamentListProps> = ({
   });
 
   // Add calculated and registration status to tournaments
-  
+
   // Include completed tournaments only when the filter explicitly requests them
   // For completed tournaments, show only the last 4
   const eligibleTournaments =
@@ -93,7 +93,7 @@ const TournamentList: React.FC<TournamentListProps> = ({
            gameName.includes(query);
   });
   console.log('6. Tournaments after search filter:', searchFilteredTournaments, 'Search query:', searchQuery);
-  
+
   // Sort tournaments: ongoing first, then upcoming
   const sortedTournaments = searchFilteredTournaments.sort((a, b) => {
     // Define priority order: ongoing = 1, upcoming = 2
@@ -104,23 +104,23 @@ const TournamentList: React.FC<TournamentListProps> = ({
         default: return 3;
       }
     };
-    
+
     const priorityA = getPriority(a.calculatedStatus);
     const priorityB = getPriority(b.calculatedStatus);
-    
+
     // If same priority, sort by start date (earliest first)
     if (priorityA === priorityB) {
       return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
     }
-    
+
     return priorityA - priorityB;
   });
   console.log('7. Final sorted tournaments for display:', sortedTournaments);
 
   return (
     <div>
-      <TournamentFilters 
-        selectedStatus={selectedStatus} 
+      <TournamentFilters
+        selectedStatus={selectedStatus}
         onStatusChange={onStatusChange}
         selectedGameId={selectedGameId || null}
         onGameFilterClear={onGameFilterClear || (() => {})}
@@ -128,7 +128,7 @@ const TournamentList: React.FC<TournamentListProps> = ({
         searchQuery={searchQuery}
         onSearchChange={onSearchChange}
       />
-      
+
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[...Array(6)].map((_, index) => (

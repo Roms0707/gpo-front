@@ -51,11 +51,11 @@ const TicketDetail: React.FC = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     const loadTicket = async () => {
       if (!ticketId) return;
-      
+
       try {
         setIsLoading(true);
         const data = await getSupportTicketWithMessages(ticketId);
@@ -67,9 +67,9 @@ const TicketDetail: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadTicket();
-    
+
     // Set up real-time subscription for new messages
     const subscription = supabase
       .channel(`ticket-${ticketId}`)
@@ -80,29 +80,29 @@ const TicketDetail: React.FC = () => {
         filter: `ticket_id=eq.${ticketId}`
       }, handleNewMessage)
       .subscribe();
-    
+
     return () => {
       supabase.removeChannel(subscription);
     };
   }, [ticketId]);
-  
+
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [ticket?.messages]);
-  
+
   const handleNewMessage = async (payload: any) => {
     if (!ticketId) return;
-    
+
     // Reload the ticket to get the new message with user info
     const data = await getSupportTicketWithMessages(ticketId);
     setTicket(data);
   };
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: fr });
@@ -110,7 +110,7 @@ const TicketDetail: React.FC = () => {
       return t('support.unknownDate');
     }
   };
-  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
@@ -143,20 +143,20 @@ const TicketDetail: React.FC = () => {
         );
     }
   };
-  
+
   const handleSendMessage = async () => {
     if (!user?.id || !ticketId || !newMessage.trim()) return;
-    
+
     try {
       setIsSending(true);
-      
+
       const result = await addTicketMessage(
         ticketId,
         user.id,
         newMessage.trim(),
         user.type === 'admin'
       );
-      
+
       if (result.success) {
         setNewMessage('');
       } else {
@@ -169,13 +169,13 @@ const TicketDetail: React.FC = () => {
       setIsSending(false);
     }
   };
-  
+
   const handleStatusChange = async (status: 'open' | 'in_progress' | 'closed') => {
     if (!ticketId) return;
-    
+
     try {
       const result = await updateTicketStatus(ticketId, status);
-      
+
       if (result.success) {
         // Update local state
         setTicket(prev => prev ? { ...prev, status } : null);
@@ -188,14 +188,14 @@ const TicketDetail: React.FC = () => {
       toast.error(t('support.errorUpdatingStatus'));
     }
   };
-  
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -204,7 +204,7 @@ const TicketDetail: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!ticket) {
     return (
       <div className="text-center py-8 bg-dark-200 rounded-lg">
@@ -220,7 +220,7 @@ const TicketDetail: React.FC = () => {
   const isAdmin = user?.type === 'admin';
   const isAdminRoute = location.pathname.startsWith('/admin/');
   const backLink = isAdminRoute ? '/admin/support' : '/profile/support';
-  
+
   return (
     <div className="bg-dark-100 rounded-xl overflow-hidden">
       <div className="p-6 border-b border-gray-800">
@@ -228,14 +228,14 @@ const TicketDetail: React.FC = () => {
           <ArrowLeft className="h-4 w-4 mr-2" />
           {t('support.backToTickets')}
         </Link>
-        
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center mb-2">
               <LifeBuoy className="h-5 w-5 text-primary-500 mr-2" />
               <h1 className="font-heading font-bold text-2xl">{ticket.subject}</h1>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-2 text-sm text-gray-400">
               <span>{t('support.createdOn')} {formatDate(ticket.created_at)}</span>
               <span className="hidden md:inline">•</span>
@@ -251,10 +251,10 @@ const TicketDetail: React.FC = () => {
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             {getStatusBadge(ticket.status)}
-            
+
             {/* Status change buttons for admins */}
             {isAdmin && (
               <div className="flex space-x-2">
@@ -296,16 +296,16 @@ const TicketDetail: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="flex flex-col h-[calc(100vh-300px)]">
         {/* Ticket description */}
         <div className="p-6 bg-dark-200/50 border-b border-gray-800">
           <div className="flex items-start">
             <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
               {ticket.users.avatar_url ? (
-                <img 
-                  src={ticket.users.avatar_url} 
-                  alt={ticket.users.username} 
+                <img
+                  src={ticket.users.avatar_url}
+                  alt={ticket.users.username}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -323,16 +323,16 @@ const TicketDetail: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {ticket.messages.map((message) => (
             <div key={message.id} className="flex items-start">
               <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                 {message.users.avatar_url ? (
-                  <img 
-                    src={message.users.avatar_url} 
-                    alt={message.users.username} 
+                  <img
+                    src={message.users.avatar_url}
+                    alt={message.users.username}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -357,7 +357,7 @@ const TicketDetail: React.FC = () => {
           ))}
           <div ref={messagesEndRef} />
         </div>
-        
+
         {/* Message input */}
         <div className="p-4 border-t border-gray-800 bg-dark-100">
           {ticket.status !== 'closed' ? (

@@ -22,27 +22,27 @@ const GameCarousel: React.FC = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  
+
   // Number of games to show at once
   const gamesPerView = isMobile ? 3 : 4;
-  
+
   // Only show navigation if we have more games than can fit in view
   const showNavigation = games.length > gamesPerView;
-  
+
   // Check if we're on mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
-  
+
   useEffect(() => {
     const loadGames = async () => {
       try {
@@ -65,10 +65,10 @@ const GameCarousel: React.FC = () => {
       navigate(`/hub/${game.slug}`);
     }
   };
-  
+
   // Calculate max index based on games length and games per view
   const maxIndex = Math.max(0, games.length - gamesPerView);
-  
+
   // Slider navigation
   const goToNext = () => {
     setCurrentIndex(prev => Math.min(prev + 1, maxIndex));
@@ -77,22 +77,22 @@ const GameCarousel: React.FC = () => {
   const goToPrev = () => {
     setCurrentIndex(prev => Math.max(prev - 1, 0));
   };
-  
+
   // Touch handlers for mobile swipe
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
-  
+
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
   };
-  
+
   const handleTouchEnd = () => {
     if (!touchStartX.current || !touchEndX.current) return;
-    
+
     const diff = touchStartX.current - touchEndX.current;
     const threshold = 50; // Minimum swipe distance
-    
+
     if (diff > threshold) {
       // Swiped left, go next
       goToNext();
@@ -100,7 +100,7 @@ const GameCarousel: React.FC = () => {
       // Swiped right, go prev
       goToPrev();
     }
-    
+
     // Reset values
     touchStartX.current = null;
     touchEndX.current = null;
@@ -154,7 +154,7 @@ const GameCarousel: React.FC = () => {
           </button>
         </>
       )}
-      
+
       {/* Carousel Container */}
       <div
         ref={carouselRef}
@@ -163,9 +163,9 @@ const GameCarousel: React.FC = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div 
+        <div
           className="flex transition-transform duration-300 ease-out"
-          style={{ 
+          style={{
             transform: `translateX(-${currentIndex * (100 / gamesPerView)}%)`
           }}
         >
@@ -205,7 +205,7 @@ const GameCarousel: React.FC = () => {
           ))}
         </div>
       </div>
-      
+
       {/* Power Bar Pagination */}
       {showNavigation && (
         <div className="flex justify-center mt-4">

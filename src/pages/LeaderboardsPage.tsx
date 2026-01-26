@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { fetchGames } from '../services/api';
+import { isOthersGame } from '../services/othersService';
 import { ArrowRight, Search, Filter, X, Grid, List, Award } from 'lucide-react';
 import { getGameTheme, getCardClipPath, getCardBorderRadius } from '../utils/gameThemes';
 
@@ -10,6 +11,8 @@ interface Game {
   name: string;
   publisher: string;
   image_url: string;
+  slug?: string;
+  is_collection?: boolean;
 }
 
 const LeaderboardsPage: React.FC = () => {
@@ -31,10 +34,10 @@ const LeaderboardsPage: React.FC = () => {
       try {
         setIsLoading(true);
         const data = await fetchGames();
-        setGames(data);
+        const realGames = data.filter((game: Game) => !isOthersGame(game));
+        setGames(realGames);
 
-        // Extract unique publishers
-        const uniquePublishers = Array.from(new Set(data.map(game => game.publisher))).sort();
+        const uniquePublishers = Array.from(new Set(realGames.map(game => game.publisher))).sort();
         setPublishers(uniquePublishers);
       } catch (error) {
         console.error('Error loading games:', error);

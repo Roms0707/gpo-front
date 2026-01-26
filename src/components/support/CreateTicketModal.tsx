@@ -29,14 +29,14 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const subjectInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // Pre-fill subject if tournament is provided
   useEffect(() => {
     if (tournamentName) {
       setSubject(`${t('support.tournamentIssue')} ${tournamentName}`);
     }
   }, [tournamentName]);
-  
+
   // Focus on subject input when modal opens
   useEffect(() => {
     if (isOpen && subjectInputRef.current) {
@@ -45,45 +45,45 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
       }, 100);
     }
   }, [isOpen]);
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      
+
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast.error(t('support.fileTooLarge'));
         return;
       }
-      
+
       setSelectedFile(file);
     }
   };
-  
+
   const uploadFile = async (): Promise<string | null> => {
     if (!selectedFile) return null;
-    
+
     try {
       setIsUploading(true);
-      
+
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `support-${Date.now()}.${fileExt}`;
       const filePath = `support-attachments/${fileName}`;
-      
+
       // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('chat-attachments') // Reusing the existing bucket
         .upload(filePath, selectedFile);
-      
+
       if (uploadError) {
         throw uploadError;
       }
-      
+
       // Get the public URL
       const { data } = supabase.storage
         .from('chat-attachments')
         .getPublicUrl(filePath);
-      
+
       return data.publicUrl;
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -93,42 +93,42 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
       setIsUploading(false);
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error(t('support.mustBeLoggedIn'));
       return;
     }
-    
+
     if (!subject.trim() || !description.trim()) {
       toast.error(t('support.fillAllFields'));
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Upload file if selected
       let fileUrl = null;
       if (selectedFile) {
         fileUrl = await uploadFile();
       }
-      
+
       // Add file URL to description if uploaded
       let fullDescription = description.trim();
       if (fileUrl) {
         fullDescription += `\n\n${t('support.attachmentLabel')} ${fileUrl}\n${t('support.fileName')} ${selectedFile.name}`;
       }
-      
+
       const result = await createSupportTicket(
         user.id,
         subject.trim(),
         fullDescription,
         tournamentId
       );
-      
+
       if (result.success) {
         toast.success(t('support.ticketCreatedSuccess'));
         setSubject('');
@@ -145,12 +145,12 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
       setIsSubmitting(false);
     }
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 overflow-y-auto">
-      <div 
+      <div
         ref={modalRef}
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl my-8 flex flex-col h-[calc(100vh-4rem)] border border-gray-200 dark:border-gray-800"
       >
@@ -161,7 +161,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
               {t('support.contactSupport')}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('support.close')}
@@ -169,7 +169,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="flex flex-col flex-1">
           <div className="p-6 space-y-6 overflow-y-auto flex-1 min-h-0 flex flex-col" onClick={(e) => e.stopPropagation()}>
             {tournamentId && tournamentName && (
@@ -181,7 +181,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                 </div>
               </div>
             )}
-            
+
             {/* File Attachment */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -194,7 +194,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                       <File className="h-5 w-5 mr-2 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                       <span className="text-sm truncate text-gray-900 dark:text-white">{selectedFile.name}</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => setSelectedFile(null)}
                       className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
                       aria-label={t('support.removeFile')}
@@ -224,7 +224,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                 {t('support.acceptedFormats')}
               </p>
             </div>
-            
+
             <div>
               <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('support.ticketSubject')} <span className="text-error-500">*</span>
@@ -240,7 +240,7 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                 required
               />
             </div>
-            
+
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('support.ticketDescription')} <span className="text-error-500">*</span>
@@ -254,14 +254,14 @@ const CreateTicketModal: React.FC<CreateTicketModalProps> = ({
                 required
               />
             </div>
-            
+
             <div className="bg-info-100 dark:bg-info-500/20 border border-info-300 dark:border-info-600/30 p-4 rounded-lg">
               <p className="text-info-700 dark:text-info-300 text-sm">
                 {t('support.supportResponseInfo')}
               </p>
             </div>
           </div>
-          
+
           <div className="p-6 border-t border-gray-200 dark:border-gray-800 flex justify-between">
             <button
               type="button"

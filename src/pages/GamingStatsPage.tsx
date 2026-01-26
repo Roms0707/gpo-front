@@ -96,15 +96,15 @@ const GamingStatsPage: React.FC = () => {
       // Determine target user ID - either from URL params or current user
       const targetUserId = paramUserId || user?.id;
       if (!targetUserId) return;
-      
+
       // Determine if we're displaying own stats or another user's stats
       const isOwnStats = !paramUserId || paramUserId === user?.id;
       setDisplayingOwnStats(isOwnStats);
-      
+
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Call the new aggregated Edge Function
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-user-profile-aggregated`, {
           method: 'POST',
@@ -116,16 +116,16 @@ const GamingStatsPage: React.FC = () => {
             user_id: targetUserId
           })
         });
-        
+
         const result = await response.json();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch user profile');
         }
-        
+
         const data = result.data;
         setUserProfile(data);
-        
+
         // Check if the loaded profile has any gaming statistics
         const hasStats = !!(
           (data?.game_rankings && data.game_rankings.length > 0) ||
@@ -141,7 +141,7 @@ const GamingStatsPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadUserProfile();
   }, [user?.id, paramUserId]);
 
@@ -155,12 +155,12 @@ const GamingStatsPage: React.FC = () => {
   // Load League of Legends data when LoL tab is selected
   useEffect(() => {
     if (activeTab === 'league-of-legends' && !riotMatchHistory.length && userProfile?.gaming_accounts) {
-      const lolAccount = userProfile.gaming_accounts.find((account: any) => 
+      const lolAccount = userProfile.gaming_accounts.find((account: any) =>
         account.game_publisher_ids?.games?.name === 'League of Legends' &&
         account.is_validated &&
         account.validation_data?.puuid
       );
-      
+
       if (lolAccount) {
         loadRiotMatchHistory();
       }
@@ -175,7 +175,7 @@ const GamingStatsPage: React.FC = () => {
         account.is_validated &&
         account.validation_data?.puuid
       );
-      
+
       if (valorantAccount) {
         loadValorantData(valorantAccount.validation_data.puuid, valorantAccount.validation_data.region);
       }
@@ -191,7 +191,7 @@ const GamingStatsPage: React.FC = () => {
     if (!userProfile?.gaming_accounts) return;
 
     // Find Steam account
-    const steamAccount = userProfile.gaming_accounts.find((account: any) => 
+    const steamAccount = userProfile.gaming_accounts.find((account: any) =>
       account.game_publisher_ids?.games?.name?.toLowerCase().includes('steam') ||
       account.game_publisher_ids?.label?.toLowerCase().includes('steam')
     );
@@ -239,7 +239,7 @@ const GamingStatsPage: React.FC = () => {
     if (!userProfile?.gaming_accounts) return;
 
     // Find Riot account
-    const riotAccount = userProfile.gaming_accounts.find((account: any) => 
+    const riotAccount = userProfile.gaming_accounts.find((account: any) =>
       account.game_publisher_ids?.games?.name === 'League of Legends' &&
       account.is_validated &&
       account.validation_data?.puuid
@@ -384,7 +384,7 @@ const GamingStatsPage: React.FC = () => {
     const totalScore = scores.reduce((sum: number, score: number) => sum + score, 0);
     const averageScore = Math.round(totalScore / totalGames);
     const bestScore = Math.max(...scores);
-    
+
     // Calculate improvement (compare last 5 games vs previous 5 games)
     let improvement = 0;
     if (totalGames >= 10) {
@@ -394,7 +394,7 @@ const GamingStatsPage: React.FC = () => {
       const previousAvg = previous5.reduce((sum: number, score: number) => sum + score, 0) / 5;
       improvement = Math.round(((recentAvg - previousAvg) / previousAvg) * 100);
     }
-    
+
     return {
       totalGames,
       averageScore,
@@ -407,7 +407,7 @@ const GamingStatsPage: React.FC = () => {
   // Generate stats summary for sharing
   const generateStatsShareMessage = () => {
     let message = `${t('gaming.myGameStats')}\n\n`;
-    
+
     // Tournament stats
     if (userProfile?.tournament_stats) {
       const stats = userProfile.tournament_stats;
@@ -416,7 +416,7 @@ const GamingStatsPage: React.FC = () => {
       message += `• ${t('gaming.ongoing')}: ${stats.ongoing}\n`;
       message += `• ${t('gaming.completed')}: ${stats.completed}\n\n`;
     }
-    
+
     // Game rankings
     if (userProfile?.game_rankings && userProfile.game_rankings.length > 0) {
       message += `${t('gaming.myBestRankings')}\n`;
@@ -425,7 +425,7 @@ const GamingStatsPage: React.FC = () => {
       });
       message += `\n`;
     }
-    
+
     // Aim trainer stats
     if (calculatedAimTrainerStats.totalGames > 0) {
       message += `🎯 ${t('gaming.aimTrainer')}:\n`;
@@ -437,9 +437,9 @@ const GamingStatsPage: React.FC = () => {
       }
       message += `\n`;
     }
-    
+
     message += t('gaming.viewMyCompleteStats');
-    
+
     return message;
   };
 
@@ -459,7 +459,7 @@ const GamingStatsPage: React.FC = () => {
     contactAvatarOrDescription?: string | null
   ) => {
     setShowShareChatListModal(false);
-    
+
     if (contactType === 'user') {
       setSelectedShareFriend({
         id: contactId,
@@ -501,13 +501,13 @@ const GamingStatsPage: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('gaming.backToProfile')}
             </Link>
-            
+
             <div className="bg-white dark:bg-dark-100 rounded-xl p-8 border border-gray-200 dark:border-gray-800">
               <AlertTriangle className="h-16 w-16 text-error-500 mx-auto mb-4" />
               <h1 className="font-heading font-bold text-2xl mb-4 text-gray-900 dark:text-white">{t('gaming.error')}</h1>
               <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
-              <button 
-                onClick={() => window.location.reload()} 
+              <button
+                onClick={() => window.location.reload()}
                 className="btn btn-primary"
               >
                 {t('gaming.retry')}
@@ -529,7 +529,7 @@ const GamingStatsPage: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t('gaming.backToProfile')}
             </Link>
-            
+
             <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
               <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -542,7 +542,7 @@ const GamingStatsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="p-6">
                 <div className="text-center py-12">
                   <Gamepad2 className="h-16 w-16 text-gray-500 mx-auto mb-4" />
@@ -603,7 +603,7 @@ const GamingStatsPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('gaming.backToProfile')}
           </Link>
-          
+
           <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
             <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -614,7 +614,7 @@ const GamingStatsPage: React.FC = () => {
                   </h1>
                   <p className="text-gray-600 dark:text-gray-400">{t('gaming.viewPerformanceAndRankings')}</p>
                 </div>
-                
+
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => setShowShareModal(true)}
@@ -623,7 +623,7 @@ const GamingStatsPage: React.FC = () => {
                     <Share2 className="h-4 w-4 mr-2" />
                     {t('gaming.share')}
                   </button>
-                  
+
                   <button
                     onClick={() => setShowPlayerProfileModal(true)}
                     className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
@@ -634,50 +634,50 @@ const GamingStatsPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Tabs Navigation */}
             <div id="walkthrough-stats-tabs" className="flex border-b border-gray-200 dark:border-gray-800 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('overview')}
                 className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                  activeTab === 'overview' 
-                    ? 'text-primary-500 border-b-2 border-primary-500' 
+                  activeTab === 'overview'
+                    ? 'text-primary-500 border-b-2 border-primary-500'
                     : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
                 {t('gaming.overview')}
               </button>
-              
+
               {userProfile?.game_rankings && userProfile.game_rankings.length > 0 && (
                 <button
                   onClick={() => setActiveTab('rankings')}
                   className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                    activeTab === 'rankings' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'rankings'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   {t('gaming.rankingsByGame')}
                 </button>
               )}
-              
-              {userProfile?.gaming_accounts?.some((account: any) => 
+
+              {userProfile?.gaming_accounts?.some((account: any) =>
                 account.game_publisher_ids?.games?.name === 'League of Legends' &&
-                account.is_validated && 
+                account.is_validated &&
                 account.validation_data
               ) && (
                 <button
                   onClick={() => setActiveTab('league-of-legends')}
                   className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                    activeTab === 'league-of-legends' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'league-of-legends'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   {t('gaming.leagueOfLegendsAccount')}
                 </button>
               )}
-              
+
               {userProfile?.gaming_accounts?.some((account: any) =>
                 account.game_publisher_ids?.games?.name === 'Valorant' &&
                 account.is_validated &&
@@ -686,44 +686,44 @@ const GamingStatsPage: React.FC = () => {
                 <button
                   onClick={() => setActiveTab('valorant')}
                   className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                    activeTab === 'valorant' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'valorant'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   {t('gaming.valorantAccount')}
                 </button>
               )}
-              
+
               {fortniteAccount && (
                 <button
                   onClick={() => setActiveTab('fortnite')}
                   className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                    activeTab === 'fortnite' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'fortnite'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   {t('gaming.fortniteAccount')}
                 </button>
               )}
-              
-              {userProfile?.gaming_accounts?.some((account: any) => 
+
+              {userProfile?.gaming_accounts?.some((account: any) =>
                 account.game_publisher_ids?.games?.name?.toLowerCase().includes('steam') ||
                 account.game_publisher_ids?.label?.toLowerCase().includes('steam')
               ) && (
                 <button
                   onClick={() => setActiveTab('steam')}
                   className={`flex-shrink-0 py-3 px-6 text-sm font-medium transition-colors ${
-                    activeTab === 'steam' 
-                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                    activeTab === 'steam'
+                      ? 'text-primary-500 border-b-2 border-primary-500'
                       : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                   }`}
                 >
                   {t('gaming.steamAccount')}
                 </button>
               )}
-              
+
               <button
                 id="walkthrough-tab-aim-trainer"
                 onClick={() => setActiveTab('aim-trainer')}
@@ -747,7 +747,7 @@ const GamingStatsPage: React.FC = () => {
                 {t('gaming.reactionTime')}
               </button>
             </div>
-            
+
             {/* Tab Content */}
             <div className="p-6">
               {/* Overview Tab */}
@@ -778,7 +778,7 @@ const GamingStatsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* Rankings Tab */}
               {activeTab === 'rankings' && userProfile?.game_rankings && (
                 <div className="space-y-6">
@@ -795,7 +795,7 @@ const GamingStatsPage: React.FC = () => {
                       </button>
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {userProfile.game_rankings
                       .slice(0, showAllGames ? undefined : 6)
@@ -817,7 +817,7 @@ const GamingStatsPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              
+
               {/* Riot Games Tab */}
               {/* League of Legends Tab */}
               {activeTab === 'league-of-legends' && userProfile?.gaming_accounts && (
@@ -882,7 +882,7 @@ const GamingStatsPage: React.FC = () => {
                           </div>
                         </div>
                       )}
-                      
+
                       {/* Error State */}
                       {riotMatchError && (
                         <div className="bg-error-500/20 border border-error-600 text-white px-4 py-3 rounded-lg">
@@ -1031,13 +1031,13 @@ const GamingStatsPage: React.FC = () => {
                       </button>
                     )}
                   </div>
-                  
+
                   {calculatedAimTrainerStats?.comingSoon && (
                     <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <p className="text-blue-800">{t('gaming.fortniteStatsComingSoon')}</p>
                     </div>
                   )}
-                  
+
                   <FortniteAccountCard
                     account={{
                       username: hasFortniteEpicId ? user?.fortnite_epic_id || '' : fortniteAccount?.username || '',
@@ -1049,7 +1049,7 @@ const GamingStatsPage: React.FC = () => {
                     isLoadingStats={isLoadingFortniteStats}
                     statsData={fortniteStats}
                   />
-                  
+
                   {fortniteStats && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       <FortniteMatchHistoryCard
@@ -1061,7 +1061,7 @@ const GamingStatsPage: React.FC = () => {
                       />
                     </div>
                   )}
-                  
+
                   {fortniteError && (
                     <div className="bg-error-500/20 border border-error-600 text-white px-4 py-3 rounded-lg">
                       <div className="flex items-center">
@@ -1070,7 +1070,7 @@ const GamingStatsPage: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  
+
                   {!fortniteStats && !fortniteError && !isLoadingFortniteStats && (
                     <div className="text-center py-8 bg-gray-100 dark:bg-dark-200 rounded-lg">
                       <Target className="h-12 w-12 text-gray-500 mx-auto mb-4" />
@@ -1084,14 +1084,14 @@ const GamingStatsPage: React.FC = () => {
                   )}
                 </div>
               )}
-              
+
               {/* Steam Tab */}
               {activeTab === 'steam' && (
                 <div className="space-y-6">
                   <h2 className="font-heading font-semibold text-xl text-gray-900 dark:text-white">
                     {t('gaming.steamProfile')}
                   </h2>
-                  
+
                   {isLoadingSteam ? (
                     <div className="flex justify-center items-center py-12">
                       <Loader className="h-8 w-8 animate-spin text-primary-500 mr-3" />
@@ -1110,22 +1110,22 @@ const GamingStatsPage: React.FC = () => {
                       {steamData.profile && (
                         <SteamProfileCard profile={steamData.profile} />
                       )}
-                      
+
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Steam Level */}
                         {steamData.level !== undefined && steamData.profile && (
-                          <SteamLevelCard 
-                            level={steamData.level} 
+                          <SteamLevelCard
+                            level={steamData.level}
                             profile={steamData.profile}
                           />
                         )}
-                        
+
                         {/* Steam Bans */}
                         {steamData.bans && (
                           <SteamBansCard bans={steamData.bans} />
                         )}
                       </div>
-                      
+
                       {/* Steam Games */}
                       {steamData.games && (
                         <SteamGamesCard games={steamData.games} />
@@ -1143,7 +1143,7 @@ const GamingStatsPage: React.FC = () => {
                   )}
                 </div>
               )}
-              
+
               {/* Aim Trainer Tab */}
               {activeTab === 'aim-trainer' && (
                 <div id="walkthrough-stats-aim-trainer" className="space-y-6">
@@ -1170,7 +1170,7 @@ const GamingStatsPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Share Options Modal */}
       {displayingOwnStats && (
         <ShareOptionsModal
@@ -1181,7 +1181,7 @@ const GamingStatsPage: React.FC = () => {
           onViewPublicProfile={() => setShowPlayerProfileModal(true)}
         />
       )}
-      
+
       {/* Player Profile Modal */}
       {displayingOwnStats && (
         <PlayerProfileModal
@@ -1190,7 +1190,7 @@ const GamingStatsPage: React.FC = () => {
           userId={user?.id || null}
         />
       )}
-      
+
       {/* Share Chat List Modal */}
       <ChatListModal
         isOpen={showShareChatListModal}
@@ -1199,7 +1199,7 @@ const GamingStatsPage: React.FC = () => {
         onContactSelectForShare={handleContactSelectForShare}
         shareTargetType={shareTargetType}
       />
-      
+
       {/* Share Chat Modal */}
       {showShareChatModal && selectedShareFriend && (
         <ChatModal
@@ -1215,7 +1215,7 @@ const GamingStatsPage: React.FC = () => {
           initialMessageContent={shareMessageContent}
         />
       )}
-      
+
       {/* Share Channel Modal */}
       {showShareChannelModal && selectedShareChannel && (
         <ChannelModal

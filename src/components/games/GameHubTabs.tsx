@@ -9,6 +9,7 @@ import {
   Brain
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
+import { useSubscriptionGuard } from '../../hooks/useSubscriptionGuard';
 
 export type GameHubTabId = 'overview' | 'tournaments' | 'leaderboard' | 'training' | 'skillLab' | 'coaching';
 
@@ -33,8 +34,19 @@ interface GameHubTabsProps {
   theme: GameTheme;
 }
 
+const PROTECTED_TABS: GameHubTabId[] = ['training', 'skillLab', 'coaching'];
+
 const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme }) => {
   const { t } = useTranslation();
+  const { checkAccess, isKliento } = useSubscriptionGuard();
+
+  const handleTabClick = async (tabId: GameHubTabId) => {
+    if (isKliento && PROTECTED_TABS.includes(tabId)) {
+      const hasAccess = await checkAccess();
+      if (!hasAccess) return;
+    }
+    onTabChange(tabId);
+  };
 
   return (
     <div id="walkthrough-gamehub-tabs" className="relative">
@@ -52,7 +64,7 @@ const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme
                   tab.id === 'training' ? 'walkthrough-tab-training' :
                   undefined
                 }
-                onClick={() => onTabChange(tab.id)}
+                onClick={() => handleTabClick(tab.id)}
                 className={`
                   relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium
                   transition-all duration-200 whitespace-nowrap

@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Target, Zap, TrendingUp, Crosshair, Timer, Trophy, Gamepad2 } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
 import { APP_CONFIG } from '../../../constants';
+import { useAuth } from '../../../contexts/AuthContext';
 import AimTrainerGame from '../AimTrainerGame';
 import ReactionTimeGame from '../ReactionTimeGame';
+import AuthRequiredOverlay from '../../auth/AuthRequiredOverlay';
 
 type SkillGameTab = 'aim-trainer' | 'reaction-time';
 
@@ -20,6 +22,7 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
   theme,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
 
   const hasAimTrainer = APP_CONFIG.AIM_TRAINER_GAME_IDS.includes(gameId);
   const hasReactionGame = APP_CONFIG.REACTION_TIME_ONLY_GAME_IDS.includes(gameId) || hasAimTrainer;
@@ -85,7 +88,7 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
     );
   }
 
-  return (
+  const content = (
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('gameHub.skillLab.title')}</h2>
@@ -173,6 +176,20 @@ const GameHubSkillLabTab: React.FC<GameHubSkillLabTabProps> = ({
       </div>
     </div>
   );
+
+  if (!user) {
+    return (
+      <AuthRequiredOverlay
+        theme={theme}
+        title={t('auth.skillLabLocked.title', 'Unlock Skills Lab')}
+        description={t('auth.skillLabLocked.description', 'Login to train your aim and reaction time with personalized tracking')}
+      >
+        {content}
+      </AuthRequiredOverlay>
+    );
+  }
+
+  return content;
 };
 
 export default GameHubSkillLabTab;

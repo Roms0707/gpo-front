@@ -37,12 +37,12 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
   const [showChatModal, setShowChatModal] = useState(false);
   const [selectedChat, setSelectedChat] = useState<{id: string, name: string, avatar?: string}>({id: '', name: ''});
   const [isDeletingAll, setIsDeletingAll] = useState(false);
-  
+
   useEffect(() => {
     if (isOpen && user?.id) {
       loadNotifications();
       loadUnreadMessages();
-      
+
       // Set up real-time subscription for notifications
       const subscription = supabase
         .channel('notifications-changes')
@@ -55,7 +55,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
           loadNotifications();
         })
         .subscribe();
-      
+
       // Set up real-time subscription for messages
       const messagesSubscription = supabase
         .channel('messages-changes')
@@ -76,37 +76,37 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
           loadUnreadMessages();
         })
         .subscribe();
-      
+
       return () => {
         supabase.removeChannel(subscription);
         supabase.removeChannel(messagesSubscription);
       };
     }
   }, [isOpen, user?.id, activeTab]);
-  
+
   const loadNotifications = async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       let query = supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-      
+
       if (activeTab === 'unread') {
         query = query.eq('read', false);
       }
-      
+
       const { data, error } = await query;
-      
+
       if (error) {
         console.error('Error loading notifications:', error);
         return;
       }
-      
+
       setNotifications(data || []);
     } catch (error) {
       console.error('Error loading notifications:', error);
@@ -114,10 +114,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       setIsLoading(false);
     }
   };
-  
+
   const loadUnreadMessages = async () => {
     if (!user?.id) return;
-    
+
     try {
       // Get unread messages grouped by sender
       const { data, error } = await supabase
@@ -133,12 +133,12 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
         .eq('receiver_id', user.id)
         .eq('read', false)
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('Error loading unread messages:', error);
         return;
       }
-      
+
       // Group messages by sender
       const messagesBySender = (data || []).reduce((acc: any, message: any) => {
         const senderId = message.sender_id;
@@ -150,18 +150,18 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
             latest: null
           };
         }
-        
+
         acc[senderId].messages.push(message);
         acc[senderId].count += 1;
-        
+
         // Track the latest message
         if (!acc[senderId].latest || new Date(message.created_at) > new Date(acc[senderId].latest.created_at)) {
           acc[senderId].latest = message;
         }
-        
+
         return acc;
       }, {});
-      
+
       // Convert to array
       const unreadMessagesArray = Object.values(messagesBySender);
       setUnreadMessages(unreadMessagesArray);
@@ -169,24 +169,24 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       console.error('Error loading unread messages:', error);
     }
   };
-  
+
   const markAsRead = async (notificationId: string) => {
     try {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
         .eq('id', notificationId);
-      
+
       if (error) {
         console.error('Error marking notification as read:', error);
         return;
       }
-      
+
       // Update local state
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === notificationId 
-            ? { ...notification, read: true } 
+      setNotifications(prev =>
+        prev.map(notification =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
             : notification
         )
       );
@@ -194,94 +194,94 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       console.error('Error marking notification as read:', error);
     }
   };
-  
+
   const markAllAsRead = async () => {
     if (!user?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('notifications')
         .update({ read: true })
         .eq('user_id', user.id)
         .eq('read', false);
-      
+
       if (error) {
         console.error('Error marking all notifications as read:', error);
         return;
       }
-      
+
       // Update local state
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(notification => ({ ...notification, read: true }))
       );
-      
+
       // Also mark all messages as read
       await markAllMessagesAsRead();
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
     }
   };
-  
+
   const markAllMessagesAsRead = async () => {
     if (!user?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('messages')
         .update({ read: true })
         .eq('receiver_id', user.id)
         .eq('read', false);
-      
+
       if (error) {
         console.error('Error marking all messages as read:', error);
         return;
       }
-      
+
       // Update local state
       setUnreadMessages([]);
     } catch (error) {
       console.error('Error marking all messages as read:', error);
     }
   };
-  
+
   const deleteNotification = async (notificationId: string) => {
     try {
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('id', notificationId);
-      
+
       if (error) {
         console.error('Error deleting notification:', error);
         return;
       }
-      
+
       // Update local state
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.filter(notification => notification.id !== notificationId)
       );
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
   };
-  
+
   const deleteAllNotifications = async () => {
     if (!user?.id) return;
-    
+
     try {
       setIsDeletingAll(true);
-      
+
       const { error } = await supabase
         .from('notifications')
         .delete()
         .eq('user_id', user.id);
-      
+
       if (error) {
         console.error('Error deleting all notifications:', error);
         toast.error(t('notifications.errorDeletingNotifications'));
         return;
       }
-      
+
       // Update local state
       setNotifications([]);
       toast.success(t('notifications.allNotificationsDeleted'));
@@ -292,10 +292,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       setIsDeletingAll(false);
     }
   };
-  
+
   const markMessagesAsRead = async (senderId: string) => {
     if (!user?.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('messages')
@@ -303,21 +303,21 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
         .eq('sender_id', senderId)
         .eq('receiver_id', user.id)
         .eq('read', false);
-      
+
       if (error) {
         console.error('Error marking messages as read:', error);
         return;
       }
-      
+
       // Update local state
-      setUnreadMessages(prev => 
+      setUnreadMessages(prev =>
         prev.filter(item => item.sender.id !== senderId)
       );
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
   };
-  
+
   const openChat = (senderId: string, senderName: string, senderAvatar?: string) => {
     setSelectedChat({
       id: senderId,
@@ -328,7 +328,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
     markMessagesAsRead(senderId);
     onClose();
   };
-  
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'tournament_status':
@@ -360,10 +360,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
         return <Info className="h-5 w-5 text-gray-400" aria-hidden="true" />;
     }
   };
-  
+
   const formatTimeAgo = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { 
+      return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
         locale: fr
       });
@@ -371,10 +371,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       return t('notifications.unknownDate');
     }
   };
-  
+
   const unreadCount = notifications.filter(n => !n.read).length;
   const totalUnreadItems = unreadCount + unreadMessages.length;
-  
+
   // Add/remove modal-open class to body
   React.useEffect(() => {
     if (isOpen) {
@@ -382,21 +382,21 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
     } else {
       document.body.classList.remove('modal-open');
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('modal-open');
     };
   }, [isOpen]);
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 md:pt-24 px-4">
         <div className="fixed inset-0 bg-black/75 z-49" onClick={onClose}></div>
-        
-        <div 
+
+        <div
           className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md max-h-[80vh] overflow-hidden border border-gray-200 dark:border-gray-800 relative z-50"
           role="dialog"
           aria-modal="true"
@@ -415,7 +415,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                 </span>
               )}
             </div>
-            <button 
+            <button
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
               aria-label={t('common.close')}
@@ -423,14 +423,14 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
               <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-          
+
           {/* Tabs Navigation */}
           <div className="flex border-b border-gray-200 dark:border-gray-800" role="tablist">
             <button
               onClick={() => setActiveTab('all')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'all' 
-                  ? 'text-primary-400 border-b-2 border-primary-500' 
+                activeTab === 'all'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-200'
               }`}
               role="tab"
@@ -443,8 +443,8 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
             <button
               onClick={() => setActiveTab('unread')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'unread' 
-                  ? 'text-primary-400 border-b-2 border-primary-500' 
+                activeTab === 'unread'
+                  ? 'text-primary-400 border-b-2 border-primary-500'
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-200'
               }`}
               role="tab"
@@ -454,7 +454,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
             >
               {t('notifications.unread')} {totalUnreadItems > 0 && `(${totalUnreadItems})`}
             </button>
-            
+
             {totalUnreadItems > 0 && (
               <button
                 onClick={markAllAsRead}
@@ -464,7 +464,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                 {t('notifications.markAllAsRead')}
               </button>
             )}
-            
+
             {notifications.length > 0 && (
               <button
                 onClick={deleteAllNotifications}
@@ -483,9 +483,9 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
               </button>
             )}
           </div>
-          
+
           {/* Notifications List */}
-          <div 
+          <div
             className="overflow-y-auto max-h-[calc(80vh-120px)]"
             tabIndex={0}
             role="tabpanel"
@@ -508,7 +508,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                     </h3>
                     <div className="space-y-2">
                       {unreadMessages.map((item: any) => (
-                        <div 
+                        <div
                           key={item.sender.id}
                           className="bg-white dark:bg-dark-200 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-300 transition-colors cursor-pointer border border-gray-200 dark:border-transparent"
                           onClick={() => openChat(item.sender.id, item.sender.username, item.sender.avatar_url)}
@@ -525,9 +525,9 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                               {item.sender.avatar_url ? (
-                                <img 
-                                  src={item.sender.avatar_url} 
-                                  alt="" 
+                                <img
+                                  src={item.sender.avatar_url}
+                                  alt=""
                                   className="w-full h-full object-cover"
                                   aria-hidden="true"
                                 />
@@ -557,13 +557,13 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                     </div>
                   </div>
                 )}
-                
+
                 {/* Regular Notifications */}
                 {notifications.length > 0 ? (
                   <div className="divide-y divide-gray-200 dark:divide-gray-800">
                     {notifications.map((notification) => (
-                      <div 
-                        key={notification.id} 
+                      <div
+                        key={notification.id}
                         className={`p-4 hover:bg-gray-50 dark:hover:bg-dark-200/50 transition-colors ${!notification.read ? 'bg-gray-100 dark:bg-dark-200/30' : ''}`}
                       >
                         <div className="flex">
@@ -580,10 +580,10 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                             <p className="text-sm text-gray-700 dark:text-gray-200 mt-1">
                               {notification.message}
                             </p>
-                            
+
                             {notification.link && (
-                              <Link 
-                                to={notification.link} 
+                              <Link
+                                to={notification.link}
                                 className="text-primary-400 hover:text-primary-300 text-sm mt-2 inline-block"
                                 onClick={() => markAsRead(notification.id)}
                                 aria-label={`${notification.type === 'friend_request' ? t('notifications.viewRequest') :
@@ -598,7 +598,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                                 t('notifications.viewDetails')}
                               </Link>
                             )}
-                            
+
                             <div className="flex justify-end mt-2 space-x-2">
                               {!notification.read && (
                                 <button
@@ -637,7 +637,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
           </div>
         </div>
       </div>
-      
+
       {/* Chat Modal */}
       {showChatModal && (
         <ChatModal

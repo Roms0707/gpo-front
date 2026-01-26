@@ -46,7 +46,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
   const [activeTab, setActiveTab] = useState<'teams' | 'applications'>('teams');
   const [userApplications, setUserApplications] = useState<any[]>([]);
   const [teamApplications, setTeamApplications] = useState<any[]>([]);
-  
+
   // Application form state
   const [showApplicationForm, setShowApplicationForm] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -54,11 +54,11 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
   const [applicationMessage, setApplicationMessage] = useState('');
   const [gamePublisherFields, setGamePublisherFields] = useState<any[]>([]);
   const [gameId, setGameId] = useState<string | null>(null);
-  
+
   // Player profile modal state
   const [isPlayerProfileModalOpen, setIsPlayerProfileModalOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  
+
   useEffect(() => {
     if (isOpen) {
       loadTeams();
@@ -71,24 +71,24 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       }
     }
   }, [isOpen, tournamentId, user, userTeamId, isTeamCaptain]);
-  
+
   // Load game ID for the tournament
   useEffect(() => {
     const loadTournamentGameId = async () => {
       if (!tournamentId) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('tournaments')
           .select('game_id')
           .eq('id', tournamentId)
           .single();
-        
+
         if (error) {
           console.error('Error loading tournament game ID:', error);
           return;
         }
-        
+
         if (data?.game_id) {
           setGameId(data.game_id);
           loadGamePublisherFields(data.game_id);
@@ -97,10 +97,10 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         console.error('Error loading tournament game ID:', error);
       }
     };
-    
+
     loadTournamentGameId();
   }, [tournamentId]);
-  
+
   const loadGamePublisherFields = async (gameId: string) => {
     try {
       // Get game publisher IDs for this specific game
@@ -158,19 +158,19 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       console.error('Error loading game publisher fields:', error);
     }
   };
-  
+
   const handleGamePublisherFieldChange = (fieldId: string, value: string) => {
-    setGamePublisherFields(prev => 
-      prev.map(field => 
+    setGamePublisherFields(prev =>
+      prev.map(field =>
         field.id === fieldId ? { ...field, value } : field
       )
     );
   };
-  
+
   const loadTeams = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get teams for this tournament that are looking for players
       const { data: teamsData, error } = await supabase
         .from('teams')
@@ -185,12 +185,12 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         `)
         .eq('tournament_id', tournamentId)
         .eq('is_looking_for_players', true);
-      
+
       if (error) {
         console.error('Error loading teams:', error);
         return;
       }
-      
+
       // Get member counts for each team
       const teamsWithMemberCounts = await Promise.all(
         (teamsData || []).map(async (team) => {
@@ -200,11 +200,11 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             .select('*', { count: 'exact', head: true })
             .eq('team_id', team.id)
             .eq('status', 'accepted');
-          
+
           // Check if user has applied to this team
           let userHasApplied = false;
           let applicationStatus = null;
-          
+
           if (user) {
             const { data: applicationData, error: appError } = await supabase
               .from('team_applications')
@@ -212,13 +212,13 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               .eq('team_id', team.id)
               .eq('user_id', user.id)
               .maybeSingle();
-            
+
             if (!appError && applicationData) {
               userHasApplied = true;
               applicationStatus = applicationData.status;
             }
           }
-          
+
           return {
             id: team.id,
             name: team.name,
@@ -232,7 +232,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
           };
         })
       );
-      
+
       setTeams(teamsWithMemberCounts);
     } catch (error) {
       console.error('Error loading teams:', error);
@@ -240,50 +240,50 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       setIsLoading(false);
     }
   };
-  
+
   const checkTeamLfpStatus = async () => {
     if (!userTeamId || !isTeamCaptain) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('teams')
         .select('is_looking_for_players')
         .eq('id', userTeamId)
         .single();
-      
+
       if (error) {
         console.error('Error checking LFP status:', error);
         return;
       }
-      
+
       setIsTeamLfp(data?.is_looking_for_players || false);
     } catch (error) {
       console.error('Error checking LFP status:', error);
     }
   };
-  
+
   const toggleLfpStatus = async () => {
     if (!userTeamId || !isTeamCaptain) return;
-    
+
     try {
       setIsUpdatingLfp(true);
-      
+
       const newStatus = !isTeamLfp;
-      
+
       const { error } = await supabase
         .from('teams')
         .update({ is_looking_for_players: newStatus })
         .eq('id', userTeamId);
-      
+
       if (error) {
         console.error('Error updating LFP status:', error);
         toast.error(t('lookingForPeople.errorUpdatingStatus'));
         return;
       }
-      
+
       setIsTeamLfp(newStatus);
       toast.success(newStatus ? t('lookingForPeople.teamNowLookingForPlayers') : t('lookingForPeople.teamNoLongerLookingForPlayers'));
-      
+
       // Refresh the teams list
       loadTeams();
     } catch (error) {
@@ -293,25 +293,25 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       setIsUpdatingLfp(false);
     }
   };
-  
+
   const openApplicationForm = (teamId: string, teamName: string) => {
     if (!user) {
       toast.error(t('lookingForPeople.mustBeLoggedInToApply'));
       return;
     }
-    
+
     setSelectedTeamId(teamId);
     setSelectedTeamName(teamName);
     setShowApplicationForm(true);
   };
-  
+
   const saveGamePublisherAccounts = async () => {
     if (!user?.id || !gameId) return;
 
     try {
       // Only save fields with values
       const fieldsWithValues = gamePublisherFields.filter(field => field.value && field.value.trim() !== '');
-      
+
       if (fieldsWithValues.length > 0) {
         // For each field, upsert the value
         for (const field of fieldsWithValues) {
@@ -336,36 +336,36 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       throw error;
     }
   };
-  
+
   const submitApplication = async () => {
     if (!user) {
       toast.error(t('lookingForPeople.mustBeLoggedInToApply'));
       return;
     }
-    
+
     if (!selectedTeamId) {
       toast.error(t('lookingForPeople.noTeamSelected'));
       return;
     }
-    
+
     // Validate required gaming account fields
     const requiredFields = gamePublisherFields.filter(field => field.required);
     const missingFields = requiredFields.filter(field => !field.value || field.value.trim() === '');
-    
+
     if (missingFields.length > 0) {
       const fieldNames = missingFields.map(field => field.label).join(', ');
       toast.error(t('lookingForPeople.pleaseFillRequiredFields', { fieldNames }));
       return;
     }
-    
+
     try {
       setIsApplying(true);
-      
+
       // Save gaming account information first
       if (gamePublisherFields.length > 0) {
         await saveGamePublisherAccounts();
       }
-      
+
       // Check if user already has a team for this tournament
       const { data: existingTeam, error: teamError } = await supabase
         .from('team_members') // Check team_members table
@@ -377,12 +377,12 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         .eq('status', 'accepted')
         .eq('teams.tournament_id', tournamentId) // Filter by the current tournament ID
         .maybeSingle();
-      
+
       if (existingTeam) {
         toast.error(t('lookingForPeople.alreadyMemberOfTeam'));
         return;
       }
-      
+
       // Create application
       const { error } = await supabase
         .from('team_applications')
@@ -395,10 +395,10 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             message: applicationMessage
           }
         ]);
-      
+
       if (error) {
         console.error('Error applying to team:', error);
-        
+
         if (error.code === '23505') { // Unique constraint violation
           toast.error(t('lookingForPeople.alreadyAppliedToTeam'));
         } else {
@@ -406,15 +406,15 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         }
         return;
       }
-      
+
       toast.success(t('lookingForPeople.applicationSentSuccessfully'));
-      
+
       // Reset form and close it
       setShowApplicationForm(false);
       setSelectedTeamId(null);
       setSelectedTeamName('');
       setApplicationMessage('');
-      
+
       // Refresh the teams list and user applications
       loadTeams();
       loadUserApplications();
@@ -425,10 +425,10 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       setIsApplying(false);
     }
   };
-  
+
   const loadUserApplications = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('team_applications')
@@ -445,21 +445,21 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         `)
         .eq('user_id', user.id)
         .eq('tournament_id', tournamentId);
-      
+
       if (error) {
         console.error('Error loading user applications:', error);
         return;
       }
-      
+
       setUserApplications(data || []);
     } catch (error) {
       console.error('Error loading user applications:', error);
     }
   };
-  
+
   const loadTeamApplications = async () => {
     if (!userTeamId || !isTeamCaptain) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('team_applications')
@@ -477,90 +477,90 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
         `)
         .eq('team_id', userTeamId)
         .eq('tournament_id', tournamentId);
-      
+
       if (error) {
         console.error('Error loading team applications:', error);
         return;
       }
-      
+
       setTeamApplications(data || []);
     } catch (error) {
       console.error('Error loading team applications:', error);
     }
   };
-  
+
   const handleApplicationAction = async (applicationId: string, action: 'accept' | 'reject') => {
     try {
       // For acceptance, validate server-side first
       if (action === 'accept') {
         console.log('Validating team application acceptance...');
-        
+
         // Get application details to get user_id
         const application = teamApplications.find(app => app.id === applicationId);
         if (!application) {
           toast.error('Application not found');
           return;
         }
-        
+
         const validationResult = await validateTeamApplicationAcceptance(
           applicationId,
           userTeamId!,
           application.user_id
         );
-        
+
         if (!validationResult.success) {
           toast.error(validationResult.error || 'Application acceptance validation failed');
           return;
         }
-        
+
         console.log('Team application acceptance validation passed');
       }
-      
+
       // Update application status
       const { error: updateError } = await supabase
         .from('team_applications')
         .update({ status: action === 'accept' ? 'accepted' : 'rejected' })
         .eq('id', applicationId);
-      
+
       if (updateError) {
         console.error('Error updating application:', updateError);
         toast.error('Erreur lors de la mise à jour de la candidature');
         return;
       }
-      
+
       // If accepted, add user to team
       if (action === 'accept') {
         // Get the application to get the user_id
         let userId;
         let teamChatChannelId = null;
-        
+
         const { data: application, error: appError } = await supabase
           .from('team_applications')
           .select('user_id')
           .eq('id', applicationId)
           .single();
-        
+
         if (appError || !application) {
           console.error('Error getting application:', appError);
           toast.error('Erreur lors de l\'ajout du membre à l\'équipe');
           return;
         }
-        
+
         userId = application.user_id;
-        
+
         // Get the team's chat channel ID
         const { data: teamData, error: teamDataError } = await supabase
           .from('teams')
           .select('chat_channel_id')
           .eq('id', userTeamId)
           .single();
-        
+
         if (teamDataError) {
           console.error('Error getting team data:', teamDataError);
         } else if (teamData?.chat_channel_id) {
           teamChatChannelId = teamData.chat_channel_id;
         }
-        
+
         // Add user to team
         const { error: memberError } = await supabase
           .from('team_members')
@@ -572,13 +572,13 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               status: 'accepted'
             }
           ]);
-        
+
         if (memberError) {
           console.error('Error adding team member:', memberError);
           toast.error('Erreur lors de l\'ajout du membre à l\'équipe');
           return;
         }
-        
+
         // Add user to team chat channel if it exists
         if (teamChatChannelId) {
           try {
@@ -589,7 +589,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             // Don't throw here, as this is not critical to the team joining process
           }
         }
-        
+
         // Register user for tournament with team
         const { error: regError } = await supabase
           .from('tournament_registrations')
@@ -601,14 +601,14 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               status: 'pending'
             }
           ]);
-        
+
         if (regError && regError.code !== '23505') { // Ignore unique constraint violations (already registered)
           console.error('Error registering user for tournament:', regError);
         }
       }
-      
+
       toast.success(action === 'accept' ? t('lookingForPeople.applicationAccepted') : t('lookingForPeople.applicationRejected'));
-      
+
       // Refresh applications
       loadTeamApplications();
     } catch (error) {
@@ -616,22 +616,22 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       toast.error(t('lookingForPeople.errorProcessingApplication'));
     }
   };
-  
+
   const cancelApplication = async (applicationId: string) => {
     try {
       const { error } = await supabase
         .from('team_applications')
         .delete()
         .eq('id', applicationId);
-      
+
       if (error) {
         console.error('Error canceling application:', error);
         toast.error(t('lookingForPeople.errorCancelingApplication'));
         return;
       }
-      
+
       toast.success(t('lookingForPeople.applicationCanceled'));
-      
+
       // Refresh applications
       loadUserApplications();
       loadTeams();
@@ -640,21 +640,21 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       toast.error('Erreur lors de l\'annulation de la candidature');
     }
   };
-  
+
   // Handle player profile click
   const handlePlayerClick = (userId: string) => {
     setSelectedPlayerId(userId);
     setIsPlayerProfileModalOpen(true);
   };
-  
+
   if (!isOpen) return null;
-  
+
   // Filter teams based on search query
-  const filteredTeams = teams.filter(team => 
+  const filteredTeams = teams.filter(team =>
     team.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     team.captain_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   // Application form
   if (showApplicationForm) {
     return (
@@ -667,7 +667,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                 {t('lookingForPeople.applyFor', { teamName: selectedTeamName })}
               </h2>
             </div>
-            <button 
+            <button
               onClick={() => setShowApplicationForm(false)}
               className="text-gray-400 hover:text-white"
               aria-label={t('lookingForPeople.close')}
@@ -675,7 +675,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               <X className="h-5 w-5" />
             </button>
           </div>
-          
+
           <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
             <div className="space-y-6">
               {/* Message */}
@@ -692,7 +692,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                   required
                 />
               </div>
-              
+
               {/* Gaming Account Fields */}
               {gamePublisherFields.length > 0 && (
                 <div>
@@ -720,7 +720,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                   </div>
                 </div>
               )}
-              
+
               <div className="bg-info-500/20 border border-info-600/30 p-4 rounded-lg">
                 <p className="text-info-300 text-sm">
                   {t('lookingForPeople.applyingAcceptTerms')}
@@ -728,7 +728,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="p-6 border-t border-gray-800 flex justify-between">
             <button
               onClick={() => setShowApplicationForm(false)}
@@ -758,7 +758,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       </div>
     );
   }
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800">
@@ -769,7 +769,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               {t('lookingForPeople.title')}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('lookingForPeople.close')}
@@ -777,7 +777,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Captain Controls - Only show if user is a team captain */}
         {userTeamId && isTeamCaptain && (
           <div className="p-4 bg-gray-100 dark:bg-dark-200 border-b border-gray-200 dark:border-gray-800">
@@ -792,8 +792,8 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                 onClick={toggleLfpStatus}
                 disabled={isUpdatingLfp}
                 className={`px-4 py-2 rounded-lg transition-colors ${
-                  isTeamLfp 
-                    ? 'bg-success-600 hover:bg-success-700 text-white' 
+                  isTeamLfp
+                    ? 'bg-success-600 hover:bg-success-700 text-white'
                     : 'bg-gray-300 hover:bg-gray-400 dark:bg-dark-300 dark:hover:bg-dark-400 text-gray-700 dark:text-gray-300'
                 }`}
               >
@@ -817,28 +817,28 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             </div>
           </div>
         )}
-        
+
         {/* Tabs - Show tabs if user is captain or has applications */}
         {((userTeamId && isTeamCaptain) || userApplications.length > 0) && (
           <div className="flex border-b border-gray-200 dark:border-gray-800">
             <button
               onClick={() => setActiveTab('teams')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'teams' 
-                  ? 'text-primary-500 border-b-2 border-primary-500' 
+                activeTab === 'teams'
+                  ? 'text-primary-500 border-b-2 border-primary-500'
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
               <Users className="h-4 w-4 inline mr-2" />
               {t('lookingForPeople.availableTeams')}
             </button>
-            
+
             {userTeamId && isTeamCaptain ? (
               <button
                 onClick={() => setActiveTab('applications')}
                 className={`flex-1 py-3 px-4 text-sm font-medium ${
-                  activeTab === 'applications' 
-                    ? 'text-primary-500 border-b-2 border-primary-500' 
+                  activeTab === 'applications'
+                    ? 'text-primary-500 border-b-2 border-primary-500'
                     : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
@@ -854,8 +854,8 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
               <button
                 onClick={() => setActiveTab('applications')}
                 className={`flex-1 py-3 px-4 text-sm font-medium ${
-                  activeTab === 'applications' 
-                    ? 'text-primary-500 border-b-2 border-primary-500' 
+                  activeTab === 'applications'
+                    ? 'text-primary-500 border-b-2 border-primary-500'
                     : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                 }`}
               >
@@ -870,14 +870,14 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             )}
           </div>
         )}
-        
+
         {/* Teams List */}
         {activeTab === 'teams' && (
           <>
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
-                <input 
+                <input
                   type="text"
                   placeholder={t('lookingForPeople.searchTeam')}
                   className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -886,7 +886,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                 />
               </div>
             </div>
-            
+
             <div className="overflow-y-auto max-h-[60vh]">
               {isLoading ? (
                 <div className="flex justify-center items-center py-12">
@@ -920,7 +920,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                             </span>
                           </div>
                         </div>
-                        
+
                         <div>
                           {user ? (
                             team.user_has_applied ? (
@@ -977,7 +977,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             </div>
           </>
         )}
-        
+
         {/* Applications Tab */}
         {activeTab === 'applications' && (
           <div className="overflow-y-auto max-h-[60vh]">
@@ -989,14 +989,14 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                     <div key={application.id} className="p-4 hover:bg-dark-200/50 transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="flex items-center">
-                          <div 
+                          <div
                             className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 cursor-pointer"
                             onClick={() => handlePlayerClick(application.user_id)}
                           >
                             {application.users.avatar_url ? (
-                              <img 
-                                src={application.users.avatar_url} 
-                                alt={application.users.username} 
+                              <img
+                                src={application.users.avatar_url}
+                                alt={application.users.username}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -1004,7 +1004,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                             )}
                           </div>
                           <div>
-                            <h3 
+                            <h3
                               className="font-medium cursor-pointer hover:text-primary-400 transition-colors"
                               onClick={() => handlePlayerClick(application.user_id)}
                             >
@@ -1020,7 +1020,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center space-x-2">
                           {application.status === 'pending' ? (
                             <>
@@ -1039,8 +1039,8 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                             </>
                           ) : (
                             <span className={`px-3 py-1 rounded-lg text-sm ${
-                              application.status === 'accepted' 
-                                ? 'bg-success-600/20 text-success-400' 
+                              application.status === 'accepted'
+                                ? 'bg-success-600/20 text-success-400'
                                 : 'bg-error-600/20 text-error-400'
                             }`}>
                               {application.status === 'accepted' ? t('lookingForPeople.accepted') : t('lookingForPeople.rejected')}
@@ -1075,7 +1075,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
                             {t('lookingForPeople.appliedOn')} {new Date(application.created_at).toLocaleDateString()}
                           </p>
                         </div>
-                        
+
                         <div className="flex items-center">
                           {application.status === 'pending' ? (
                             <>
@@ -1117,7 +1117,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
             )}
           </div>
         )}
-        
+
         <div className="p-4 border-t border-gray-800 bg-dark-200">
           <div className="text-sm text-gray-400">
             <p>
@@ -1128,7 +1128,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Player Profile Modal */}
       <PlayerProfileModal
         isOpen={isPlayerProfileModalOpen}

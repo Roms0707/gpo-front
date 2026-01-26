@@ -63,7 +63,7 @@ const SteamLevelCard: React.FC<SteamLevelCardProps> = ({ level, profile }) => {
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           {t('gaming.steamLevelOf', { name: profile.personaname })}
         </p>
-        
+
         {accountAge && (
           <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
             <TrendingUp className="h-4 w-4 mr-1" />

@@ -10,7 +10,7 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const { brandName } = useAppConfig();
   const { t } = useTranslation();
-  
+
   return (
     <footer className="bg-gray-100 dark:bg-dark-300 text-gray-900 dark:text-white py-12">
       <div className="container mx-auto px-4">
@@ -23,7 +23,7 @@ const Footer: React.FC = () => {
               {t('footer.joinCompetition')}
             </p>
           </div>
-          
+
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-2">
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">{t('footer.help')}</h3>
             <ul className="space-y-2">
@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
               </li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-heading font-semibold text-lg mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        
+
         <div className="border-t border-gray-200 dark:border-gray-700 mt-8 pt-8 text-center">
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             {t('footer.copyright', { year: currentYear, brandName })}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import MobileNavBar from '../navigation/MobileNavBar';
 import ChatButton from '../chat/ChatButton';
 import CompleteProfileModal from '../profile/CompleteProfileModal';
 import SubscriptionExpiredModal from '../ui/SubscriptionExpiredModal';
@@ -41,6 +42,9 @@ const Layout: React.FC = () => {
         <Outlet />
       </main>
       <Footer />
+
+      {/* Mobile Navigation Bar */}
+      <MobileNavBar user={user} />
 
       {/* Chat Button - Only show for logged in users */}
       {user && <ChatButton />}

@@ -26,7 +26,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
                 {subtitle}
               </p>
             </div>
-            
+
             <div className="p-6">
               {teamInviteMessage}
               {children}

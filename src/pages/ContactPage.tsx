@@ -27,7 +27,7 @@ const ContactPage: React.FC = () => {
     category: '',
     message: '',
   });
-  
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -35,35 +35,35 @@ const ContactPage: React.FC = () => {
       [name]: value,
     }));
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     if (!formData.name || !formData.email || !formData.subject || !formData.category || !formData.message) {
       toast.error(t('toast.fillAllFieldsError'));
       return;
     }
-    
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast.error(t('toast.invalidEmailError'));
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Simulate API call with a delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
+
       // In a real implementation, you would send the form data to your backend here
       console.log('Form submitted:', formData);
-      
+
       toast.success(t('toast.messageSentSuccess'));
       setIsSubmitted(true);
-      
+
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error(t('toast.formSubmitError'));
@@ -71,7 +71,7 @@ const ContactPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="min-h-screen pt-28 pb-16 bg-gray-50 dark:bg-dark-200">
       <div className="container mx-auto px-4">
@@ -84,7 +84,7 @@ const ContactPage: React.FC = () => {
               {t('contactPage.subtitle')}
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="col-span-1">
               <div className="space-y-6">
@@ -105,7 +105,7 @@ const ContactPage: React.FC = () => {
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </div>
-                
+
                 <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
                     <MessageSquare className="h-6 w-6 text-primary-500" />
@@ -123,7 +123,7 @@ const ContactPage: React.FC = () => {
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </a>
                 </div>
-                
+
                 <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 p-6 rounded-xl">
                   <h3 className="font-heading font-semibold text-xl mb-2 text-gray-900 dark:text-white">{t('contactPage.help.title')}</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4">
@@ -142,7 +142,7 @@ const ContactPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="md:col-span-2">
               <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800">
                 <div className="p-6 border-b border-gray-200 dark:border-gray-800">
@@ -150,7 +150,7 @@ const ContactPage: React.FC = () => {
                     {t('contactPage.form.title')}
                   </h2>
                 </div>
-                
+
                 {isSubmitted ? (
                   <div className="p-8 text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-success-600/20 text-success-500 rounded-full mb-4">
@@ -281,7 +281,7 @@ const ContactPage: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-12 p-8 bg-white dark:bg-dark-100 rounded-xl border border-gray-200 dark:border-gray-800">
             <div className="text-center mb-8">
               <h2 className="font-heading font-bold text-2xl mb-2 text-gray-900 dark:text-white">

@@ -156,11 +156,11 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -171,7 +171,7 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
               {t('joinTournament.title')}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('joinTournament.close')}
@@ -264,7 +264,7 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
                           <p className="text-sm text-gray-400">{account.game_publisher_ids.label}</p>
                           <p className="font-medium">{account.value}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleCopyAccount(account.id, account.value)}
                           className="bg-dark-400 hover:bg-dark-500 text-gray-300 p-2 rounded transition-colors"
                           title={t('joinTournament.copyIdentifier')}
@@ -293,7 +293,7 @@ const JoinTournamentModal: React.FC<JoinTournamentModalProps> = ({
                 <MessageSquare className="h-5 w-5 text-indigo-500 mr-2" />
                 <h4 className="font-medium">{t('joinTournament.tournamentDiscord')}</h4>
               </div>
-              <a 
+              <a
                 href={tournament.discord_url}
                 target="_blank"
                 rel="noopener noreferrer"

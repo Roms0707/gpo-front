@@ -114,7 +114,7 @@ const AppContent = () => {
               <SignupPage />
             </Suspense>
           } />
-          
+
           {/* Leaderboards */}
           <Route path="leaderboards" element={
             <Suspense fallback={<PageLoadingFallback />}>
@@ -126,21 +126,21 @@ const AppContent = () => {
               <GameLeaderboardPage />
             </Suspense>
           } />
-         
+
           {/* Twitch Embed */}
           <Route path="stream/:channelName" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <TwitchEmbedPage />
             </Suspense>
           } />
-          
+
           {/* Video Player */}
           <Route path="video/:contentId" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <VideoPlayerPage />
             </Suspense>
           } />
-          
+
          {/* Communities */}
          <Route path="communities" element={
            <Suspense fallback={<PageLoadingFallback />}>
@@ -220,7 +220,7 @@ const AppContent = () => {
               </Suspense>
             } />
           </Route>
-          
+
           {/* Admin-only routes */}
           <Route element={<ProtectedRoute requiredRole="admin" />}>
             <Route path="admin/support/:ticketId" element={
@@ -231,7 +231,7 @@ const AppContent = () => {
             {/* Add admin routes here when needed */}
             {/* Example: <Route path="admin/dashboard" element={<AdminDashboard />} /> */}
           </Route>
-          
+
           {/* Support and Info pages */}
           <Route path="faq" element={
             <Suspense fallback={<PageLoadingFallback />}>
@@ -268,7 +268,7 @@ const AppContent = () => {
               <GamingStatsPage />
             </Suspense>
           } />
-          
+
           <Route path="*" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <NotFoundPage />

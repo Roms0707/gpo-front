@@ -31,13 +31,13 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
 }) => {
   const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
-  
+
   useEffect(() => {
     // Animate in
     setTimeout(() => {
       setIsVisible(true);
     }, 100);
-    
+
     // Auto-dismiss after 5 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
@@ -45,13 +45,13 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
         onClose();
       }, 300); // Wait for animation to complete
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, [onClose]);
-  
+
   const formatTimeAgo = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), { 
+      return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
         locale: fr
       });
@@ -59,7 +59,7 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
       return t('chat.justNow');
     }
   };
-  
+
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsVisible(false);
@@ -67,15 +67,15 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
       onClose();
     }, 300); // Wait for animation to complete
   };
-  
+
   // Truncate message content if it's too long
   const truncateContent = (content: string, maxLength = 100) => {
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + '...';
   };
-  
+
   return (
-    <div 
+    <div
       className={`fixed bottom-24 right-6 z-40 max-w-sm w-full bg-dark-100 rounded-lg shadow-lg border border-gray-800 transform transition-all duration-300 cursor-pointer ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
       }`}
@@ -89,9 +89,9 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
           <div className="flex-shrink-0 mr-3">
             <div className="w-10 h-10 rounded-full bg-dark-200 flex items-center justify-center overflow-hidden">
               {message.sender?.avatar_url ? (
-                <img 
-                  src={message.sender.avatar_url} 
-                  alt={message.sender.username} 
+                <img
+                  src={message.sender.avatar_url}
+                  alt={message.sender.username}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -105,7 +105,7 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
                 <MessageSquare className="h-4 w-4 text-primary-500 mr-1" />
                 {message.sender?.username || t('chat.user')}
               </h3>
-              <button 
+              <button
                 onClick={handleClose}
                 className="text-gray-400 hover:text-white"
                 aria-label={t('common.close')}

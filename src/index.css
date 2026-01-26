@@ -177,55 +177,55 @@
   .btn {
     @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center;
   }
-  
+
   .btn-primary {
     @apply bg-primary-600 hover:bg-primary-700 text-white dark:bg-primary-600 dark:hover:bg-primary-700;
   }
-  
+
   .btn-secondary {
     @apply bg-secondary-600 hover:bg-secondary-700 text-white dark:bg-secondary-600 dark:hover:bg-secondary-700;
   }
-  
+
   .btn-accent {
     @apply bg-accent-500 hover:bg-accent-600 text-white dark:bg-accent-500 dark:hover:bg-accent-600;
   }
-  
+
   .btn-outline {
     @apply border border-primary-600 text-primary-500 hover:bg-primary-600 hover:text-white dark:border-primary-600 dark:text-primary-400 dark:hover:bg-primary-600 dark:hover:text-white;
   }
-  
+
   .card {
     @apply bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-800;
   }
-  
+
   .nav-link {
     @apply text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200;
   }
-  
+
   .input {
     @apply bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white transition-colors duration-200;
   }
-  
+
   .label {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
   }
-  
+
   .badge {
     @apply px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .badge-live {
     @apply bg-error-600 text-white;
   }
-  
+
   .badge-upcoming {
     @apply bg-primary-600 text-white;
   }
-  
+
   .badge-completed {
     @apply bg-gray-600 text-white;
   }
-  
+
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-500 dark:to-secondary-500;
   }
@@ -234,35 +234,35 @@
   .tournament-container {
     @apply bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800;
   }
-  
+
   .tournament-section {
     @apply bg-gray-50 dark:bg-dark-200 rounded-lg p-4 border border-gray-200 dark:border-gray-700;
   }
-  
+
   .tournament-text-primary {
     @apply text-gray-900 dark:text-white;
   }
-  
+
   .tournament-text-secondary {
     @apply text-gray-600 dark:text-gray-300;
   }
-  
+
   .tournament-text-muted {
     @apply text-gray-500 dark:text-gray-400;
   }
-  
+
   .tournament-border {
     @apply border-gray-200 dark:border-gray-800;
   }
-  
+
   .tournament-tab {
     @apply bg-white dark:bg-dark-100 border-gray-200 dark:border-gray-800;
   }
-  
+
   .tournament-tab-active {
     @apply text-primary-500 border-primary-500;
   }
-  
+
   .tournament-tab-inactive {
     @apply text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300;
   }
@@ -270,64 +270,64 @@
   .text-high-contrast {
     @apply text-white;
   }
-  
+
   .text-medium-contrast {
     @apply text-gray-700 dark:text-gray-200;
   }
-  
+
   .text-gray-improved {
     @apply text-gray-600 dark:text-gray-300;
   }
-  
+
   .text-primary-improved {
     @apply text-primary-600 dark:text-primary-400;
   }
-  
+
   .text-secondary-improved {
     @apply text-secondary-600 dark:text-secondary-400;
   }
-  
+
   .text-info-improved {
     @apply text-info-600 dark:text-info-300;
   }
-  
+
   .text-success-improved {
     @apply text-success-600 dark:text-success-300;
   }
-  
+
   .text-warning-improved {
     @apply text-warning-600 dark:text-warning-300;
   }
-  
+
   .text-error-improved {
     @apply text-error-600 dark:text-error-300;
   }
-  
+
   /* Background with improved text contrast */
   .bg-dark-with-text {
     @apply bg-dark-200 text-gray-200;
   }
-  
+
   .bg-primary-with-text {
     @apply bg-primary-600 dark:bg-primary-700 text-white;
   }
-  
+
   .bg-secondary-with-text {
     @apply bg-secondary-600 dark:bg-secondary-700 text-white;
   }
-  
+
   .bg-info-with-text {
     @apply bg-info-600 dark:bg-info-700 text-white;
   }
-  
+
   .bg-success-with-text {
     @apply bg-success-600 dark:bg-success-700 text-white;
   }
-  
+
   .bg-warning-with-text {
     @apply bg-warning-600 dark:bg-warning-700 text-white;
   }
-  
+
   .bg-error-with-text {
     @apply bg-error-600 dark:bg-error-700 text-white;
   }
@@ -1971,5 +1971,197 @@ a:focus, button:focus, [tabindex="0"]:focus {
   .customization-card-border-glow {
     animation: none !important;
     transition: opacity 0.2s ease !important;
+  }
+}
+
+/* Hextech Mobile Game Grid Styles */
+.hextech-section-bg {
+  background: linear-gradient(180deg,
+    rgba(0, 20, 30, 0.95) 0%,
+    rgba(10, 25, 35, 0.98) 50%,
+    rgba(0, 15, 25, 0.95) 100%
+  );
+}
+
+.hextech-grid-pattern {
+  background-image:
+    linear-gradient(rgba(0, 212, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.hextech-border-glow {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 212, 255, 0.3) 20%,
+    rgba(0, 212, 255, 0.6) 50%,
+    rgba(0, 212, 255, 0.3) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.hextech-corner-accent {
+  background: #00d4ff;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
+}
+
+.hextech-game-card {
+  animation: hextech-card-entrance 0.5s ease-out both;
+}
+
+@keyframes hextech-card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hextech-card-frame {
+  position: relative;
+}
+
+.hextech-frame-border {
+  background: linear-gradient(135deg,
+    rgba(0, 212, 255, 0.6) 0%,
+    rgba(0, 150, 180, 0.3) 25%,
+    rgba(0, 100, 130, 0.2) 50%,
+    rgba(0, 150, 180, 0.3) 75%,
+    rgba(0, 212, 255, 0.6) 100%
+  );
+  border-radius: 0.5rem;
+  animation: hextech-border-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes hextech-border-shimmer {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.hextech-card-glow {
+  background: radial-gradient(ellipse at center,
+    rgba(0, 212, 255, 0.15) 0%,
+    transparent 70%
+  );
+  box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.1);
+}
+
+.hextech-scan-line {
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 212, 255, 0.03) 50%,
+    transparent 100%
+  );
+  animation: hextech-scan 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes hextech-scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.hextech-expand-button {
+  position: relative;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.hextech-expand-button::before,
+.hextech-expand-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5));
+  transform: translateY(-50%);
+}
+
+.hextech-expand-button::before {
+  left: -10px;
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.hextech-expand-button::after {
+  right: -10px;
+}
+
+.hextech-card-skeleton {
+  background: linear-gradient(135deg,
+    rgba(0, 212, 255, 0.05) 0%,
+    rgba(20, 30, 40, 0.8) 50%,
+    rgba(0, 212, 255, 0.05) 100%
+  );
+  background-size: 200% 200%;
+  animation: hextech-skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes hextech-skeleton-shimmer {
+  0% {
+    background-position: 200% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+.text-hextech-cyan {
+  color: #00d4ff;
+}
+
+.text-hextech-cyan-light {
+  color: #33dfff;
+}
+
+.bg-hextech-cyan {
+  background-color: #00d4ff;
+}
+
+.hextech-game-card:active {
+  transform: scale(0.98);
+}
+
+.hextech-game-card:focus-visible {
+  outline: none;
+}
+
+.hextech-game-card:focus-visible .hextech-frame-border {
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.5);
+}
+
+/* Reduced motion for hextech animations */
+@media (prefers-reduced-motion: reduce) {
+  .hextech-game-card {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .hextech-frame-border {
+    animation: none;
+    opacity: 0.8;
+  }
+
+  .hextech-scan-line {
+    animation: none;
+    opacity: 0;
+  }
+
+  .hextech-card-skeleton {
+    animation: none;
   }
 }

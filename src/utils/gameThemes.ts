@@ -6,6 +6,7 @@ import {
   Rocket,
   Gamepad2,
   Play,
+  Layers,
   LucideIcon
 } from 'lucide-react';
 
@@ -377,6 +378,32 @@ const gameThemes: Record<string, GameTheme> = {
     },
     borderStyle: 'double',
     animation: 'kick',
+  },
+  others: {
+    shape: 'rounded',
+    icon: Layers,
+    colors: {
+      primary: '#0D9488',
+      secondary: '#14B8A6',
+      glow: 'rgba(13, 148, 136, 0.5)',
+      text: '#FFFFFF',
+      border: '#14B8A6',
+    },
+    borderStyle: 'solid',
+    animation: 'pulse',
+  },
+  othergames: {
+    shape: 'rounded',
+    icon: Layers,
+    colors: {
+      primary: '#0D9488',
+      secondary: '#14B8A6',
+      glow: 'rgba(13, 148, 136, 0.5)',
+      text: '#FFFFFF',
+      border: '#14B8A6',
+    },
+    borderStyle: 'solid',
+    animation: 'pulse',
   },
 };
 

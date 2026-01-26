@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, CheckCircle, Zap, Clock, Pause, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, Zap, Clock, Pause, Eye, MoveHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 type RoundStatus = 'pending' | 'active' | 'paused' | 'finished' | 'unknown';
@@ -66,7 +66,7 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({
           <button
             onClick={() => onNavigate('prev')}
             disabled={!canGoPrev || viewAllRounds}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`hidden sm:flex p-2 rounded-lg transition-colors ${
               canGoPrev && !viewAllRounds
                 ? 'hover:bg-gray-100 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
@@ -109,7 +109,7 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({
           <button
             onClick={() => onNavigate('next')}
             disabled={!canGoNext || viewAllRounds}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`hidden sm:flex p-2 rounded-lg transition-colors ${
               canGoNext && !viewAllRounds
                 ? 'hover:bg-gray-100 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
@@ -133,7 +133,7 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({
       </div>
 
       {!viewAllRounds && selectedRound && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2">
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2">
           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(getRoundStatus(selectedRound))}`}>
             {getStatusIcon(getRoundStatus(selectedRound))}
             {getRoundStatus(selectedRound) === 'finished' && t('tournamentBracket.completed')}
@@ -141,6 +141,10 @@ const RoundSelector: React.FC<RoundSelectorProps> = ({
             {getRoundStatus(selectedRound) === 'paused' && t('tournamentBracket.paused')}
             {getRoundStatus(selectedRound) === 'pending' && t('tournamentBracket.upcoming')}
           </span>
+          <div className="sm:hidden flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
+            <MoveHorizontal className="h-3 w-3" />
+            <span>{t('tournamentBracket.swipeToNavigate')}</span>
+          </div>
         </div>
       )}
     </div>

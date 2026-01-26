@@ -213,7 +213,7 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
       )}
 
       <div className="absolute inset-0">
-        <div className="container mx-auto px-4 h-full flex flex-col justify-center pt-20 sm:pt-24 pb-8">
+        <div className="container mx-auto px-4 h-full flex flex-col justify-center pt-36 sm:pt-24 pb-8">
           <Link
             to="/"
             className="inline-flex items-center text-white hover:text-white mb-6 w-fit bg-dark-300/70 px-3 py-1.5 rounded-lg backdrop-blur-sm transition-all hover:bg-dark-300/90"

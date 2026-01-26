@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchTournaments, fetchGames, extractTwitchChannelName } from '../services/api';
 import { Tournament } from '../types';
 import TournamentList from '../components/tournaments/TournamentList';
-import GameCarousel from '../components/games/GameCarousel';
+import MobileGameGrid from '../components/games/MobileGameGrid';
 import GameLibrarySidebar from '../components/games/GameLibrarySidebar';
 import { HeroSection } from '../components/home/HeroSection';
 import { X, Video, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -43,21 +43,21 @@ const HomePage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
+
   // Check if we're on mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
-  
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -87,7 +87,7 @@ const HomePage: React.FC = () => {
       setIsLoadingCountry(false);
     }
   }, [user]);
-  
+
   // Setup slideshow for live tournaments
   useEffect(() => {
     // Clear any existing interval
@@ -95,21 +95,21 @@ const HomePage: React.FC = () => {
       clearInterval(slideInterval.current);
       slideInterval.current = null;
     }
-    
+
     // Only start slideshow if we have more than slidesPerView tournaments
     if (liveTournaments.length > slidesPerView) {
       slideInterval.current = setInterval(() => {
         setCurrentSlide(prev => (prev + 1) % totalSlides);
       }, 5000); // Change slide every 5 seconds
     }
-    
+
     return () => {
       if (slideInterval.current) {
         clearInterval(slideInterval.current);
       }
     };
   }, [liveTournaments.length, totalSlides, slidesPerView]);
-  
+
   // Function to filter tournaments by country (user or visitor)
   const filterByCountry = (tournamentsToFilter: Tournament[]): Tournament[] => {
     // If user is whitelisted, return ALL tournaments without filtering
@@ -144,17 +144,17 @@ const HomePage: React.FC = () => {
       return eligibleCountries.includes(countryCode);
     });
   };
-  
+
   // Handle URL parameters for game filtering
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const gameParam = params.get('game');
-    
+
     if (gameParam && gameParam !== selectedGameId) {
       setSelectedGameId(gameParam);
     }
   }, [location.search, selectedGameId]);
-  
+
   // Load all tournaments initially
   useEffect(() => {
     const loadTournaments = async () => {
@@ -163,12 +163,12 @@ const HomePage: React.FC = () => {
         const data = await fetchTournaments();
         console.debug('All tournaments:', data);
         setTournaments(data);
-        
+
         // Apply country filtering by default
         const filtered = filterByCountry(data);
         console.debug('Country filtered tournaments:', filtered);
         setFilteredTournaments(filtered);
-        
+
         setError(null);
       } catch (err) {
         setError(t('home.errorLoadingTournaments'));
@@ -179,10 +179,10 @@ const HomePage: React.FC = () => {
         setIsLoading(false);
       }
     };
-    
+
     loadTournaments();
   }, [user?.country, visitorCountry]); // Re-run when user's country or visitor country changes
-  
+
   // Load games for mapping game IDs to names
   useEffect(() => {
     const loadGames = async () => {
@@ -200,7 +200,7 @@ const HomePage: React.FC = () => {
 
     loadGames();
   }, []);
-  
+
   // When a game is selected, update the game filter name and filter tournaments
   useEffect(() => {
     if (selectedGameId) {
@@ -224,23 +224,23 @@ const HomePage: React.FC = () => {
       setFilteredTournaments(filtered);
     }
   }, [selectedGameId, games, tournaments, user?.country, visitorCountry, isWhitelisted]);
-  
+
   // Check which tournaments have live streams
   useEffect(() => {
     const filterLiveTournaments = () => {
       if (tournaments.length === 0) return;
-      
+
       try {
         // Filter tournaments that are ongoing AND have live Twitch streams
         const liveTournaments = tournaments.filter(tournament => {
           const calculatedStatus = calculateTournamentStatus(tournament);
-          return calculatedStatus === 'ongoing' && 
-                 tournament.twitch_url && 
+          return calculatedStatus === 'ongoing' &&
+                 tournament.twitch_url &&
                  tournament.is_twitch_live;
         });
-        
+
         setLiveTournaments(liveTournaments);
-        
+
         // Auto-open the live tournaments section if there are any
         if (liveTournaments.length > 0) {
           setIsLiveTournamentsOpen(true);
@@ -250,16 +250,16 @@ const HomePage: React.FC = () => {
         setLiveTournaments([]);
       }
     };
-    
+
     filterLiveTournaments();
   }, [tournaments]);
-  
+
   const handleGameSelect = (gameId: string | null) => {
     setSelectedGameId(gameId);
     // Reset SQL query when changing selection
     setSqlQuery(null);
   };
-  
+
   const handleGameFilterClear = () => {
     setSelectedGameId(null);
     setGameFilterName(null);
@@ -270,12 +270,12 @@ const HomePage: React.FC = () => {
   const toggleLiveTournaments = () => {
     setIsLiveTournamentsOpen(!isLiveTournamentsOpen);
   };
-  
+
   // Navigate to previous slide
   const goToPrevSlide = () => {
     setCurrentSlide(prev => (prev === 0 ? totalSlides - 1 : prev - 1));
   };
-  
+
   // Navigate to next slide
   const goToNextSlide = () => {
     setCurrentSlide(prev => (prev + 1) % totalSlides);
@@ -320,7 +320,7 @@ const HomePage: React.FC = () => {
   const navigateToGameHub = () => {
     navigate('/hub');
   };
-  
+
   return (
     <div className="flex min-h-screen overflow-x-hidden">
       {!isMobile && (
@@ -347,37 +347,14 @@ const HomePage: React.FC = () => {
           onBrowseGames={navigateToGameHub}
           onWatchLive={scrollToLiveTournaments}
         />
-        
-        {/* Mobile Game Slider - Only show on mobile */}
+
+        {/* Mobile Game Grid - Only show on mobile */}
         {isMobile && (
-          <section id="walkthrough-game-hub" className="py-4 sm:py-6 bg-dark-100 overflow-hidden">
-            <div className="container mx-auto px-4 max-w-full">
-              <div className="flex items-center justify-between mb-3 sm:mb-4">
-                <h2 className="font-heading text-lg sm:text-xl font-bold">{t('home.gamesAvailable')}</h2>
-                {selectedGameId && (
-                  <button
-                    onClick={handleGameFilterClear}
-                    className="flex items-center text-xs bg-primary-600/20 text-primary-400 px-2 py-1 rounded-full"
-                  >
-                    <X className="h-3 w-3 mr-1" />
-                    {t('home.resetFilter')}
-                  </button>
-                )}
-              </div>
-              
-              <GameCarousel />
-              
-              {selectedGameId && gameFilterName && (
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-400">
-                    {t('home.filteredBy')} <span className="text-primary-400 font-medium">{gameFilterName}</span>
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
+          <div id="walkthrough-game-hub">
+            <MobileGameGrid />
+          </div>
         )}
-        
+
         {/* Live Tournaments Section - Only show when there are live tournaments */}
         {liveTournaments.length > 0 && (
           <section id="live-tournaments" className="py-6 sm:py-8 md:py-10 bg-gradient-to-r from-red-900/20 to-dark-200/20 overflow-hidden">
@@ -411,7 +388,7 @@ const HomePage: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
               {isLiveTournamentsOpen && (
                 <>
                   {/* Slideshow for more than 3 tournaments */}
@@ -425,25 +402,25 @@ const HomePage: React.FC = () => {
                       >
                         <ChevronLeft className="h-6 w-6" />
                       </button>
-                      
+
                       <div className="overflow-hidden">
-                        <div 
+                        <div
                           className="flex transition-transform duration-500 ease-in-out"
                           style={{ transform: `translateX(-${currentSlide * (100 / totalSlides)}%)` }}
                         >
                           {liveTournaments.map(tournament => (
-                            <div 
+                            <div
                               key={tournament.id}
                               className={`${isMobile ? 'w-full' : 'w-1/3'} flex-shrink-0 px-3`}
                             >
-                              <Link 
+                              <Link
                                 to={`/stream/${extractTwitchChannelName(tournament.twitch_url || '')}`}
                                 className="block bg-dark-100 rounded-lg overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group border border-red-500/30 h-full"
                               >
                                 <div className="relative h-40 overflow-hidden">
-                                  <img 
-                                    src={tournament.header_url || tournament.image || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} 
-                                    alt={tournament.title} 
+                                  <img
+                                    src={tournament.header_url || tournament.image || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                                    alt={tournament.title}
                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                   />
                                   <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
@@ -467,7 +444,7 @@ const HomePage: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      
+
                       <button
                         onClick={goToNextSlide}
                         className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-dark-100/80 p-2 rounded-full text-white hover:bg-dark-100 transition-colors"
@@ -475,7 +452,7 @@ const HomePage: React.FC = () => {
                       >
                         <ChevronRight className="h-6 w-6" />
                       </button>
-                      
+
                       {/* Slide indicators */}
                       <div className="flex justify-center mt-4 space-x-2">
                         {Array.from({ length: totalSlides }).map((_, index) => (
@@ -494,15 +471,15 @@ const HomePage: React.FC = () => {
                     // Regular grid for 3 or fewer tournaments
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {liveTournaments.map(tournament => (
-                        <Link 
+                        <Link
                           key={tournament.id}
                           to={`/stream/${extractTwitchChannelName(tournament.twitch_url || '')}`}
                           className="bg-dark-100 rounded-lg overflow-hidden hover:shadow-lg transition-all hover:-translate-y-1 group border border-red-500/30"
                         >
                           <div className="relative h-40 overflow-hidden">
-                            <img 
-                              src={tournament.header_url || tournament.image || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} 
-                              alt={tournament.title} 
+                            <img
+                              src={tournament.header_url || tournament.image || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                              alt={tournament.title}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent"></div>
@@ -530,7 +507,7 @@ const HomePage: React.FC = () => {
             </div>
           </section>
         )}
-        
+
         {/* Tournament listing section */}
         <section id="walkthrough-tournaments" className="py-8 sm:py-12 md:py-16 overflow-hidden">
           <div className="container mx-auto px-4 max-w-full">
@@ -539,7 +516,7 @@ const HomePage: React.FC = () => {
                 {error}
               </div>
             )}
-            
+
             {isWhitelisted ? (
               <div className="mb-4 sm:mb-6 px-2">
                 <div className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/30 rounded-xl p-4 sm:p-6">
@@ -576,9 +553,9 @@ const HomePage: React.FC = () => {
                 {t('home.detectingCountry')}
               </div>
             )}
-            
-            <TournamentList 
-              tournaments={filteredTournaments} 
+
+            <TournamentList
+              tournaments={filteredTournaments}
               isLoading={isLoading}
               selectedStatus={selectedStatus}
               onStatusChange={setSelectedStatus}
