@@ -14,7 +14,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => {
   const store = useAuthStore();
-
+  
   return {
     user: store.user,
     login: store.login,
@@ -60,9 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [checkSession]);
-
+  
   const store = useAuthStore();
-
+  
   const value = {
     user: store.user,
     login: store.login,
@@ -70,6 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout: store.logout,
     isLoading: store.isLoading,
   };
-
+  
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

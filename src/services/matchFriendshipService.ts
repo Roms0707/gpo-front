@@ -56,7 +56,7 @@ export const getOpponentUserProfile = async (opponentUserId: string) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, username, avatar_url, country, bio')
+      .select('id, username, avatar_url, country, bio, discord_handle, riot_game_name, riot_tagline, fortnite_epic_id')
       .eq('id', opponentUserId)
       .maybeSingle();
 
@@ -69,6 +69,64 @@ export const getOpponentUserProfile = async (opponentUserId: string) => {
   } catch (error) {
     console.error('Error in getOpponentUserProfile:', error);
     throw error;
+  }
+};
+
+export interface GameIdEntry {
+  label: string;
+  value: string;
+  key: string;
+}
+
+export const getOpponentGameIdsForTournament = async (
+  opponentUserId: string,
+  tournamentId: string
+): Promise<GameIdEntry[]> => {
+  try {
+    const { data: tournament, error: tournamentError } = await supabase
+      .from('tournaments')
+      .select('game_id')
+      .eq('id', tournamentId)
+      .maybeSingle();
+
+    if (tournamentError || !tournament?.game_id) {
+      console.error('Error fetching tournament game_id:', tournamentError);
+      return [];
+    }
+
+    const { data: gameIds, error: gameIdsError } = await supabase
+      .from('game_publisher_id_for_users')
+      .select(`
+        value,
+        game_publisher_ids (
+          label,
+          id_name
+        )
+      `)
+      .eq('user_id', opponentUserId)
+      .eq('game_id', tournament.game_id);
+
+    if (gameIdsError) {
+      console.error('Error fetching opponent game IDs:', gameIdsError);
+      return [];
+    }
+
+    if (!gameIds || gameIds.length === 0) {
+      return [];
+    }
+
+    return gameIds
+      .filter((item: { value: string; game_publisher_ids: { label: string; id_name: string } | null }) =>
+        item.value && item.game_publisher_ids
+      )
+      .map((item: { value: string; game_publisher_ids: { label: string; id_name: string } | null }) => ({
+        label: item.game_publisher_ids!.label,
+        value: item.value,
+        key: item.game_publisher_ids!.id_name
+      }));
+  } catch (error) {
+    console.error('Error in getOpponentGameIdsForTournament:', error);
+    return [];
   }
 };
 

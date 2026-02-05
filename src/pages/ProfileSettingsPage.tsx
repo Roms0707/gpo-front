@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAuthStore } from '../stores/authStore';
 import {
@@ -132,6 +132,7 @@ const ProfileSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gamePublisherFields, setGamePublisherFields] = useState<GamePublisherField[]>([]);
@@ -167,6 +168,20 @@ const ProfileSettingsPage: React.FC = () => {
 
     loadFavoriteGame();
   }, [user?.favorite_game_id]);
+
+  useEffect(() => {
+    if (location.hash === '#gaming-accounts') {
+      setTimeout(() => {
+        const element = document.getElementById('gaming-accounts');
+        if (element) {
+          const headerOffset = 100;
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [location.hash]);
 
   const { theme } = usePlayerPrimaryGame({
     playerRankings: [],
@@ -476,7 +491,7 @@ const ProfileSettingsPage: React.FC = () => {
           </div>
 
           <form onSubmit={handleSaveSettings} className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div id="gaming-accounts" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <SettingsCard
                 title={t('discord.oauth.title', 'Discord')}
                 icon={
@@ -497,7 +512,7 @@ const ProfileSettingsPage: React.FC = () => {
                 title={t('profile.steamAccount', 'Steam')}
                 icon={
                   <svg className="h-6 w-6 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95c0-5.52-4.48-10-10-10z" />
+                    <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zm-5.39 18.465l-2.083-.862c.369.79.988 1.449 1.769 1.855.626.325 1.301.465 1.97.465 2.312 0 4.187-1.875 4.187-4.187 0-2.313-1.875-4.188-4.187-4.188-.327 0-.656.038-.976.113l2.151.89c1.396.577 2.059 2.172 1.482 3.566-.578 1.396-2.173 2.059-3.567 1.482-.312-.129-.592-.313-.834-.541l.088.407zm9.337-5.098c0-1.663-1.354-3.016-3.016-3.016-1.661 0-3.016 1.353-3.016 3.016 0 1.662 1.355 3.015 3.016 3.015 1.662 0 3.016-1.353 3.016-3.015zm-5.429 0c0-1.331 1.082-2.412 2.413-2.412 1.33 0 2.412 1.081 2.412 2.412 0 1.33-1.082 2.412-2.412 2.412-1.331 0-2.413-1.082-2.413-2.412z" />
                   </svg>
                 }
                 isExpanded={expandedCard === 'steam'}

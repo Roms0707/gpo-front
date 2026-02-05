@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Clock, Trophy, Target, Users, MapPin } from 'lucide-react';
+import { getGameTheme, getCardClipPath } from '../../utils/gameThemes';
 
 interface FortniteMatchHistoryCardProps {
   matchHistory: any[];
@@ -12,6 +13,7 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
   isLoading = false
 }) => {
   const { t, i18n } = useTranslation();
+  const theme = getGameTheme('Fortnite');
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -37,9 +39,15 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-800">
+      <div
+        className="bg-white dark:bg-gray-800/90 shadow-lg p-6 relative overflow-hidden"
+        style={{
+          clipPath: getCardClipPath(theme.shape),
+          border: `1px solid ${theme.colors.border}30`,
+        }}
+      >
         <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-purple-500" />
+          <Clock className="w-5 h-5" style={{ color: theme.colors.primary }} />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('gaming.fortniteMatchHistory')}
           </h3>
@@ -57,16 +65,25 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
 
   if (matchHistory.length === 0) {
     return (
-      <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-800">
+      <div
+        className="bg-white dark:bg-gray-800/90 shadow-lg p-6 relative overflow-hidden"
+        style={{
+          clipPath: getCardClipPath(theme.shape),
+          border: `1px solid ${theme.colors.border}30`,
+        }}
+      >
         <div className="flex items-center gap-2 mb-4">
-          <Clock className="w-5 h-5 text-purple-500" />
+          <Clock className="w-5 h-5" style={{ color: theme.colors.primary }} />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {t('gaming.fortniteMatchHistory')}
           </h3>
         </div>
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-8 h-8 text-purple-500" />
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: `${theme.colors.primary}20` }}
+          >
+            <Clock className="w-8 h-8" style={{ color: theme.colors.primary }} />
           </div>
           <p className="text-gray-600 dark:text-gray-400">
             {t('gaming.noMatchHistoryAvailable')}
@@ -80,13 +97,24 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-800">
-      <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-5 h-5 text-purple-500" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          Historique des Matchs Fortnite
-        </h3>
-      </div>
+    <div
+      className="bg-white dark:bg-gray-800/90 shadow-lg p-6 relative overflow-hidden"
+      style={{
+        clipPath: getCardClipPath(theme.shape),
+        border: `1px solid ${theme.colors.border}30`,
+      }}
+    >
+      <div
+        className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${theme.colors.primary}20, transparent 50%, ${theme.colors.border}20)` }}
+      />
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-5 h-5" style={{ color: theme.colors.primary }} />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('gaming.fortniteMatchHistory')}
+          </h3>
+        </div>
 
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {matchHistory.slice(0, 10).map((match, index) => (
@@ -144,7 +172,7 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
 
             {match.gameMode && (
               <div className="mt-2 flex items-center gap-1">
-                <MapPin className="w-4 h-4 text-purple-500" />
+                <MapPin className="w-4 h-4" style={{ color: theme.colors.primary }} />
                 <span className="text-xs text-gray-500 dark:text-gray-400">
                   {t('gaming.modeLabel')} {getGameModeDisplay(match.gameMode)}
                 </span>
@@ -161,6 +189,7 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -18,7 +18,7 @@ interface GameRankingCardProps {
 const GameRankingCard: React.FC<GameRankingCardProps> = ({ ranking, onClick }) => {
   const { t } = useTranslation();
   return (
-    <div
+    <div 
       className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all cursor-pointer"
       onClick={onClick}
     >
@@ -50,7 +50,7 @@ const GameRankingCard: React.FC<GameRankingCardProps> = ({ ranking, onClick }) =
           </div>
         </div>
       </div>
-
+      
       <div className="mt-4 grid grid-cols-3 gap-4 text-center">
         <div>
           <div className="text-lg font-bold text-success-400">{ranking.wins}</div>
@@ -62,8 +62,8 @@ const GameRankingCard: React.FC<GameRankingCardProps> = ({ ranking, onClick }) =
         </div>
         <div>
           <div className={`text-lg font-bold ${
-            ranking.win_rate >= 70 ? 'text-success-400' :
-            ranking.win_rate >= 50 ? 'text-info-400' :
+            ranking.win_rate >= 70 ? 'text-success-400' : 
+            ranking.win_rate >= 50 ? 'text-info-400' : 
             'text-error-400'
           }`}>
             {ranking.win_rate}%

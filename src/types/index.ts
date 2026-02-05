@@ -411,7 +411,7 @@ export interface TournamentDiscordVerification {
   user_id: string;
   discord_user_id: string;
   discord_username: string;
-  is_member: boolean;
+  is_verified: boolean;
   last_verified_at: string;
   created_at: string;
   updated_at: string;
@@ -513,16 +513,19 @@ export interface UserProfileCustomization {
   avatar_frame_id?: string;
   modal_frame_id?: string;
   avatar_badge_id?: string;
+  selected_avatar_id?: string;
+  use_preset_avatar?: boolean;
   updated_at: string;
   avatar_frame?: ProfileFrame;
   modal_frame?: ProfileFrame;
   avatar_badge?: ProfileBadge;
+  selected_avatar?: ProfileAvatar;
 }
 
 export interface UserUnlockedItem {
   id: string;
   user_id: string;
-  item_type: 'frame' | 'badge';
+  item_type: 'frame' | 'badge' | 'avatar';
   item_id: string;
   unlocked_at: string;
   unlock_source?: string;
@@ -543,4 +546,30 @@ export interface DiscordJoinDeadlineStatus {
   minutesRemaining?: number;
   isExpired?: boolean;
   warningShown?: boolean;
+}
+
+export type AvatarGameAffinity = 'lol' | 'warzone' | 'valorant' | 'cs2' | 'apex' | 'rocket_league' | 'universal';
+
+export interface ProfileAvatar {
+  id: string;
+  name: string;
+  description?: string;
+  image_url: string;
+  game_affinity: AvatarGameAffinity;
+  rarity: ItemRarity;
+  unlock_type: 'free' | 'xp';
+  unlock_requirement: UnlockRequirement;
+  sort_order: number;
+  is_available: boolean;
+  created_at: string;
+}
+
+export interface ProfileAvatarWithUnlockStatus extends ProfileAvatar {
+  is_unlocked: boolean;
+}
+
+export interface UserAvatarCustomization {
+  selected_avatar_id: string | null;
+  use_preset_avatar: boolean;
+  selected_avatar?: ProfileAvatar | null;
 }

@@ -51,9 +51,9 @@ const FriendItem: React.FC<FriendItemProps> = ({
           <div className="flex items-center">
             <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
               {related_user.avatar_url ? (
-                <img
-                  src={related_user.avatar_url}
-                  alt=""
+                <img 
+                  src={related_user.avatar_url} 
+                  alt="" 
                   className="w-full h-full object-cover"
                   aria-hidden="true"
                 />
@@ -72,7 +72,7 @@ const FriendItem: React.FC<FriendItemProps> = ({
               )}
             </div>
           </div>
-
+          
           <div className="flex space-x-2">
             <button
               onClick={() => setShowChatModal(true)}

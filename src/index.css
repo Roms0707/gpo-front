@@ -177,55 +177,55 @@
   .btn {
     @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center;
   }
-
+  
   .btn-primary {
     @apply bg-primary-600 hover:bg-primary-700 text-white dark:bg-primary-600 dark:hover:bg-primary-700;
   }
-
+  
   .btn-secondary {
     @apply bg-secondary-600 hover:bg-secondary-700 text-white dark:bg-secondary-600 dark:hover:bg-secondary-700;
   }
-
+  
   .btn-accent {
     @apply bg-accent-500 hover:bg-accent-600 text-white dark:bg-accent-500 dark:hover:bg-accent-600;
   }
-
+  
   .btn-outline {
     @apply border border-primary-600 text-primary-500 hover:bg-primary-600 hover:text-white dark:border-primary-600 dark:text-primary-400 dark:hover:bg-primary-600 dark:hover:text-white;
   }
-
+  
   .card {
     @apply bg-white dark:bg-dark-100 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-800;
   }
-
+  
   .nav-link {
     @apply text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200;
   }
-
+  
   .input {
     @apply bg-white dark:bg-dark-100 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-900 dark:text-white transition-colors duration-200;
   }
-
+  
   .label {
     @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
   }
-
+  
   .badge {
     @apply px-2 py-1 rounded-full text-xs font-medium;
   }
-
+  
   .badge-live {
     @apply bg-error-600 text-white;
   }
-
+  
   .badge-upcoming {
     @apply bg-primary-600 text-white;
   }
-
+  
   .badge-completed {
     @apply bg-gray-600 text-white;
   }
-
+  
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-500 dark:to-secondary-500;
   }
@@ -234,35 +234,35 @@
   .tournament-container {
     @apply bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800;
   }
-
+  
   .tournament-section {
     @apply bg-gray-50 dark:bg-dark-200 rounded-lg p-4 border border-gray-200 dark:border-gray-700;
   }
-
+  
   .tournament-text-primary {
     @apply text-gray-900 dark:text-white;
   }
-
+  
   .tournament-text-secondary {
     @apply text-gray-600 dark:text-gray-300;
   }
-
+  
   .tournament-text-muted {
     @apply text-gray-500 dark:text-gray-400;
   }
-
+  
   .tournament-border {
     @apply border-gray-200 dark:border-gray-800;
   }
-
+  
   .tournament-tab {
     @apply bg-white dark:bg-dark-100 border-gray-200 dark:border-gray-800;
   }
-
+  
   .tournament-tab-active {
     @apply text-primary-500 border-primary-500;
   }
-
+  
   .tournament-tab-inactive {
     @apply text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300;
   }
@@ -270,64 +270,64 @@
   .text-high-contrast {
     @apply text-white;
   }
-
+  
   .text-medium-contrast {
     @apply text-gray-700 dark:text-gray-200;
   }
-
+  
   .text-gray-improved {
     @apply text-gray-600 dark:text-gray-300;
   }
-
+  
   .text-primary-improved {
     @apply text-primary-600 dark:text-primary-400;
   }
-
+  
   .text-secondary-improved {
     @apply text-secondary-600 dark:text-secondary-400;
   }
-
+  
   .text-info-improved {
     @apply text-info-600 dark:text-info-300;
   }
-
+  
   .text-success-improved {
     @apply text-success-600 dark:text-success-300;
   }
-
+  
   .text-warning-improved {
     @apply text-warning-600 dark:text-warning-300;
   }
-
+  
   .text-error-improved {
     @apply text-error-600 dark:text-error-300;
   }
-
+  
   /* Background with improved text contrast */
   .bg-dark-with-text {
     @apply bg-dark-200 text-gray-200;
   }
-
+  
   .bg-primary-with-text {
     @apply bg-primary-600 dark:bg-primary-700 text-white;
   }
-
+  
   .bg-secondary-with-text {
     @apply bg-secondary-600 dark:bg-secondary-700 text-white;
   }
-
+  
   .bg-info-with-text {
     @apply bg-info-600 dark:bg-info-700 text-white;
   }
-
+  
   .bg-success-with-text {
     @apply bg-success-600 dark:bg-success-700 text-white;
   }
-
+  
   .bg-warning-with-text {
     @apply bg-warning-600 dark:bg-warning-700 text-white;
   }
-
+  
   .bg-error-with-text {
     @apply bg-error-600 dark:bg-error-700 text-white;
   }

@@ -68,7 +68,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'recent' | 'friends' | 'channels' | 'invitations'>('recent');
   const [isJoiningChannel, setIsJoiningChannel] = useState(false);
-
+  
   useEffect(() => {
     if (isOpen && user?.id) {
       loadFriends();
@@ -78,7 +78,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       if (activeTab === 'channels') {
         loadPublicChannels();
       }
-
+      
       // Set up real-time subscription for new messages
       const subscription = supabase
         .channel('chat-updates')
@@ -99,16 +99,16 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           loadRecentChats();
         })
         .subscribe();
-
+      
       return () => {
         supabase.removeChannel(subscription);
       };
     }
   }, [isOpen, user?.id]);
-
+  
   const loadFriends = async () => {
     if (!user?.id) return;
-
+    
     try {
       const data = await fetchFriends(user.id);
       setFriends(data);
@@ -116,25 +116,25 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       console.error('Error loading friends:', error);
     }
   };
-
+  
   const loadRecentChats = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsLoading(true);
-
+      
       // Get the most recent message with each user
       const { data, error } = await supabase.rpc('execute_sql', {
         query: `
           WITH ranked_messages AS (
-            SELECT
+            SELECT 
               m.*,
               ROW_NUMBER() OVER (
-                PARTITION BY
-                  CASE
-                    WHEN m.sender_id = '${user.id}' THEN m.receiver_id
-                    ELSE m.sender_id
-                  END
+                PARTITION BY 
+                  CASE 
+                    WHEN m.sender_id = '${user.id}' THEN m.receiver_id 
+                    ELSE m.sender_id 
+                  END 
                 ORDER BY m.created_at DESC
               ) as rn
             FROM messages m
@@ -144,44 +144,44 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             SELECT * FROM ranked_messages WHERE rn = 1
           ),
           unread_counts AS (
-            SELECT
+            SELECT 
               sender_id,
               COUNT(*) as unread_count
             FROM messages
             WHERE receiver_id = '${user.id}' AND read = false
             GROUP BY sender_id
           )
-          SELECT
+          SELECT 
             lm.*,
             COALESCE(uc.unread_count, 0) as unread_count,
             u.username,
             u.avatar_url
           FROM latest_messages lm
-          LEFT JOIN unread_counts uc ON
-            CASE
-              WHEN lm.sender_id = '${user.id}' THEN lm.receiver_id
-              ELSE lm.sender_id
+          LEFT JOIN unread_counts uc ON 
+            CASE 
+              WHEN lm.sender_id = '${user.id}' THEN lm.receiver_id 
+              ELSE lm.sender_id 
             END = uc.sender_id
-          LEFT JOIN users u ON
-            CASE
-              WHEN lm.sender_id = '${user.id}' THEN lm.receiver_id
-              ELSE lm.sender_id
+          LEFT JOIN users u ON 
+            CASE 
+              WHEN lm.sender_id = '${user.id}' THEN lm.receiver_id 
+              ELSE lm.sender_id 
             END = u.id
           ORDER BY lm.created_at DESC
           LIMIT 20
         `
       });
-
+      
       if (error) {
         console.error('Error loading recent chats:', error);
         return;
       }
-
+      
       // Transform the data
       const chatPreviews: ChatPreview[] = (data || []).map((message: any) => {
         const isCurrentUser = message.sender_id === user.id;
         const otherUserId = isCurrentUser ? message.receiver_id : message.sender_id;
-
+        
         return {
           userId: otherUserId,
           username: message.username || t('chat.unknownUser'),
@@ -191,7 +191,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           unreadCount: parseInt(message.unread_count) || 0
         };
       });
-
+      
       setRecentChats(chatPreviews);
     } catch (error) {
       console.error('Error loading recent chats:', error);
@@ -199,10 +199,10 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       setIsLoading(false);
     }
   };
-
+  
   const loadUserChannels = async () => {
     if (!user?.id) return;
-
+    
     try {
       const channels = await getUserChannels();
       setUserChannels(channels.map(channel => ({
@@ -219,10 +219,10 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       console.error('Error loading user channels:', error);
     }
   };
-
+  
   const loadChannelInvitations = async () => {
     if (!user?.id) return;
-
+    
     try {
       const invitations = await getChannelInvitations();
       setChannelInvitations(invitations);
@@ -230,14 +230,14 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       console.error('Error loading channel invitations:', error);
     }
   };
-
+  
   const handleAcceptInvitation = async (membershipId: string) => {
     try {
       const result = await acceptChannelInvitation(membershipId);
-
+      
       if (result.success) {
         toast.success(t('chat.invitationAccepted'));
-
+        
         // Refresh invitations and channels
         await loadChannelInvitations();
         await loadUserChannels();
@@ -249,14 +249,14 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       toast.error(t('chat.invitationAcceptError'));
     }
   };
-
+  
   const handleRejectInvitation = async (membershipId: string) => {
     try {
       const result = await rejectChannelInvitation(membershipId);
-
+      
       if (result.success) {
         toast.success(t('chat.invitationRejected'));
-
+        
         // Refresh invitations
         await loadChannelInvitations();
       } else {
@@ -267,35 +267,35 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       toast.error(t('chat.invitationRejectError'));
     }
   };
-
+  
   const loadPublicChannels = async () => {
     try {
       const channels = await getPublicChannels();
-
+      
       // Filter out channels the user is already a member of
       const userChannelIds = userChannels.map(c => c.id);
       const filteredChannels = channels.filter(c => !userChannelIds.includes(c.id));
-
+      
       setPublicChannels(filteredChannels);
     } catch (error) {
       console.error('Error loading public channels:', error);
     }
   };
-
+  
   const handleJoinChannel = async (channelId: string) => {
     if (!user) {
       console.error(t('chat.mustBeLoggedIn'));
       return;
     }
-
+    
     try {
       setIsJoiningChannel(true);
-
+      
       const result = await joinChannel(channelId);
-
+      
       if (result.success) {
         console.log(result.message);
-
+        
         // Refresh channels lists
         await loadUserChannels();
         await loadPublicChannels();
@@ -309,14 +309,14 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       setIsJoiningChannel(false);
     }
   };
-
+  
   const openChat = (userId: string, username: string, avatarUrl?: string | null) => {
     // If this is for sharing stats, use the callback instead of opening chat directly
     if (onContactSelectForShare) {
       onContactSelectForShare('user', userId, username, avatarUrl);
       return;
     }
-
+    
     setSelectedChat({
       id: userId,
       name: username,
@@ -331,7 +331,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       onContactSelectForShare('channel', channelId, channelName, channelDescription);
       return;
     }
-
+    
     setSelectedChannel({
       id: channelId,
       name: channelName,
@@ -339,10 +339,10 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
     });
     setShowChannelModal(true);
   };
-
+  
   const formatTimeAgo = (dateString: string) => {
     try {
-      return formatDistanceToNow(new Date(dateString), {
+      return formatDistanceToNow(new Date(dateString), { 
         addSuffix: true,
         locale: fr
       });
@@ -350,32 +350,32 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
       return t('chat.unknownDate');
     }
   };
-
+  
   // Filter friends based on search query
-  const filteredFriends = friends.filter(friend =>
+  const filteredFriends = friends.filter(friend => 
     friend.related_user?.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   // Filter recent chats based on search query
-  const filteredRecentChats = recentChats.filter(chat =>
+  const filteredRecentChats = recentChats.filter(chat => 
     chat.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Filter channels based on search query
-  const filteredUserChannels = userChannels.filter(channel =>
+  const filteredUserChannels = userChannels.filter(channel => 
     channel.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredPublicChannels = publicChannels.filter(channel =>
+  const filteredPublicChannels = publicChannels.filter(channel => 
     channel.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  
   // Calculate total unread messages
   const totalUnreadMessages = recentChats.reduce((total, chat) => total + chat.unreadCount, 0);
   const totalInvitations = channelInvitations.length;
-
+  
   if (!isOpen) return null;
-
+  
   return (
     <>
       <div className="fixed bottom-24 right-6 z-40 w-80 bg-white dark:bg-dark-100 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 chat-list-modal">
@@ -389,7 +389,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
               </span>
             )}
           </h2>
-          <button
+          <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('common.close')}
@@ -397,12 +397,12 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-
+        
         {/* Search Bar */}
         <div className="p-3 border-b border-gray-200 dark:border-gray-800">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-4 w-4" />
-            <input
+            <input 
               type="text"
               placeholder={t('chat.searchPlaceholder')}
               className="w-full bg-gray-100 dark:bg-dark-200 border border-gray-300 dark:border-gray-700 rounded-lg pl-10 pr-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -412,14 +412,14 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             />
           </div>
         </div>
-
+        
         {/* Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-800">
           <button
             onClick={() => setActiveTab('recent')}
             className={`flex-1 py-2 px-4 text-sm font-medium ${
-              activeTab === 'recent'
-                ? 'text-primary-500 border-b-2 border-primary-500'
+              activeTab === 'recent' 
+                ? 'text-primary-500 border-b-2 border-primary-500' 
                 : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
             aria-selected={activeTab === 'recent'}
@@ -439,8 +439,8 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             <button
             onClick={() => setActiveTab('friends')}
             className={`flex-1 py-2 px-4 text-sm font-medium ${
-              activeTab === 'friends'
-                ? 'text-primary-500 border-b-2 border-primary-500'
+              activeTab === 'friends' 
+                ? 'text-primary-500 border-b-2 border-primary-500' 
                 : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
             aria-selected={activeTab === 'friends'}
@@ -458,8 +458,8 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
               loadPublicChannels();
             }}
             className={`flex-1 py-2 px-4 text-sm font-medium ${
-              activeTab === 'channels'
-                ? 'text-primary-500 border-b-2 border-primary-500'
+              activeTab === 'channels' 
+                ? 'text-primary-500 border-b-2 border-primary-500' 
                 : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
             aria-selected={activeTab === 'channels'}
@@ -477,8 +477,8 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
               loadChannelInvitations();
             }}
             className={`flex-1 py-2 px-4 text-sm font-medium ${
-              activeTab === 'invitations'
-                ? 'text-primary-500 border-b-2 border-primary-500'
+              activeTab === 'invitations' 
+                ? 'text-primary-500 border-b-2 border-primary-500' 
                 : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
             }`}
             aria-selected={activeTab === 'invitations'}
@@ -496,9 +496,9 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           </button>
           )}
         </div>
-
+        
         {/* Chat List */}
-        <div
+        <div 
           className="overflow-y-auto max-h-96"
           tabIndex={0}
           role="tabpanel"
@@ -516,7 +516,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
               filteredUserChannels.length > 0 ? (
                 <div className="divide-y divide-gray-800">
                   {filteredUserChannels.map((channel) => (
-                    <div
+                    <div 
                       key={channel.id}
                       className="p-3 hover:bg-dark-200 transition-colors cursor-pointer"
                       onClick={() => openChannel(channel.id, channel.name, channel.description)}
@@ -526,17 +526,17 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                     >
                       <div className="flex items-center">
                         <div className={`w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 flex items-center justify-center ${
-                          channel.is_community
+                          channel.is_community 
                             ? 'bg-indigo-600/20'
-                            : channel.is_private
-                              ? 'bg-gray-600/20'
+                            : channel.is_private 
+                              ? 'bg-gray-600/20' 
                               : 'bg-primary-600/20'
                         }`}>
                           <MessageSquare className={`h-5 w-5 ${
-                            channel.is_community
-                              ? 'text-indigo-500'
-                              : channel.is_private
-                                ? 'text-gray-400'
+                            channel.is_community 
+                              ? 'text-indigo-500' 
+                              : channel.is_private 
+                                ? 'text-gray-400' 
                                 : 'text-primary-500'
                           }`} />
                         </div>
@@ -581,7 +581,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             ) : filteredRecentChats.length > 0 ? (
               <div className="divide-y divide-gray-800">
                 {filteredRecentChats.map((chat) => (
-                  <div
+                  <div 
                     key={chat.userId}
                     className={`p-3 hover:bg-dark-200 transition-colors cursor-pointer ${
                       chat.unreadCount > 0 ? 'bg-dark-200/50' : ''
@@ -594,9 +594,9 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                         {chat.avatarUrl ? (
-                          <img
-                            src={chat.avatarUrl}
-                            alt={chat.username}
+                          <img 
+                            src={chat.avatarUrl} 
+                            alt={chat.username} 
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -650,12 +650,12 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             filteredFriends.length > 0 ? (
               <div className="divide-y divide-gray-800">
                 {filteredFriends.map((friend) => (
-                  <div
+                  <div 
                     key={friend.id}
                     className="p-3 hover:bg-dark-200 transition-colors cursor-pointer"
                     onClick={() => friend.related_user && openChat(
-                      friend.related_user.id,
-                      friend.related_user.username,
+                      friend.related_user.id, 
+                      friend.related_user.username, 
                       friend.related_user.avatar_url
                     )}
                     role="button"
@@ -665,9 +665,9 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                         {friend.related_user?.avatar_url ? (
-                          <img
-                            src={friend.related_user.avatar_url}
-                            alt={friend.related_user.username}
+                          <img 
+                            src={friend.related_user.avatar_url} 
+                            alt={friend.related_user.username} 
                             className="w-full h-full object-cover"
                           />
                         ) : (
@@ -715,7 +715,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                   </div>
                   <div className="divide-y divide-gray-800">
                   {filteredUserChannels.map((channel) => (
-                    <div
+                    <div 
                       key={channel.id}
                       className="p-3 hover:bg-dark-200 transition-colors cursor-pointer"
                       onClick={() => openChannel(channel.id, channel.name, channel.description)}
@@ -725,24 +725,24 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                     >
                       <div className="flex items-center">
                         <div className={`w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 flex items-center justify-center ${
-                          channel.is_community
+                          channel.is_community 
                             ? 'bg-indigo-600/20'
-                            : channel.is_private
-                              ? 'bg-gray-600/20'
+                            : channel.is_private 
+                              ? 'bg-gray-600/20' 
                               : 'bg-primary-600/20'
                         }`}>
                           {channel.image_url ? (
-                            <img
-                              src={channel.image_url}
-                              alt={channel.name}
+                            <img 
+                              src={channel.image_url} 
+                              alt={channel.name} 
                               className="w-full h-full object-cover"
                             />
                           ) : (
                             <MessageSquare className={`h-5 w-5 ${
-                              channel.is_community
-                                ? 'text-indigo-500'
-                                : channel.is_private
-                                  ? 'text-gray-400'
+                              channel.is_community 
+                                ? 'text-indigo-500' 
+                                : channel.is_private 
+                                  ? 'text-gray-400' 
                                   : 'text-primary-500'
                             }`} />
                           )}
@@ -780,7 +780,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                   </div>
                 </div>
               )}
-
+              
               {/* Public Channels Section */}
               {filteredPublicChannels.length > 0 && (!onContactSelectForShare || shareTargetType === 'community') && (
                 <div>
@@ -789,11 +789,11 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                   </div>
                   <div className="divide-y divide-gray-800">
                     {filteredPublicChannels.map((channel) => (
-                      <div
+                      <div 
                         key={channel.id}
                         className="p-3 hover:bg-dark-200 transition-colors cursor-pointer"
-                        onClick={() => onContactSelectForShare ?
-                          openChannel(channel.id, channel.name, channel.description) :
+                        onClick={() => onContactSelectForShare ? 
+                          openChannel(channel.id, channel.name, channel.description) : 
                           undefined
                         }
                       >
@@ -801,9 +801,9 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                           <div className="flex items-center flex-1 min-w-0">
                             <div className="w-10 h-10 rounded-full bg-indigo-600/20 overflow-hidden mr-3 flex-shrink-0 flex items-center justify-center">
                               {channel.image_url ? (
-                                <img
-                                  src={channel.image_url}
-                                  alt={channel.name}
+                                <img 
+                                  src={channel.image_url} 
+                                  alt={channel.name} 
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
@@ -839,7 +839,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                   </div>
                 </div>
               )}
-
+              
               {filteredUserChannels.length === 0 && filteredPublicChannels.length === 0 && !onContactSelectForShare && (
                 <div className="text-center py-8">
                   <MessageSquare className="h-12 w-12 text-gray-500 mx-auto mb-4" />
@@ -854,7 +854,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
                   </a>
                 </div>
               )}
-
+              
               {/* Empty state for sharing */}
               {filteredUserChannels.length === 0 && filteredPublicChannels.length === 0 && onContactSelectForShare && (
                 <div className="text-center py-8">
@@ -881,7 +881,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
               ) : channelInvitations.length > 0 ? (
                 <div className="divide-y divide-gray-800">
                   {channelInvitations.map((invitation) => (
-                    <div
+                    <div 
                       key={invitation.id}
                       className="p-3 hover:bg-dark-200 transition-colors"
                     >
@@ -928,7 +928,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
             </>
           ) : null}
         </div>
-
+        
         {/* Footer */}
         {!onContactSelectForShare && (
           <div className="p-3 border-t border-gray-800 text-center">
@@ -954,7 +954,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           </div>
         )}
       </div>
-
+      
       {/* Chat Modal */}
       {showChatModal && selectedChat && (
         <ChatModal
@@ -969,7 +969,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           initialMessageContent={initialMessageContent}
         />
       )}
-
+    
       {/* Channel Modal */}
       {showChannelModal && selectedChannel && (
         <ChannelModal
@@ -984,7 +984,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
           initialMessageContent={initialMessageContent}
         />
       )}
-
+    
     </>
   );
 };

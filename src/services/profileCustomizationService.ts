@@ -92,7 +92,8 @@ export const fetchUserCustomization = async (
       *,
       avatar_frame:profile_frames!user_profile_customizations_avatar_frame_id_fkey(*),
       modal_frame:profile_frames!user_profile_customizations_modal_frame_id_fkey(*),
-      avatar_badge:profile_badges(*)
+      avatar_badge:profile_badges(*),
+      selected_avatar:profile_avatars(*)
     `)
     .eq('user_id', userId)
     .maybeSingle();
@@ -111,6 +112,8 @@ export const saveUserCustomization = async (
     avatar_frame_id?: string | null;
     modal_frame_id?: string | null;
     avatar_badge_id?: string | null;
+    selected_avatar_id?: string | null;
+    use_preset_avatar?: boolean;
   }
 ): Promise<UserProfileCustomization> => {
   const { data, error } = await supabase
@@ -124,7 +127,8 @@ export const saveUserCustomization = async (
       *,
       avatar_frame:profile_frames!user_profile_customizations_avatar_frame_id_fkey(*),
       modal_frame:profile_frames!user_profile_customizations_modal_frame_id_fkey(*),
-      avatar_badge:profile_badges(*)
+      avatar_badge:profile_badges(*),
+      selected_avatar:profile_avatars(*)
     `)
     .single();
 
@@ -138,7 +142,7 @@ export const saveUserCustomization = async (
 
 export const unlockItem = async (
   userId: string,
-  itemType: 'frame' | 'badge',
+  itemType: 'frame' | 'badge' | 'avatar',
   itemId: string,
   unlockSource: string
 ): Promise<UserUnlockedItem> => {
@@ -163,7 +167,7 @@ export const unlockItem = async (
 
 export const checkItemUnlocked = async (
   userId: string,
-  itemType: 'frame' | 'badge',
+  itemType: 'frame' | 'badge' | 'avatar',
   itemId: string
 ): Promise<boolean> => {
   const { data, error } = await supabase

@@ -24,7 +24,7 @@ const GamingAccountsSection: React.FC<GamingAccountsSectionProps> = ({
             <Gamepad2 className="h-5 w-5 mr-2 text-primary-500" />
             {t('gaming.connectedGamingAccounts')}
           </h2>
-          <Link to="/profile/edit" className="text-primary-500 hover:text-primary-400 text-sm">
+          <Link to="/profile/settings#gaming-accounts" className="text-primary-500 hover:text-primary-400 text-sm">
             {t('gaming.manageMyAccounts')}
           </Link>
         </div>
@@ -96,7 +96,7 @@ const GamingAccountsSection: React.FC<GamingAccountsSectionProps> = ({
         ) : (
           <div className="bg-gray-100 dark:bg-dark-200 rounded-lg p-4 text-center">
             <p className="text-gray-600 dark:text-gray-400 mb-2">{t('gaming.noConnectedGamingAccounts')}</p>
-            <Link to="/profile/edit" className="text-primary-500 hover:text-primary-400 text-sm">
+            <Link to="/profile/settings#gaming-accounts" className="text-primary-500 hover:text-primary-400 text-sm">
               {t('gaming.addGamingAccounts')}
             </Link>
           </div>

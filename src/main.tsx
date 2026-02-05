@@ -6,6 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AppConfigProvider } from './contexts/AppConfigContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
@@ -19,7 +20,8 @@ createRoot(document.getElementById('root')!).render(
           <BrowserRouter>
             <AuthProvider>
               <SubscriptionProvider>
-                <App />
+                <SidebarProvider>
+                  <App />
                 <Toaster
                   position="top-right"
                   toastOptions={{
@@ -31,6 +33,7 @@ createRoot(document.getElementById('root')!).render(
                     },
                   }}
                 />
+                </SidebarProvider>
               </SubscriptionProvider>
             </AuthProvider>
           </BrowserRouter>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Trophy, Users, User, Gamepad2, CheckCircle, Loader, FileText } from 'lucide-react';
+import { X, Trophy, Users, User, Gamepad2, CheckCircle, Loader, FileText, AlertTriangle, MessageSquare, ExternalLink, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAuthStore } from '../../stores/authStore';
@@ -15,7 +15,6 @@ import { getDefaultPhoneCountry, getEligiblePhoneCountries } from '../../utils/c
 import { validatePhoneNumber } from '../../utils/phoneValidation';
 import { discordVerificationService } from '../../services/discordVerificationService';
 import { DiscordConnectionRequired } from './DiscordConnectionRequired';
-import { modalStateManager } from '../../utils/modalStateManager';
 
 interface GamePublisherField {
   id: string;
@@ -90,6 +89,8 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const [discordVerificationError, setDiscordVerificationError] = useState<string | null>(null);
   const [isTechnicalDiscordError, setIsTechnicalDiscordError] = useState(false);
   const [isUnlinkingDiscord, setIsUnlinkingDiscord] = useState(false);
+  const [isVerifyingMembership, setIsVerifyingMembership] = useState(false);
+  const [tournamentDiscordUrl, setTournamentDiscordUrl] = useState<string | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const isTeamTournament = tournament?.mode?.toLowerCase().includes('team');
@@ -132,6 +133,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
       const hasDiscordUrl = !!data?.discord_url;
       setRequiresDiscord(hasDiscordUrl);
+      setTournamentDiscordUrl(data?.discord_url || null);
 
       if (hasDiscordUrl) {
         const userHasDiscordId = !!user.discord_user_id;
@@ -197,61 +199,44 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       return;
     }
 
-    const isKliento = discordVerificationService.isKlientoUser(user);
-
-    console.log('[RegistrationModal] Initiating Discord OAuth', {
+    console.log('[RegistrationModal] Initiating Discord OAuth popup', {
       tournamentId: tournament.id,
       teamId,
-      isKlientoUser: isKliento,
     });
 
     setIsConnectingDiscord(true);
 
     try {
-      if (isKliento) {
-        console.log('[RegistrationModal] Using Kliento Discord OAuth flow (popup)');
+      const result = await discordVerificationService.initiateDiscordOAuthPopup(user.id);
 
-        const result = await discordVerificationService.initiateKlientoDiscordOAuth(user.id);
+      if (result.success && result.discord_user) {
+        console.log('[RegistrationModal] Discord OAuth successful:', result.discord_user);
+        toast.success(t('registrationModal.discordConnected', { username: result.discord_user.handle }));
 
-        if (result.success && result.discord_user) {
-          console.log('[RegistrationModal] Kliento Discord OAuth successful:', result.discord_user);
-          toast.success(t('registrationModal.discordConnected', { username: result.discord_user.handle }));
+        await refreshKlientoUser();
 
-          await refreshKlientoUser();
+        setHasDiscordUserId(true);
+        setIsDiscordLinked(true);
 
-          setHasDiscordUserId(true);
-          setIsDiscordLinked(true);
+        console.log('[RegistrationModal] Verifying Discord server membership...');
+        const verifyResult = await discordVerificationService.verifyDiscordMembership(user.id, tournament.id);
+
+        if (verifyResult.success && verifyResult.data?.is_verified) {
+          console.log('[RegistrationModal] User is a member of the Discord server');
           setIsDiscordMember(true);
         } else {
-          console.error('[RegistrationModal] Kliento Discord OAuth failed:', result.error);
-          toast.error(result.error || t('registrationModal.errorConnectingDiscord'));
+          console.log('[RegistrationModal] User is NOT a member of the Discord server');
+          setIsDiscordMember(false);
         }
-
-        setIsConnectingDiscord(false);
       } else {
-        modalStateManager.saveModalState({
-          tournamentId: tournament.id,
-          teamId: teamId,
-          teamName: teamName,
-        });
-
-        const result = await discordVerificationService.initiateDiscordOAuthFromModal(
-          tournament.id,
-          teamId
-        );
-
-        if (!result.success) {
-          console.error('[RegistrationModal] Failed to initiate Discord OAuth:', result.error);
-          toast.error(result.error || t('registrationModal.errorConnectingDiscord'));
-          setIsConnectingDiscord(false);
-          modalStateManager.clearModalState();
-        }
+        console.error('[RegistrationModal] Discord OAuth failed:', result.error);
+        toast.error(result.error || t('registrationModal.errorConnectingDiscord'));
       }
     } catch (error) {
       console.error('[RegistrationModal] Error initiating Discord OAuth:', error);
       toast.error(t('registrationModal.errorConnectingDiscord'));
+    } finally {
       setIsConnectingDiscord(false);
-      modalStateManager.clearModalState();
     }
   };
 
@@ -283,6 +268,28 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
     }
   };
 
+  const handleVerifyMembership = async () => {
+    if (!user?.id || !tournament?.id) return;
+
+    setIsVerifyingMembership(true);
+    try {
+      const result = await discordVerificationService.verifyDiscordMembership(user.id, tournament.id);
+
+      if (result.success && result.data?.is_verified) {
+        setIsDiscordMember(true);
+        toast.success(t('registrationModal.discordMembershipVerified'));
+      } else {
+        setIsDiscordMember(false);
+        toast.error(t('registrationModal.notADiscordMember'));
+      }
+    } catch (error) {
+      console.error('[RegistrationModal] Error verifying Discord membership:', error);
+      toast.error(t('registrationModal.errorVerifyingMembership'));
+    } finally {
+      setIsVerifyingMembership(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen && tournament?.id) {
       console.log('RegistrationModal: Loading tournament fields for tournament:', tournament.id);
@@ -293,7 +300,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
   const loadTournamentFields = async (tournamentId: string) => {
     try {
       setIsLoadingFields(true);
-
+      
       // Get tournament fields for this tournament
       const { data: fieldValues, error: fieldValuesError } = await supabase
         .from('tournament_field_values')
@@ -309,18 +316,18 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
           )
         `)
         .eq('tournament_id', tournamentId);
-
+      
       if (fieldValuesError) {
         console.error('Error loading tournament field values:', fieldValuesError);
         return;
       }
-
+      
       if (!fieldValues || fieldValues.length === 0) {
         console.log('No tournament fields found for tournament:', tournamentId);
         setTournamentFields([]);
         return;
       }
-
+      
       // Transform the data
       const fields: TournamentField[] = fieldValues.map(item => ({
         id: item.tournament_fields.id,
@@ -331,7 +338,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
         options: item.tournament_fields.options,
         selectedValues: item.tournament_fields.field_type === 'multi-select' ? [] : undefined
       }));
-
+      
       console.log('Tournament fields:', fields);
       setTournamentFields(fields);
     } catch (error) {
@@ -343,20 +350,20 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   const loadGamePublisherFields = async (gameId: string) => {
     console.log('RegistrationModal: loadGamePublisherFields called with gameId:', gameId);
-
+    
     try {
       setIsLoadingFields(true);
-
+      
       // Get Fortnite game ID for special handling
       const { data: fortniteGame, error: fortniteGameError } = await supabase
         .from('games')
         .select('id')
         .ilike('name', '%fortnite%')
         .maybeSingle();
-
+      
       const fortniteGameId = fortniteGame?.id;
       const isFortniteGame = gameId === fortniteGameId;
-
+      
       // Get game publisher IDs for this specific game
       const { data: publisherIds, error: publisherError } = await supabase
         .from('game_publisher_ids')
@@ -372,7 +379,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
         .select('has_an_api, api_key')
         .eq('id', gameId)
         .single();
-
+        
       if (!gameError && gameData) {
         setGameHasApi(gameData.has_an_api || false);
       }
@@ -392,12 +399,12 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
       // Identify field pairs (e.g., Riot Game Name + Riot Tagline)
       const pairs: {[key: string]: string[]} = {};
-
+      
       // First pass: identify potential pairs based on id_name patterns
       publisherIds.forEach(item => {
         // Extract base name by removing common suffixes
         let baseName = item.id_name;
-
+        
         // Handle Riot Game Name + Tagline pattern
         if (baseName.includes('game_name-riot')) {
           baseName = 'riot';
@@ -408,23 +415,23 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
         else if (baseName.includes('_name') || baseName.includes('_tagline') ||
                 baseName.includes('_first') || baseName.includes('_second') ||
                 baseName.includes('_part1') || baseName.includes('_part2')) {
-
+          
           baseName = baseName.split('_')[0]; // Get the first part before underscore
         }
-
+        
         if (!pairs[baseName]) {
           pairs[baseName] = [];
         }
         pairs[baseName].push(item.id);
       });
-
+      
       // Second pass: keep only actual pairs (2+ fields with same base)
       Object.keys(pairs).forEach(key => {
         if (pairs[key].length < 2) {
           delete pairs[key];
         }
       });
-
+      
       setFieldPairs(pairs);
       console.log('RegistrationModal: Identified field pairs:', pairs);
 
@@ -465,20 +472,20 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       // Special handling for Fortnite tournaments
       if (isFortniteGame && user?.fortnite_epic_id) {
         // Find the Fortnite Epic ID field
-        const fortniteEpicField = fields.find(field =>
-          field.id_name.toLowerCase().includes('fortnite') ||
+        const fortniteEpicField = fields.find(field => 
+          field.id_name.toLowerCase().includes('fortnite') || 
           field.id_name.toLowerCase().includes('epic') ||
           field.label.toLowerCase().includes('fortnite') ||
           field.label.toLowerCase().includes('epic')
         );
-
+        
         if (fortniteEpicField) {
           // Pre-fill with user's validated Fortnite Epic ID
           fortniteEpicField.value = user.fortnite_epic_id;
           fortniteEpicField.isValidated = user.is_fortnite_validated || false;
           fortniteEpicField.validation_data = user.fortnite_validation_data;
           fortniteEpicField.validation_date = user.is_fortnite_validated ? new Date().toISOString() : undefined;
-
+          
           console.log('RegistrationModal: Pre-filled Fortnite Epic ID from user profile:', user.fortnite_epic_id);
         }
       }
@@ -492,8 +499,8 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
   };
 
   const handleGamePublisherFieldChange = (fieldId: string, value: string) => {
-    setGamePublisherFields(prev =>
-      prev.map(field =>
+    setGamePublisherFields(prev => 
+      prev.map(field => 
         field.id === fieldId ? { ...field, value, isValidated: false } : field
       )
     );
@@ -552,10 +559,10 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       toast.error(t('registrationModal.steamId64MustBe17Digits'));
       return;
     }
-
+    
     try {
       setIsValidatingSteam(true);
-
+      
       // Call the Steam profile Edge Function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-steam-profile`, {
         method: 'POST',
@@ -569,9 +576,9 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
           includeGames: false
         })
       });
-
+      
       const result = await response.json();
-
+      
       if (result.success && result.profile) {
         setIsSteamValidated(true);
         setSteamValidationData(result.profile);
@@ -601,27 +608,27 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
     // Check if this field is part of a pair
     let pairFieldIds: string[] = [];
     let combinedValue: string = '';
-
+    
     // Find if this field is part of a pair
     for (const [baseName, fieldIds] of Object.entries(fieldPairs)) {
       if (fieldIds.includes(fieldId) && fieldIds.length > 1) {
         // This is part of a pair
         pairFieldIds = fieldIds;
-
+        
         // Get all fields in the pair
-        const pairFields = pairFieldIds.map(id =>
+        const pairFields = pairFieldIds.map(id => 
           gamePublisherFields.find(f => f.id === id)
         ).filter(Boolean) as GamePublisherField[];
-
+        
         // Check if all fields have values
         const allFieldsHaveValues = pairFields.every(f => f.value && f.value.trim() !== '');
-
+        
         if (allFieldsHaveValues) {
           // For Riot fields, we want to combine as "gameName#tagline"
           if (pairFields.some(f => f.id_name.includes('riot'))) {
             const gameNameField = pairFields.find(f => f.id_name.includes('game_name-riot'));
             const taglineField = pairFields.find(f => f.id_name.includes('tagline-riot'));
-
+            
             if (gameNameField && taglineField) {
               combinedValue = `${gameNameField.value}#${taglineField.value}`;
             }
@@ -630,15 +637,15 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
             combinedValue = pairFields.map(f => f.value).join('#');
           }
         }
-
+        
         break;
       }
     }
 
     try {
       // Set validating state for all fields in the pair
-      setGamePublisherFields(prev =>
-        prev.map(f =>
+      setGamePublisherFields(prev => 
+        prev.map(f => 
           pairFieldIds.includes(f.id) ? { ...f, isValidating: true, isValidated: false } : f
         )
       );
@@ -647,19 +654,19 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       if (field.id_name.includes('riot') && pairFieldIds.length > 1) {
         const gameNameField = gamePublisherFields.find(f => f.id_name.includes('game_name-riot'));
         const taglineField = gamePublisherFields.find(f => f.id_name.includes('tagline-riot'));
-
+        
         if (gameNameField?.value && taglineField?.value) {
           console.log('Validating Riot ID:', gameNameField.value, taglineField.value);
-
+          
           const result = await validateRiotId(gameNameField.value, taglineField.value);
-
+          
           if (result.valid) {
             // Set validated state for all fields in the pair
-            setGamePublisherFields(prev =>
-              prev.map(f =>
-                pairFieldIds.includes(f.id) ? {
-                  ...f,
-                  isValidating: false,
+            setGamePublisherFields(prev => 
+              prev.map(f => 
+                pairFieldIds.includes(f.id) ? { 
+                  ...f, 
+                  isValidating: false, 
                   isValidated: true,
                   puuid: result.puuid,
                   validation_data: result,
@@ -667,15 +674,15 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                 } : f
               )
             );
-
+            
             toast.success(t('registrationModal.accountValidatedSuccess', { account: `${gameNameField.value}#${taglineField.value}` }));
           } else {
             // Reset validation state for all fields in the pair
-            setGamePublisherFields(prev =>
-              prev.map(f =>
-                pairFieldIds.includes(f.id) ? {
-                  ...f,
-                  isValidating: false,
+            setGamePublisherFields(prev => 
+              prev.map(f => 
+                pairFieldIds.includes(f.id) ? { 
+                  ...f, 
+                  isValidating: false, 
                   isValidated: false,
                   puuid: undefined,
                   validation_data: undefined,
@@ -683,10 +690,10 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                 } : f
               )
             );
-
+            
             toast.error(result.error || t('registrationModal.errorValidatingRiotAccount'));
           }
-
+          
           return;
         }
       }
@@ -695,11 +702,11 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Set validated state for all fields in the pair
-      setGamePublisherFields(prev =>
-        prev.map(f =>
-          pairFieldIds.includes(f.id) ? {
-            ...f,
-            isValidating: false,
+      setGamePublisherFields(prev => 
+        prev.map(f => 
+          pairFieldIds.includes(f.id) ? { 
+            ...f, 
+            isValidating: false, 
             isValidated: true,
             validation_date: new Date().toISOString()
           } : f
@@ -714,19 +721,19 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
       }
     } catch (error) {
       console.error('Error validating game account:', error);
-
+      
       // Reset validation state for all fields in the pair
-      setGamePublisherFields(prev =>
-        prev.map(f =>
-          pairFieldIds.includes(f.id) ? {
-            ...f,
-            isValidating: false,
+      setGamePublisherFields(prev => 
+        prev.map(f => 
+          pairFieldIds.includes(f.id) ? { 
+            ...f, 
+            isValidating: false, 
             isValidated: false,
             validation_date: undefined
           } : f
         )
       );
-
+      
       toast.error(t('registrationModal.errorValidatingAccount'));
     }
   };
@@ -1444,7 +1451,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
   // Process fields into paired and single groups
   gamePublisherFields.forEach(field => {
     let isPaired = false;
-
+    
     // Check if this field is part of a pair
     for (const [baseName, fieldIds] of Object.entries(fieldPairs)) {
       if (fieldIds.includes(field.id) && fieldIds.length > 1) {
@@ -1457,7 +1464,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
         break;
       }
     }
-
+    
     // If not part of a pair, add to single fields
     if (!isPaired) {
       groupedFields.single.push(field);
@@ -1466,14 +1473,14 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
 
   // Special handling for Riot API fields
   const riotApiGameId = "614e99e6-40b0-48e6-9dcd-d8c3f1981f52";
-  const hasRiotFields = gamePublisherFields.some(field =>
-    field.game_id === riotApiGameId ||
+  const hasRiotFields = gamePublisherFields.some(field => 
+    field.game_id === riotApiGameId || 
     (field.id_name.includes('game_name-riot') || field.id_name.includes('tagline-riot'))
   );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      <div
+      <div 
         ref={modalRef}
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
         tabIndex={-1}
@@ -1485,7 +1492,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
               {teamId ? t('registrationModal.joinTeam') : t('registrationModal.tournamentRegistration')}
             </h2>
           </div>
-          <button
+          <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('registrationModal.close')}
@@ -1569,6 +1576,49 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
             </div>
           )}
 
+          {/* Discord Server Membership Warning - Connected but not a member */}
+          {requiresDiscord && hasDiscordUserId && isDiscordLinked && !isDiscordMember && !isTechnicalDiscordError && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+              <div className="flex flex-col space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="p-2 rounded-full bg-amber-500/20">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-amber-600 dark:text-amber-400">
+                      {t('registrationModal.discordServerRequired')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                      {t('registrationModal.discordServerRequiredDescription')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 ml-11">
+                  {tournamentDiscordUrl && (
+                    <a
+                      href={tournamentDiscordUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white rounded-lg font-medium transition-colors text-sm"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      {t('registrationModal.joinDiscordServer')}
+                      <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                    </a>
+                  )}
+                  <button
+                    onClick={handleVerifyMembership}
+                    disabled={isVerifyingMembership}
+                    className="inline-flex items-center justify-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors text-sm disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isVerifyingMembership ? 'animate-spin' : ''}`} />
+                    {t('registrationModal.verifyMembership')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Team Name Input for Team Tournaments */}
           {isTeamTournament && !teamId && (
             <div>
@@ -1608,12 +1658,12 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                   (() => {
                       const gameNameField = gamePublisherFields.find(f => f.id_name.includes('game_name-riot'));
                       const taglineField = gamePublisherFields.find(f => f.id_name.includes('tagline-riot'));
-
+                      
                       if (gameNameField && taglineField) {
                         const isValidating = gameNameField.isValidating || taglineField.isValidating;
                         const isValidated = gameNameField.isValidated || taglineField.isValidated;
                         const bothFieldsHaveValues = gameNameField.value && taglineField.value;
-
+                        
                         return (
                           <div>
                             <label htmlFor="riot_combined" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1643,7 +1693,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                                   required={taglineField.required}
                                 />
                               </div>
-
+                              
                               {/* Validation button for Riot ID */}
                               {gameHasApi && bothFieldsHaveValues && (
                                 <div className="flex justify-end mt-2">
@@ -1653,7 +1703,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                                     disabled={isValidating || isValidated}
                                     className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
                                       isValidated
-                                        ? 'bg-success-600 text-white cursor-default'
+                                        ? 'bg-success-600 text-white cursor-default' 
                                         : isValidating
                                           ? 'bg-primary-600/50 text-white cursor-wait'
                                           : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -1682,14 +1732,14 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                       return null;
                     })()
                 )}
-
+                
                 {/* Render other paired fields (excluding Riot fields if they're handled above) */}
                 {Object.entries(groupedFields.paired).map(([baseName, fields]) => {
                   // Skip Riot fields if they're already handled
                   if (baseName === 'riot' && hasRiotFields) {
                     return null;
                   }
-
+                  
                   return (
                     <div key={baseName} className="p-3 border border-gray-700 rounded-lg space-y-3">
                       {fields.map(field => (
@@ -1711,7 +1761,7 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({
                     </div>
                   );
                 })}
-
+                
                 {/* Render single fields */}
                 {groupedFields.single.map((field) => (
                   <div key={field.id}>

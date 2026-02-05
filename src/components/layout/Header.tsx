@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useSidebar, SIDEBAR_WIDTH } from '../../contexts/SidebarContext';
 import {
   Bell,
   User,
@@ -43,6 +44,7 @@ const Header: React.FC = () => {
   const { brandName } = useAppConfig();
   const location = useLocation();
   const { t } = useTranslation();
+  const { isSidebarVisible } = useSidebar();
 
   const {
     notifications: matchNotifications,
@@ -179,14 +181,6 @@ const Header: React.FC = () => {
     return 'bg-white dark:bg-dark-100 shadow-lg';
   };
 
-  const getContainerStyling = () => {
-    if (isHomePage) {
-      return isScrolled
-        ? 'bg-white/20 dark:bg-transparent backdrop-blur-sm'
-        : 'bg-white/10 dark:bg-dark-100/10 backdrop-blur-sm';
-    }
-    return 'bg-transparent';
-  };
 
   const getTextStyling = () => {
     if (isHomePage) {
@@ -245,11 +239,13 @@ const Header: React.FC = () => {
 
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-300 ${getHeaderStyling()}`}
+      className={`fixed top-0 z-50 transition-all duration-300 ${getHeaderStyling()}`}
+      style={{
+        left: isSidebarVisible ? `${SIDEBAR_WIDTH}px` : '0px',
+        width: isSidebarVisible ? `calc(100% - ${SIDEBAR_WIDTH}px)` : '100%',
+      }}
     >
-      <div
-        className={`container mx-auto px-4 py-4 ${getContainerStyling()} rounded-lg mx-4 mt-2`}
-      >
+      <div className="w-full px-4 lg:px-6 py-4 transition-all duration-300">
         <div className="flex items-center justify-between">
           <Link
             to="/"

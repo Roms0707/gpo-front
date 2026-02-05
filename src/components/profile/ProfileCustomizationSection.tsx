@@ -1,19 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Image, LayoutGrid as Layout, Award, Lock, Check, Sparkles, Star, CheckCircle, TrendingUp, Crown, Trophy, Flame, Loader, X, ChevronDown, ChevronUp, Swords, Target, Skull, Rocket, Crosshair, Zap, Globe } from 'lucide-react';
+import { Image, UserCircle, Award, Lock, Check, Sparkles, Star, CheckCircle, TrendingUp, Crown, Trophy, Flame, Loader, X, ChevronDown, ChevronUp, Swords, Target, Skull, Rocket, Crosshair, Zap, Globe, Gamepad2 } from 'lucide-react';
 import type {
   ProfileFrame,
   ProfileBadge,
   ProfileFrameWithUnlockStatus,
   ProfileBadgeWithUnlockStatus,
+  ProfileAvatarWithUnlockStatus,
   ItemRarity,
-  FrameCollection
+  FrameCollection,
+  AvatarGameAffinity
 } from '../../types';
 import AvatarWithFrame from './AvatarWithFrame';
 import CustomizationCardBorder from './CustomizationCardBorder';
+import AvatarSelectionCard, { getGameAffinityColor, getGameAffinityName } from './AvatarSelectionCard';
 
-type CustomizationTab = 'avatar' | 'modal' | 'badges';
+type CustomizationTab = 'avatar' | 'avatars' | 'badges';
 type CollectionFilter = 'all' | FrameCollection;
+type AvatarFilter = 'all' | AvatarGameAffinity;
 
 interface CollectionInfo {
   id: CollectionFilter;
@@ -21,6 +25,13 @@ interface CollectionInfo {
   icon: React.ElementType;
   color: string;
   gradient: string;
+}
+
+interface AvatarCollectionInfo {
+  id: AvatarFilter;
+  name: string;
+  icon: React.ElementType;
+  color: string;
 }
 
 const COLLECTIONS: CollectionInfo[] = [
@@ -35,16 +46,30 @@ const COLLECTIONS: CollectionInfo[] = [
   { id: 'universal', name: 'Elite', icon: Sparkles, color: '#8b5cf6', gradient: 'from-violet-500/20 to-cyan-500/20' },
 ];
 
+const AVATAR_COLLECTIONS: AvatarCollectionInfo[] = [
+  { id: 'all', name: 'All', icon: Globe, color: '#6b7280' },
+  { id: 'lol', name: 'LoL', icon: Crown, color: '#c89b3c' },
+  { id: 'warzone', name: 'Warzone', icon: Crosshair, color: '#4a5a3d' },
+  { id: 'valorant', name: 'Valorant', icon: Target, color: '#ff4655' },
+  { id: 'cs2', name: 'CS2', icon: Swords, color: '#ffb03b' },
+  { id: 'apex', name: 'Apex', icon: Rocket, color: '#da291c' },
+  { id: 'universal', name: 'Elite', icon: Gamepad2, color: '#8b5cf6' },
+];
+
 interface ProfileCustomizationSectionProps {
   avatarFrames: ProfileFrameWithUnlockStatus[];
   modalFrames: ProfileFrameWithUnlockStatus[];
   badges: ProfileBadgeWithUnlockStatus[];
+  presetAvatars?: ProfileAvatarWithUnlockStatus[];
   selectedAvatarFrameId?: string | null;
   selectedModalFrameId?: string | null;
   selectedBadgeId?: string | null;
+  selectedPresetAvatarId?: string | null;
+  usePresetAvatar?: boolean;
   onSelectAvatarFrame: (frameId: string | null) => void;
   onSelectModalFrame: (frameId: string | null) => void;
   onSelectBadge: (badgeId: string | null) => void;
+  onSelectPresetAvatar?: (avatarId: string | null) => void;
   userXp?: number;
   themeColor?: string;
   avatarUrl?: string | null;
@@ -89,12 +114,16 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
   avatarFrames,
   modalFrames,
   badges,
+  presetAvatars = [],
   selectedAvatarFrameId,
   selectedModalFrameId,
   selectedBadgeId,
+  selectedPresetAvatarId,
+  usePresetAvatar = false,
   onSelectAvatarFrame,
   onSelectModalFrame,
   onSelectBadge,
+  onSelectPresetAvatar,
   userXp = 0,
   themeColor,
   avatarUrl,
@@ -107,19 +136,25 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
   const [hoveredFrame, setHoveredFrame] = useState<ProfileFrame | null>(null);
   const [hoveredBadge, setHoveredBadge] = useState<ProfileBadge | null>(null);
   const [collectionFilter, setCollectionFilter] = useState<CollectionFilter>('all');
+  const [avatarFilter, setAvatarFilter] = useState<AvatarFilter>('all');
 
   const selectedAvatarFrame = avatarFrames.find(f => f.id === selectedAvatarFrameId) || null;
   const selectedBadge = badges.find(b => b.id === selectedBadgeId) || null;
+  const selectedPresetAvatar = presetAvatars.find(a => a.id === selectedPresetAvatarId) || null;
+
+  const displayAvatarUrl = usePresetAvatar && selectedPresetAvatar
+    ? selectedPresetAvatar.image_url
+    : avatarUrl;
 
   const filteredAvatarFrames = useMemo(() => {
     if (collectionFilter === 'all') return avatarFrames;
     return avatarFrames.filter(f => f.collection === collectionFilter);
   }, [avatarFrames, collectionFilter]);
 
-  const filteredModalFrames = useMemo(() => {
-    if (collectionFilter === 'all') return modalFrames;
-    return modalFrames.filter(f => f.collection === collectionFilter);
-  }, [modalFrames, collectionFilter]);
+  const filteredPresetAvatars = useMemo(() => {
+    if (avatarFilter === 'all') return presetAvatars;
+    return presetAvatars.filter(a => a.game_affinity === avatarFilter);
+  }, [presetAvatars, avatarFilter]);
 
   const availableCollections = useMemo(() => {
     const frameCollections = new Set<string>();
@@ -128,12 +163,26 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
     return COLLECTIONS.filter(c => c.id === 'all' || frameCollections.has(c.id));
   }, [avatarFrames, modalFrames]);
 
+  const availableAvatarCollections = useMemo(() => {
+    const affinities = new Set<string>();
+    presetAvatars.forEach(a => affinities.add(a.game_affinity));
+    return AVATAR_COLLECTIONS.filter(c => c.id === 'all' || affinities.has(c.id));
+  }, [presetAvatars]);
+
   const getCollectionStats = (collection: CollectionFilter) => {
     const frames = collection === 'all'
       ? avatarFrames
       : avatarFrames.filter(f => f.collection === collection);
     const unlocked = frames.filter(f => f.is_unlocked).length;
     return { total: frames.length, unlocked };
+  };
+
+  const getAvatarCollectionStats = (affinity: AvatarFilter) => {
+    const avatars = affinity === 'all'
+      ? presetAvatars
+      : presetAvatars.filter(a => a.game_affinity === affinity);
+    const unlocked = avatars.filter(a => a.is_unlocked).length;
+    return { total: avatars.length, unlocked };
   };
 
   const renderUnlockRequirement = (item: ProfileFrameWithUnlockStatus | ProfileBadgeWithUnlockStatus) => {
@@ -181,6 +230,13 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
 
   const getCollectionInfo = (collectionId?: string) => {
     return COLLECTIONS.find(c => c.id === collectionId) || COLLECTIONS[0];
+  };
+
+  const getAvatarAffinityIcon = (affinity: AvatarGameAffinity) => {
+    const collection = AVATAR_COLLECTIONS.find(c => c.id === affinity);
+    if (!collection) return null;
+    const Icon = collection.icon;
+    return <Icon className="w-2.5 h-2.5" style={{ color: collection.color }} />;
   };
 
   const renderFrameItem = (
@@ -347,7 +403,7 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
 
   const tabs = [
     { id: 'avatar' as CustomizationTab, label: t('profile.customization.avatarFrame'), icon: Image, count: avatarFrames.length },
-    { id: 'modal' as CustomizationTab, label: t('profile.customization.modalFrame'), icon: Layout, count: modalFrames.length },
+    { id: 'avatars' as CustomizationTab, label: t('profile.customization.avatars'), icon: UserCircle, count: presetAvatars.length },
     { id: 'badges' as CustomizationTab, label: t('profile.customization.badges'), icon: Award, count: badges.length },
   ];
 
@@ -385,7 +441,7 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
         <div className="px-4 pb-4">
           <div className="flex items-center justify-center gap-4 mb-4 py-3 border-t border-gray-800/50">
             <AvatarWithFrame
-              avatarUrl={avatarUrl}
+              avatarUrl={displayAvatarUrl}
               frame={hoveredFrame || selectedAvatarFrame}
               badge={hoveredBadge || selectedBadge}
               size="lg"
@@ -399,6 +455,11 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
               {(hoveredBadge || selectedBadge) && (
                 <p className="text-xs text-gray-500 mt-0.5">
                   + {hoveredBadge?.name || selectedBadge?.name}
+                </p>
+              )}
+              {usePresetAvatar && selectedPresetAvatar && (
+                <p className="text-xs mt-0.5" style={{ color: getGameAffinityColor(selectedPresetAvatar.game_affinity) }}>
+                  {selectedPresetAvatar.name}
                 </p>
               )}
             </div>
@@ -425,7 +486,7 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
             ))}
           </div>
 
-          {(activeTab === 'avatar' || activeTab === 'modal') && availableCollections.length > 2 && (
+          {activeTab === 'avatar' && availableCollections.length > 2 && (
             <div className="mb-3">
               <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
                 {availableCollections.map((collection) => {
@@ -436,6 +497,42 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
                     <button
                       key={collection.id}
                       onClick={() => setCollectionFilter(collection.id)}
+                      className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                        isActive
+                          ? 'border-opacity-50 bg-opacity-20'
+                          : 'border-transparent bg-dark-300/30 hover:bg-dark-300/50 text-gray-400'
+                      }`}
+                      style={{
+                        borderColor: isActive ? collection.color : undefined,
+                        backgroundColor: isActive ? `${collection.color}15` : undefined,
+                        color: isActive ? collection.color : undefined,
+                      }}
+                    >
+                      <CollectionIcon className="w-3.5 h-3.5" />
+                      <span>{collection.name}</span>
+                      {collection.id !== 'all' && (
+                        <span className="text-[10px] opacity-70">
+                          {stats.unlocked}/{stats.total}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'avatars' && availableAvatarCollections.length > 1 && (
+            <div className="mb-3">
+              <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+                {availableAvatarCollections.map((collection) => {
+                  const stats = getAvatarCollectionStats(collection.id);
+                  const CollectionIcon = collection.icon;
+                  const isActive = avatarFilter === collection.id;
+                  return (
+                    <button
+                      key={collection.id}
+                      onClick={() => setAvatarFilter(collection.id)}
                       className={`flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                         isActive
                           ? 'border-opacity-50 bg-opacity-20'
@@ -495,41 +592,45 @@ const ProfileCustomizationSection: React.FC<ProfileCustomizationSectionProps> = 
                   )}
                   {filteredAvatarFrames.length === 0 && collectionFilter !== 'all' && (
                     <div className="col-span-3 py-6 text-center text-gray-500 text-sm">
-                      No frames in this collection yet
+                      {t('profile.customization.noFramesInCollection')}
                     </div>
                   )}
                 </>
               )}
 
-              {activeTab === 'modal' && (
+              {activeTab === 'avatars' && (
                 <>
                   <button
-                    onClick={() => onSelectModalFrame(null)}
-                    className={`p-3 rounded-xl border transition-all ${
-                      !selectedModalFrameId
+                    onClick={() => onSelectPresetAvatar?.(null)}
+                    className={`p-2 rounded-xl border transition-all ${
+                      !selectedPresetAvatarId
                         ? 'border-2'
                         : 'border-gray-700/50 hover:border-gray-600 hover:bg-dark-200/30'
                     }`}
                     style={{
-                      borderColor: !selectedModalFrameId ? themeColor || '#3b82f6' : undefined,
-                      backgroundColor: !selectedModalFrameId ? `${themeColor || '#3b82f6'}10` : undefined,
+                      borderColor: !selectedPresetAvatarId ? themeColor || '#3b82f6' : undefined,
+                      backgroundColor: !selectedPresetAvatarId ? `${themeColor || '#3b82f6'}10` : undefined,
                     }}
                   >
                     <div className="w-full aspect-square rounded-lg bg-dark-300/50 flex items-center justify-center mb-2">
                       <X className="w-5 h-5 text-gray-500" />
                     </div>
-                    <p className="text-xs font-medium text-gray-400">{t('profile.customization.none')}</p>
+                    <p className="text-xs font-medium text-gray-400 text-left">{t('profile.customization.useCustomPhoto')}</p>
                   </button>
-                  {filteredModalFrames.map((frame) =>
-                    renderFrameItem(
-                      frame,
-                      selectedModalFrameId === frame.id,
-                      () => onSelectModalFrame(frame.id)
-                    )
-                  )}
-                  {filteredModalFrames.length === 0 && collectionFilter !== 'all' && (
+                  {filteredPresetAvatars.map((avatar) => (
+                    <AvatarSelectionCard
+                      key={avatar.id}
+                      avatar={avatar}
+                      isSelected={selectedPresetAvatarId === avatar.id}
+                      onClick={() => onSelectPresetAvatar?.(avatar.id)}
+                      userXp={userXp}
+                      themeColor={themeColor}
+                      gameAffinityIcon={getAvatarAffinityIcon(avatar.game_affinity)}
+                    />
+                  ))}
+                  {filteredPresetAvatars.length === 0 && avatarFilter !== 'all' && (
                     <div className="col-span-3 py-6 text-center text-gray-500 text-sm">
-                      No modal frames in this collection yet
+                      {t('profile.customization.noAvatarsInCollection')}
                     </div>
                   )}
                 </>

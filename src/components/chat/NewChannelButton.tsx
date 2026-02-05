@@ -14,18 +14,18 @@ const NewChannelButton: React.FC<NewChannelButtonProps> = ({ className }) => {
   const [showChannelModal, setShowChannelModal] = useState(false);
   const [newChannelId, setNewChannelId] = useState<string | null>(null);
   const [newChannelName, setNewChannelName] = useState<string>('');
-
+  
   const handleChannelCreated = (channelId: string, channelName: string) => {
     setNewChannelId(channelId);
     setNewChannelName(channelName);
     setShowCreateModal(false);
-
+    
     // Open the channel modal after a short delay to ensure the create modal is closed
     setTimeout(() => {
       setShowChannelModal(true);
     }, 100);
   };
-
+  
   return (
     <>
       <button
@@ -40,14 +40,14 @@ const NewChannelButton: React.FC<NewChannelButtonProps> = ({ className }) => {
         <Plus className="h-5 w-5" />
         <span>{t('chat.createNewChannel')}</span>
       </button>
-
+      
       {/* Create Channel Modal */}
       <CreateChannelModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onChannelCreated={handleChannelCreated}
       />
-
+      
       {/* Channel Modal - Opens after creation */}
       {newChannelId && (
         <ChannelModal

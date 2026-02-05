@@ -92,7 +92,7 @@ const FormField: React.FC<FormFieldProps> = ({
       </label>
       {renderField()}
       {(helpText || error) && (
-        <p
+        <p 
           id={`${id}-help`}
           className={`text-xs mt-1 ${error ? 'text-error-500' : 'text-gray-400'}`}
         >

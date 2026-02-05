@@ -10,10 +10,10 @@ interface VideoCardProps {
   showMetadata?: boolean;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({
-  content,
+const VideoCard: React.FC<VideoCardProps> = ({ 
+  content, 
   className = '',
-  showMetadata = true
+  showMetadata = true 
 }) => {
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -28,19 +28,19 @@ const VideoCard: React.FC<VideoCardProps> = ({
     >
       {/* Video Thumbnail */}
       <div className="relative h-32 sm:h-36 md:h-40 overflow-hidden">
-        <img
-          src={content.playlist_image_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
-          alt={content.title}
+        <img 
+          src={content.playlist_image_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'} 
+          alt={content.title} 
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
-
+        
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div className="h-12 w-12 sm:h-14 sm:w-14 md:h-16 md:w-16 bg-primary-600 bg-opacity-90 rounded-full flex items-center justify-center">
             <Play className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white ml-1" />
           </div>
         </div>
-
+        
         {/* Duration Badge */}
         {content.duration && (
           <div className="absolute bottom-1.5 right-1.5 sm:bottom-2 sm:right-2 bg-black bg-opacity-70 text-white text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 rounded">
@@ -53,7 +53,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
           Vidéo
         </div>
       </div>
-
+      
       {/* Video Info */}
       <div className="p-3 sm:p-4">
         <div className="text-[10px] sm:text-xs text-primary-400 uppercase mb-1">{content.content_type}</div>
@@ -70,7 +70,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
             showGradient={false}
           />
         </div>
-
+        
         {/* Video Metadata */}
         {showMetadata && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 mt-1.5 sm:mt-2">

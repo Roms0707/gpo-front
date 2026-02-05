@@ -33,7 +33,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   const nameInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-
+  
   useEffect(() => {
     if (isOpen && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -59,41 +59,41 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, onClose]);
-
+  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-
+      
       // Validate file type
       const validFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!validFileTypes.includes(file.type)) {
         toast.error(t('chat.unsupportedFileType'));
         return;
       }
-
+      
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error(t('chat.imageTooLarge'));
         return;
       }
-
+      
       setImageFile(file);
       // Create a temporary URL for preview
       const objectUrl = URL.createObjectURL(file);
       setImagePreview(objectUrl);
     }
   };
-
+  
   const uploadImage = async (): Promise<string | null> => {
     if (!imageFile) return null;
-
+    
     try {
       setIsUploading(true);
-
+      
       const fileExt = imageFile.name.split('.').pop();
       const fileName = `community-${Date.now()}.${fileExt}`;
       const filePath = `community-images/${fileName}`;
-
+      
       // Upload the image
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -101,16 +101,16 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
           cacheControl: '3600',
           upsert: false
         });
-
+      
       if (uploadError) {
         throw uploadError;
       }
-
+      
       // Get the public URL
       const { data } = supabase.storage
         .from('avatars')
         .getPublicUrl(filePath);
-
+      
       return data.publicUrl;
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -120,24 +120,24 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
       setIsUploading(false);
     }
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!channelName.trim()) {
       toast.error(t('chat.channelNameRequired'));
       return;
     }
-
+    
     try {
       setIsCreating(true);
-
+      
       // Upload image if selected
       let imageUrl = null;
       if (imageFile) {
         imageUrl = await uploadImage();
       }
-
+      
       const result = await createChannel(
         channelName.trim(),
         channelDescription.trim(),
@@ -145,11 +145,11 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
         isCommunity,
         imageUrl
       );
-
+      
       if (result) {
         toast.success(t('chat.channelCreated'));
         onChannelCreated(result.id, channelName.trim());
-
+        
         // Reset form
         setChannelName('');
         setChannelDescription('');
@@ -157,7 +157,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
         setImagePreview(null);
         setIsPrivate(false);
         setIsCommunity(false);
-
+        
         // Close modal
         onClose();
       } else {
@@ -170,9 +170,9 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
       setIsCreating(false);
     }
   };
-
+  
   if (!isOpen) return null;
-
+  
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-auto">
       <div
@@ -222,7 +222,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-
+        
         <form onSubmit={handleSubmit} className="relative flex flex-col flex-1">
           <div className="p-6 space-y-4 overflow-y-auto flex-1">
             <div>
@@ -284,7 +284,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                   />
                 </div>
               </div>
-
+              
               <label htmlFor="channelName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('chat.channelNameLabel')} <span className="text-error-500">*</span>
               </label>
@@ -319,7 +319,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 {t('chat.channelNameHint')}
               </p>
             </div>
-
+            
             <div>
               <label htmlFor="channelDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('chat.descriptionLabel')}
@@ -343,7 +343,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 />
               </div>
             </div>
-
+            
             <div
               className="space-y-3 p-4 rounded-xl border"
               style={{
@@ -408,7 +408,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 </div>
               </div>
             </div>
-
+            
             {isCommunity && (
               <div className="bg-info-100 dark:bg-info-500/20 border border-info-300 dark:border-info-600/30 p-3 rounded-lg flex items-start">
                 <Info className="h-5 w-5 text-info-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -417,7 +417,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 </p>
               </div>
             )}
-
+            
             {isPrivate && (
               <div className="bg-info-100 dark:bg-info-500/20 border border-info-300 dark:border-info-600/30 p-3 rounded-lg flex items-start">
                 <Info className="h-5 w-5 text-info-500 mr-2 flex-shrink-0 mt-0.5" />
@@ -427,7 +427,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               </div>
             )}
           </div>
-
+          
           <div className="relative p-4 border-t border-gray-200 dark:border-gray-700/50 flex justify-end space-x-3 flex-shrink-0 bg-white dark:bg-dark-100">
             <button
               type="button"

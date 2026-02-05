@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { X, Copy, CheckCircle, XCircle, Trophy, Swords, Award, User, UserPlus, MessageSquare, Users, Clock, CheckCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { PlayerMatchNotification, OpponentGameIds } from '../../types';
+import { PlayerMatchNotification } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { sendFriendRequest, acceptFriendRequest } from '../../services/api';
-import { checkFriendshipStatus, getOpponentUserProfile, generateMatchContextMessage, FriendshipStatus } from '../../services/matchFriendshipService';
+import { checkFriendshipStatus, getOpponentUserProfile, getOpponentGameIdsForTournament, generateMatchContextMessage, FriendshipStatus, GameIdEntry } from '../../services/matchFriendshipService';
 import { createAndInitializeTeamChat } from '../../services/matchTeamChatService';
 import ChatModal from '../chat/ChatModal';
 import ChannelModal from '../chat/ChannelModal';
@@ -23,6 +23,10 @@ interface OpponentProfile {
   avatar_url?: string | null;
   country?: string;
   bio?: string;
+  discord_handle?: string | null;
+  riot_game_name?: string | null;
+  riot_tagline?: string | null;
+  fortnite_epic_id?: string | null;
 }
 
 const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
@@ -38,6 +42,7 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
 
   const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus | null>(null);
   const [opponentProfile, setOpponentProfile] = useState<OpponentProfile | null>(null);
+  const [gameSpecificIds, setGameSpecificIds] = useState<GameIdEntry[]>([]);
   const [isLoadingFriendship, setIsLoadingFriendship] = useState(false);
   const [isSendingRequest, setIsSendingRequest] = useState(false);
   const [showDirectChat, setShowDirectChat] = useState(false);
@@ -45,29 +50,35 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
   const [teamChatChannelId, setTeamChatChannelId] = useState<string | null>(null);
   const [isCreatingTeamChat, setIsCreatingTeamChat] = useState(false);
 
+  const opponentUserId = notification.opponent_id || notification.opponent_user_id;
+
   useEffect(() => {
     setTimeout(() => {
       setIsVisible(true);
     }, 100);
 
-    if (notification.opponent_user_id && user?.id) {
+    if (opponentUserId && user?.id) {
       loadOpponentData();
     }
-  }, [notification.opponent_user_id, user?.id]);
+  }, [opponentUserId, user?.id]);
 
   const loadOpponentData = async () => {
-    if (!notification.opponent_user_id || !user?.id) return;
+    if (!opponentUserId || !user?.id) return;
 
     try {
       setIsLoadingFriendship(true);
 
-      const [profile, friendship] = await Promise.all([
-        getOpponentUserProfile(notification.opponent_user_id),
-        checkFriendshipStatus(user.id, notification.opponent_user_id)
+      const [profile, friendship, tournamentGameIds] = await Promise.all([
+        getOpponentUserProfile(opponentUserId),
+        checkFriendshipStatus(user.id, opponentUserId),
+        notification.tournament_id
+          ? getOpponentGameIdsForTournament(opponentUserId, notification.tournament_id)
+          : Promise.resolve([])
       ]);
 
       setOpponentProfile(profile);
       setFriendshipStatus(friendship);
+      setGameSpecificIds(tournamentGameIds);
     } catch (error) {
       console.error('Error loading opponent data:', error);
     } finally {
@@ -227,86 +238,29 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
     }
   };
 
-  const formatGameIds = (gameIds: OpponentGameIds | undefined) => {
-    if (!gameIds) return [];
-
+  const formatGameIds = (profile: OpponentProfile | null, tournamentGameIds: GameIdEntry[]) => {
     const formattedIds: Array<{ label: string; value: string; key: string }> = [];
 
-    if (gameIds.steam_id) {
-      formattedIds.push({
-        label: 'Steam ID',
-        value: gameIds.steam_id,
-        key: 'steam_id'
-      });
-    }
-    if (gameIds.discord_handle) {
+    if (profile?.discord_handle) {
       formattedIds.push({
         label: 'Discord',
-        value: gameIds.discord_handle,
+        value: profile.discord_handle,
         key: 'discord_handle'
       });
     }
-    if (gameIds.riot_game_name && gameIds.riot_tagline) {
+
+    tournamentGameIds.forEach((gameId) => {
       formattedIds.push({
-        label: 'Riot Game Name',
-        value: `${gameIds.riot_game_name}#${gameIds.riot_tagline}`,
-        key: 'riot_game_name'
+        label: gameId.label,
+        value: gameId.value,
+        key: gameId.key
       });
-    }
-    if (gameIds.ea_id) {
-      formattedIds.push({
-        label: 'EA ID',
-        value: gameIds.ea_id,
-        key: 'ea_id'
-      });
-    }
-    if (gameIds.epic_games_id) {
-      formattedIds.push({
-        label: 'Epic Games ID',
-        value: gameIds.epic_games_id,
-        key: 'epic_games_id'
-      });
-    }
-    if (gameIds.battle_net_id) {
-      formattedIds.push({
-        label: 'Battle.net ID',
-        value: gameIds.battle_net_id,
-        key: 'battle_net_id'
-      });
-    }
-    if (gameIds.ubisoft_username) {
-      formattedIds.push({
-        label: 'Ubisoft',
-        value: gameIds.ubisoft_username,
-        key: 'ubisoft_username'
-      });
-    }
-    if (gameIds.playstation_id) {
-      formattedIds.push({
-        label: 'PlayStation ID',
-        value: gameIds.playstation_id,
-        key: 'playstation_id'
-      });
-    }
-    if (gameIds.xbox_gamertag) {
-      formattedIds.push({
-        label: 'Xbox Gamertag',
-        value: gameIds.xbox_gamertag,
-        key: 'xbox_gamertag'
-      });
-    }
-    if (gameIds.nintendo_friend_code) {
-      formattedIds.push({
-        label: 'Nintendo Friend Code',
-        value: gameIds.nintendo_friend_code,
-        key: 'nintendo_friend_code'
-      });
-    }
+    });
 
     return formattedIds;
   };
 
-  const gameIds = formatGameIds(notification.opponent_game_ids);
+  const gameIds = formatGameIds(opponentProfile, gameSpecificIds);
   const metadata = notification.metadata || {};
   const resultBadgeClass =
     notification.match_result === 'won'
@@ -388,7 +342,7 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
             </p>
           </div>
 
-          {metadata.opponent_username && (
+          {(opponentProfile?.username || metadata.opponent_username) && (
             <div className="mb-4">
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{t('notifications.opponent')}</p>
               <div className="bg-gray-100 dark:bg-dark-200 rounded-lg overflow-hidden">
@@ -396,7 +350,7 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
                   {opponentProfile?.avatar_url ? (
                     <img
                       src={opponentProfile.avatar_url}
-                      alt={metadata.opponent_username}
+                      alt={opponentProfile?.username || metadata.opponent_username}
                       className="h-12 w-12 rounded-full object-cover"
                     />
                   ) : (
@@ -406,7 +360,7 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
                   )}
                   <div className="flex-1">
                     <p className="text-xl font-bold text-gray-900 dark:text-white">
-                      {metadata.opponent_username}
+                      {opponentProfile?.username || metadata.opponent_username}
                     </p>
                     {opponentProfile?.country && (
                       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -516,7 +470,7 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
             </div>
           )}
 
-          {gameIds.length === 0 && metadata.opponent_username && (
+          {gameIds.length === 0 && (opponentProfile?.username || metadata.opponent_username) && (
             <div className="mb-6 p-4 bg-warning-100 dark:bg-warning-900/20 border border-warning-300 dark:border-warning-700 rounded-lg">
               <p className="text-sm text-warning-800 dark:text-warning-300">
                 {t('notifications.opponentNoGameIds')}

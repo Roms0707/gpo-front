@@ -82,17 +82,17 @@ const RiotMatchHistoryCard: React.FC<RiotMatchHistoryCardProps> = ({
           {matches.map((match) => {
             const kda = calculateKDAR(match.stats.kills, match.stats.deaths, match.stats.assists);
             const isExpanded = expandedMatch === match.matchId;
-
+            
             return (
-              <div
+              <div 
                 key={match.matchId}
                 className={`border rounded-lg transition-all duration-200 ${
-                  match.stats.win
-                    ? 'border-success-500/30 bg-success-500/5'
+                  match.stats.win 
+                    ? 'border-success-500/30 bg-success-500/5' 
                     : 'border-error-500/30 bg-error-500/5'
                 }`}
               >
-                <div
+                <div 
                   className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-200/50 transition-colors"
                   onClick={() => toggleMatchDetails(match.matchId)}
                 >
@@ -100,7 +100,7 @@ const RiotMatchHistoryCard: React.FC<RiotMatchHistoryCardProps> = ({
                     <div className="flex items-center space-x-4">
                       {/* Champion Icon */}
                       <div className="relative">
-                        <img
+                        <img 
                           src={getChampionIconUrl(match.champion.name)}
                           alt={match.champion.name}
                           className="w-12 h-12 rounded-lg"
@@ -156,7 +156,7 @@ const RiotMatchHistoryCard: React.FC<RiotMatchHistoryCardProps> = ({
                         <div className="text-sm text-gray-500 dark:text-gray-400">Gold</div>
                       </div>
 
-                      <ChevronDown
+                      <ChevronDown 
                         className={`h-5 w-5 text-gray-400 transition-transform ${
                           isExpanded ? 'rotate-180' : ''
                         }`}
@@ -177,7 +177,7 @@ const RiotMatchHistoryCard: React.FC<RiotMatchHistoryCardProps> = ({
                             <span className="text-sm text-gray-600 dark:text-gray-400 w-16">{t('gaming.items')}</span>
                             <div className="flex space-x-1">
                               {match.items.map((itemId, index) => (
-                                <img
+                                <img 
                                   key={index}
                                   src={getItemIconUrl(itemId)}
                                   alt={`Item ${itemId}`}
@@ -194,7 +194,7 @@ const RiotMatchHistoryCard: React.FC<RiotMatchHistoryCardProps> = ({
                             <span className="text-sm text-gray-600 dark:text-gray-400 w-16">{t('gaming.spells')}</span>
                             <div className="flex space-x-1">
                               {match.summoners.map((summonerId, index) => (
-                                <img
+                                <img 
                                   key={index}
                                   src={getSummonerSpellIconUrl(summonerId)}
                                   alt={`Summoner ${summonerId}`}

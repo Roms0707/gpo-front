@@ -7,7 +7,7 @@ import { resolve } from 'path'
 export default defineConfig(() => {
   // Load env file from .env
   const env = loadEnv('', process.cwd(), '')
-
+  
   return {
     plugins: [
       react(),
@@ -18,18 +18,18 @@ export default defineConfig(() => {
           // Get the Riot key from loaded environment
           const riotKey = env.VITE_RIOT_KEY || env.RIOT_KEY || '';
           const riotFilePath = resolve(__dirname, 'public', 'riot.txt');
-
+          
           try {
             console.log('🔍 Environment variables loaded:');
             console.log('📋 VITE_RIOT_KEY:', env.VITE_RIOT_KEY ? 'Found' : 'Not found');
             console.log('📋 RIOT_KEY:', env.RIOT_KEY ? 'Found' : 'Not found');
             console.log('📋 All VITE_ vars:', Object.keys(env).filter(key => key.startsWith('VITE_')));
-
+            
             if (!riotKey) {
               console.warn('⚠️  No Riot key found in environment variables');
               console.warn('💡 Make sure VITE_RIOT_KEY is set in your .env file');
             }
-
+            
             writeFileSync(riotFilePath, riotKey);
             console.log('✅ riot.txt generated successfully');
             console.log('📝 Key length:', riotKey.length, 'characters');

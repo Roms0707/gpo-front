@@ -20,13 +20,13 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const isTeamTournament = tournament?.mode?.toLowerCase().includes('team');
-
+  
   // Profile modals state
   const [isPlayerProfileModalOpen, setIsPlayerProfileModalOpen] = useState(false);
   const [isTeamProfileModalOpen, setIsTeamProfileModalOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-
+  
   // Handle player profile click
   const handlePlayerClick = (userId: string) => {
     console.log('[ClassementTab] Player clicked with userId:', userId);
@@ -37,7 +37,7 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
     setSelectedPlayerId(userId);
     setIsPlayerProfileModalOpen(true);
   };
-
+  
   // Handle team profile click
   const handleTeamClick = (teamId: string) => {
     setSelectedTeamId(teamId);
@@ -51,7 +51,7 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
         <span className="hidden sm:inline">{t('classementTab.title', { title: tournament?.title })}</span>
         <span className="sm:hidden">{t('classementTab.titleShort')}</span>
       </h2>
-
+      
       {isLoadingRankings ? (
         <div className="flex justify-center items-center py-8">
           <Loader className="h-8 w-8 animate-spin text-primary-500" aria-hidden="true" />
@@ -74,11 +74,11 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
               </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
               {tournamentRankings.map((entry) => (
-                <tr
-                  key={isTeamTournament ? entry.team_id : entry.user_id}
+                <tr 
+                  key={isTeamTournament ? entry.team_id : entry.user_id} 
                   className="hover:bg-gray-50 dark:hover:bg-dark-200/50 transition-colors cursor-pointer"
-                  onClick={() => isTeamTournament
-                    ? handleTeamClick(entry.team_id)
+                  onClick={() => isTeamTournament 
+                    ? handleTeamClick(entry.team_id) 
                     : handlePlayerClick(entry.user_id)
                   }
                   tabIndex={0}
@@ -92,9 +92,9 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
                       {!isTeamTournament && (
                         <div className="w-8 h-8 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0 flex items-center justify-center">
                           {entry.avatar_url ? (
-                            <img
-                              src={entry.avatar_url}
-                              alt=""
+                            <img 
+                              src={entry.avatar_url} 
+                              alt="" 
                               className="w-full h-full object-cover"
                               aria-hidden="true"
                             />
@@ -122,8 +122,8 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
                   </td>
                   <td className="p-4 text-center">
                     <span className={`font-medium ${
-                      (entry.win_rate || 0) >= 70 ? 'text-green-500' :
-                      (entry.win_rate || 0) >= 50 ? 'text-blue-500' :
+                      (entry.win_rate || 0) >= 70 ? 'text-green-500' : 
+                      (entry.win_rate || 0) >= 50 ? 'text-blue-500' : 
                       'text-red-500'
                     }`}>
                       {entry.win_rate || 0}%
@@ -131,7 +131,7 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
                   </td>
                 </tr>
               ))}
-
+              
                 {tournamentRankings.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-gray-600 dark:text-gray-400">
@@ -224,7 +224,7 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
           </p>
         </div>
       )}
-
+      
       {/* Player Profile Modal */}
       <PlayerProfileModal
         isOpen={isPlayerProfileModalOpen}
@@ -232,7 +232,7 @@ const ClassementTab: React.FC<ClassementTabProps> = ({
         userId={selectedPlayerId}
         gameId={tournament?.game_id}
       />
-
+      
       {/* Team Profile Modal */}
       <TeamProfileModal
         isOpen={isTeamProfileModalOpen}

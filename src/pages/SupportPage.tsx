@@ -8,7 +8,7 @@ import TicketList from '../components/support/TicketList';
 const SupportPage: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-
+  
   return (
     <div className="min-h-screen pt-28 pb-16 bg-gray-50 dark:bg-dark-200">
       <div className="container mx-auto px-4">
@@ -21,7 +21,7 @@ const SupportPage: React.FC = () => {
               {t('support.helpCenterDescription')}
             </p>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             <div className="bg-white dark:bg-dark-100 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors border border-gray-200 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
@@ -36,7 +36,7 @@ const SupportPage: React.FC = () => {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </div>
-
+            
             <div className="bg-white dark:bg-dark-100 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors border border-gray-200 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
                 <Mail className="h-6 w-6 text-primary-500" />
@@ -51,7 +51,7 @@ const SupportPage: React.FC = () => {
               </Link>
             </div>
           </div>
-
+          
           {/* Support Tickets Section - Only show for logged in users */}
           {user && (
             <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mb-12 border border-gray-200 dark:border-gray-800">
@@ -61,12 +61,12 @@ const SupportPage: React.FC = () => {
                   <span className="text-gray-900 dark:text-white">{t('support.mySupportTickets')}</span>
                 </h2>
               </div>
-
+              
               <div className="p-6">
                 <TicketList />
-
+                
                 <div className="mt-6 text-center">
-                  <Link
+                  <Link 
                     to="/profile/support"
                     className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
@@ -77,14 +77,14 @@ const SupportPage: React.FC = () => {
               </div>
             </div>
           )}
-
+          
           <div className="bg-white dark:bg-dark-100 rounded-xl overflow-hidden mb-12 border border-gray-200 dark:border-gray-800">
             <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-200 dark:border-gray-800">
               <h2 className="font-heading font-semibold text-2xl text-gray-900 dark:text-white">
                 {t('support.commonIssues')}
               </h2>
             </div>
-
+            
             <div className="p-6 space-y-6">
               <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700">
                 <h3 className="font-medium text-lg mb-2 text-gray-900 dark:text-white">{t('support.tournamentRegistrationIssues')}</h3>
@@ -92,21 +92,21 @@ const SupportPage: React.FC = () => {
                   {t('support.tournamentRegistrationDescription')}
                 </p>
               </div>
-
+              
               <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700">
                 <h3 className="font-medium text-lg mb-2 text-gray-900 dark:text-white">{t('support.technicalIssuesDuringMatches')}</h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   {t('support.technicalIssuesDescription')}
                 </p>
               </div>
-
+              
               <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700">
                 <h3 className="font-medium text-lg mb-2 text-gray-900 dark:text-white">{t('support.claimsAndDisputes')}</h3>
                 <p className="text-gray-600 dark:text-gray-400">
                   {t('support.claimsAndDisputesDescription')}
                 </p>
               </div>
-
+              
               <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300 transition-colors cursor-pointer border border-gray-200 dark:border-gray-700">
                 <h3 className="font-medium text-lg mb-2 text-gray-900 dark:text-white">{t('support.paymentsAndRewards')}</h3>
                 <p className="text-gray-600 dark:text-gray-400">
@@ -115,7 +115,7 @@ const SupportPage: React.FC = () => {
               </div>
             </div>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white dark:bg-dark-100 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors border border-gray-200 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
@@ -130,7 +130,7 @@ const SupportPage: React.FC = () => {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </a>
             </div>
-
+            
             <div className="bg-white dark:bg-dark-100 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors border border-gray-200 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
                 <MessageSquare className="h-6 w-6 text-primary-500" />
@@ -144,7 +144,7 @@ const SupportPage: React.FC = () => {
                 <ArrowRight className="h-4 w-4 ml-2" />
               </a>
             </div>
-
+            
             <div className="bg-white dark:bg-dark-100 rounded-xl p-6 hover:bg-gray-50 dark:hover:bg-dark-300/50 transition-colors border border-gray-200 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-600/20 rounded-lg mb-4">
                 <FileText className="h-6 w-6 text-primary-500" />

@@ -50,21 +50,21 @@ const RegisterPage: React.FC = () => {
     teamName: '',
     agreeToTerms: false,
   });
-
+  
   useEffect(() => {
     const loadTournament = async () => {
       if (!id) return;
-
+      
       try {
         setIsLoading(true);
         const { data } = await fetchTournamentById(id);
-
+        
         if (!data) {
           toast.error(t('toast.tournamentNotFoundError'));
           navigate('/');
           return;
         }
-
+        
         // Check if registration is still open
         if (data.status !== 'upcoming' || new Date() > new Date(data.registrationEndDate || '')) {
           toast.error(t('toast.registrationClosedError'));
@@ -81,32 +81,32 @@ const RegisterPage: React.FC = () => {
             return;
           }
         }
-
+        
         // Check age eligibility
         if (data.minimum_age && user?.dateOfBirth) {
           const birthDate = new Date(user.dateOfBirth);
           const today = new Date();
           let age = today.getFullYear() - birthDate.getFullYear();
           const monthDiff = today.getMonth() - birthDate.getMonth();
-
+          
           if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             age--;
           }
-
+          
           if (age < data.minimum_age) {
             toast.error(t('toast.minimumAgeError', { age: data.minimum_age }));
             navigate(`/tournaments/${id}`);
             return;
           }
         }
-
+        
         setTournament(data);
-
+        
         // Check if the game has an API for validation
         if (data.game_id) {
           await checkGameApiStatus(data.game_id);
         }
-
+        
         // Load gaming account fields for this tournament's game
         if (data.game_id) {
           console.log('Loading game publisher fields for game:', data.game_id);
@@ -124,7 +124,7 @@ const RegisterPage: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+    
     loadTournament();
   }, [id, navigate, user]);
 
@@ -135,12 +135,12 @@ const RegisterPage: React.FC = () => {
         .select('has_an_api')
         .eq('id', gameId)
         .single();
-
+      
       if (error) {
         console.error('Error checking game API status:', error);
         return;
       }
-
+      
       setGameHasApi(data?.has_an_api || false);
     } catch (error) {
       console.error('Error checking game API status:', error);
@@ -164,18 +164,18 @@ const RegisterPage: React.FC = () => {
           )
         `)
         .eq('tournament_id', tournamentId);
-
+      
       if (fieldValuesError) {
         console.error('Error loading tournament field values:', fieldValuesError);
         return;
       }
-
+      
       if (!fieldValues || fieldValues.length === 0) {
         console.log('No tournament fields found for tournament:', tournamentId);
         setTournamentFields([]);
         return;
       }
-
+      
       // Transform the data
       const fields: TournamentField[] = fieldValues.map(item => ({
         id: item.tournament_fields.id,
@@ -185,7 +185,7 @@ const RegisterPage: React.FC = () => {
         value: '',
         options: item.tournament_fields.options
       }));
-
+      
       console.log('Tournament fields:', fields);
       setTournamentFields(fields);
     } catch (error) {
@@ -195,7 +195,7 @@ const RegisterPage: React.FC = () => {
 
   const loadGamePublisherFields = async (gameId: string) => {
     console.log('loadGamePublisherFields called with gameId:', gameId);
-
+    
     try {
       // Get game publisher IDs for this specific game
       const { data: publisherIds, error: publisherError } = await supabase
@@ -261,8 +261,8 @@ const RegisterPage: React.FC = () => {
   };
 
   const handleGamePublisherFieldChange = (fieldId: string, value: string) => {
-    setGamePublisherFields(prev =>
-      prev.map(field =>
+    setGamePublisherFields(prev => 
+      prev.map(field => 
         field.id === fieldId ? { ...field, value, isValidated: false, validationError: undefined } : field
       )
     );
@@ -278,15 +278,15 @@ const RegisterPage: React.FC = () => {
     // Check if this is a Riot ID field (we need both game name and tagline)
     const isRiotGameName = field.id_name.includes('riot_game_name');
     const isRiotTagline = field.id_name.includes('riot_tagline');
-
+    
     if (isRiotGameName || isRiotTagline) {
       // For Riot fields, we need both game name and tagline
       const gameNameField = gamePublisherFields.find(f => f.id_name.includes('riot_game_name'));
       const taglineField = gamePublisherFields.find(f => f.id_name.includes('riot_tagline'));
-
+      
       if (!gameNameField?.value || !taglineField?.value) {
         // Set validation error for both fields
-        setGamePublisherFields(prev =>
+        setGamePublisherFields(prev => 
           prev.map(f => {
             if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
               return { ...f, validationError: 'Veuillez remplir le nom de jeu et le tagline' };
@@ -296,10 +296,10 @@ const RegisterPage: React.FC = () => {
         );
         return;
       }
-
+      
       try {
         // Set validating state for both Riot fields
-        setGamePublisherFields(prev =>
+        setGamePublisherFields(prev => 
           prev.map(f => {
             if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
               return { ...f, isValidating: true, isValidated: false, validationError: undefined };
@@ -309,12 +309,12 @@ const RegisterPage: React.FC = () => {
         );
 
         console.log('Validating Riot ID:', gameNameField.value, taglineField.value);
-
+        
         const result = await validateRiotId(gameNameField.value, taglineField.value);
-
+        
         if (result.valid) {
           // Set validated state for both Riot fields
-          setGamePublisherFields(prev =>
+          setGamePublisherFields(prev => 
             prev.map(f => {
               if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
                 return { ...f, isValidating: false, isValidated: true, validationError: undefined };
@@ -322,11 +322,11 @@ const RegisterPage: React.FC = () => {
               return f;
             })
           );
-
+          
           toast.success(t('toast.accountValidatedSuccess', { account: `${gameNameField.value}#${taglineField.value}` }));
         } else {
           // Set error state for both Riot fields
-          setGamePublisherFields(prev =>
+          setGamePublisherFields(prev => 
             prev.map(f => {
               if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
                 return { ...f, isValidating: false, isValidated: false, validationError: result.error || 'Erreur de validation' };
@@ -334,14 +334,14 @@ const RegisterPage: React.FC = () => {
               return f;
             })
           );
-
+          
           toast.error(result.error || t('toast.riotAccountValidationError'));
         }
       } catch (error) {
         console.error('Error validating Riot ID:', error);
-
+        
         // Set error state for both Riot fields
-        setGamePublisherFields(prev =>
+        setGamePublisherFields(prev => 
           prev.map(f => {
             if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
               return { ...f, isValidating: false, isValidated: false, validationError: 'Erreur lors de la validation' };
@@ -349,14 +349,14 @@ const RegisterPage: React.FC = () => {
             return f;
           })
         );
-
+        
         toast.error(t('toast.riotAccountValidationError'));
       }
     } else {
       // For other game accounts, simulate validation or implement specific logic
       try {
-        setGamePublisherFields(prev =>
-          prev.map(f =>
+        setGamePublisherFields(prev => 
+          prev.map(f => 
             f.id === fieldId ? { ...f, isValidating: true, isValidated: false, validationError: undefined } : f
           )
         );
@@ -364,8 +364,8 @@ const RegisterPage: React.FC = () => {
         // Simulate validation for other games
         await new Promise(resolve => setTimeout(resolve, 1500));
 
-        setGamePublisherFields(prev =>
-          prev.map(f =>
+        setGamePublisherFields(prev => 
+          prev.map(f => 
             f.id === fieldId ? { ...f, isValidating: false, isValidated: true, validationError: undefined } : f
           )
         );
@@ -373,13 +373,13 @@ const RegisterPage: React.FC = () => {
         toast.success(t('toast.accountValidatedSuccess', { account: field.value }));
       } catch (error) {
         console.error('Error validating game account:', error);
-
-        setGamePublisherFields(prev =>
-          prev.map(f =>
+        
+        setGamePublisherFields(prev => 
+          prev.map(f => 
             f.id === fieldId ? { ...f, isValidating: false, isValidated: false, validationError: 'Erreur lors de la validation' } : f
           )
         );
-
+        
         toast.error(t('toast.accountValidationError'));
       }
     }
@@ -399,37 +399,37 @@ const RegisterPage: React.FC = () => {
 
   // Check if any Riot field is being validated or is validated
   const isRiotFieldValidatingOrValidated = (): boolean => {
-    return gamePublisherFields.some(f =>
-      (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) &&
+    return gamePublisherFields.some(f => 
+      (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) && 
       (f.isValidating || f.isValidated)
     );
   };
 
   const handleTournamentFieldChange = (fieldId: string, value: string) => {
-    setTournamentFields(prev =>
-      prev.map(field =>
+    setTournamentFields(prev => 
+      prev.map(field => 
         field.id === fieldId ? { ...field, value } : field
       )
     );
   };
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
     const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
-
+    
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-
+  
   const nextStep = () => {
     if (step === 1) {
       if (!formData.username || !formData.email) {
         toast.error(t('toast.fillAllFieldsError'));
         return;
       }
-
+      
       if (tournament?.mode.toLowerCase().includes('team') && !formData.teamName) {
         toast.error(t('toast.teamNameRequiredError'));
         return;
@@ -438,7 +438,7 @@ const RegisterPage: React.FC = () => {
       // Validate required gaming account fields
       const requiredFields = gamePublisherFields.filter(field => field.required);
       const missingFields = requiredFields.filter(field => !field.value || field.value.trim() === '');
-
+      
       if (missingFields.length > 0) {
         const fieldNames = missingFields.map(field => field.label).join(', ');
         toast.error(t('toast.fillRequiredFieldsError', { fields: fieldNames }));
@@ -448,17 +448,17 @@ const RegisterPage: React.FC = () => {
       // Validate required tournament fields
       const requiredTournamentFields = tournamentFields.filter(field => field.required);
       const missingTournamentFields = requiredTournamentFields.filter(field => !field.value || field.value.trim() === '');
-
+      
       if (missingTournamentFields.length > 0) {
         const fieldNames = missingTournamentFields.map(field => field.name).join(', ');
         toast.error(t('toast.fillTournamentFieldsError', { fields: fieldNames }));
         return;
       }
     }
-
+    
     setStep(prev => prev + 1);
   };
-
+  
   const prevStep = () => {
     setStep(prev => prev - 1);
   };
@@ -480,7 +480,7 @@ const RegisterPage: React.FC = () => {
 
       // Insert new entries for fields with values
       const fieldsWithValues = gamePublisherFields.filter(field => field.value && field.value.trim() !== '');
-
+      
       if (fieldsWithValues.length > 0) {
         const insertData = fieldsWithValues.map(field => ({
           user_id: user.id,
@@ -559,15 +559,15 @@ const RegisterPage: React.FC = () => {
       throw error;
     }
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!formData.agreeToTerms) {
       toast.error(t('toast.acceptTermsError'));
       return;
     }
-
+    
     try {
       setIsSubmitting(true);
 
@@ -589,7 +589,7 @@ const RegisterPage: React.FC = () => {
         ...formData,
         is_whitelisted: isWhitelisted,
       });
-
+      
       if (success) {
         toast.success(t('toast.registrationSuccess'));
         navigate(`/tournaments/${id}`);
@@ -603,7 +603,7 @@ const RegisterPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen pt-16">
@@ -611,7 +611,7 @@ const RegisterPage: React.FC = () => {
       </div>
     );
   }
-
+  
   if (!tournament) {
     return (
       <div className="container mx-auto px-4 pt-32 pb-16">
@@ -629,7 +629,7 @@ const RegisterPage: React.FC = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="min-h-screen pt-28 pb-16">
       <div className="container mx-auto px-4">
@@ -638,7 +638,7 @@ const RegisterPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour au tournoi
           </Link>
-
+          
           <div className="bg-dark-100 rounded-xl overflow-hidden">
             <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-4 border-b border-gray-800">
               <h1 className="font-heading font-bold text-2xl">
@@ -646,7 +646,7 @@ const RegisterPage: React.FC = () => {
               </h1>
               <p className="text-gray-400">{tournament.title}</p>
             </div>
-
+            
             <div className="p-6">
               {/* Progress steps */}
               <div className="flex items-center justify-center mb-8">
@@ -672,13 +672,13 @@ const RegisterPage: React.FC = () => {
                   3
                 </div>
               </div>
-
+              
               <form onSubmit={handleSubmit}>
                 {/* Step 1: Personal Information */}
                 {step === 1 && (
                   <div>
                     <h2 className="text-xl font-heading font-semibold mb-4">Informations personnelles</h2>
-
+                    
                     <div className="space-y-4">
                       <div>
                         <label htmlFor="username" className="label">
@@ -694,7 +694,7 @@ const RegisterPage: React.FC = () => {
                           required
                         />
                       </div>
-
+                      
                       <div>
                         <label htmlFor="email" className="label">
                           Email <span className="text-error-500">*</span>
@@ -749,7 +749,7 @@ const RegisterPage: React.FC = () => {
                           La date de naissance est définie dans votre profil et ne peut pas être modifiée.
                         </p>
                       </div>
-
+                      
                       {tournament.mode.toLowerCase().includes('team') && (
                         <div>
                           <label htmlFor="teamName" className="label">
@@ -787,25 +787,25 @@ const RegisterPage: React.FC = () => {
                                     value={field.value || ''}
                                     onChange={(e) => handleGamePublisherFieldChange(field.id, e.target.value)}
                                     className={`flex-1 input ${
-                                      field.isValidated ? 'border-success-500' :
+                                      field.isValidated ? 'border-success-500' : 
                                       field.validationError ? 'border-error-500' : ''
                                     }`}
                                     placeholder={`Votre ${field.id_name}`}
                                     required={field.required}
                                   />
-
+                                  
                                   {/* Validation button for API-enabled games */}
                                   {gameHasApi && isRiotField(field) && (
                                     <button
                                       type="button"
                                       onClick={() => validateGameAccount(field.id)}
                                       disabled={
-                                        !bothRiotFieldsHaveValues() ||
+                                        !bothRiotFieldsHaveValues() || 
                                         isRiotFieldValidatingOrValidated()
                                       }
                                       className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
                                         field.isValidated
-                                          ? 'bg-success-600 text-white cursor-default'
+                                          ? 'bg-success-600 text-white cursor-default' 
                                           : field.isValidating
                                             ? 'bg-primary-600/50 text-white cursor-wait'
                                             : bothRiotFieldsHaveValues()
@@ -828,7 +828,7 @@ const RegisterPage: React.FC = () => {
                                       )}
                                     </button>
                                   )}
-
+                                  
                                   {/* Validation button for other games with API */}
                                   {gameHasApi && !isRiotField(field) && field.value && (
                                     <button
@@ -837,7 +837,7 @@ const RegisterPage: React.FC = () => {
                                       disabled={field.isValidating || field.isValidated}
                                       className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
                                         field.isValidated
-                                          ? 'bg-success-600 text-white cursor-default'
+                                          ? 'bg-success-600 text-white cursor-default' 
                                           : field.isValidating
                                             ? 'bg-primary-600/50 text-white cursor-wait'
                                             : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -859,7 +859,7 @@ const RegisterPage: React.FC = () => {
                                     </button>
                                   )}
                                 </div>
-
+                                
                                 {/* Validation status messages */}
                                 {field.validationError && (
                                   <p className="text-error-500 text-xs mt-1">{field.validationError}</p>
@@ -875,7 +875,7 @@ const RegisterPage: React.FC = () => {
                           </div>
                         </div>
                       )}
-
+                    
                     {/* Debug information for API status - Always show for now */}
                     {true && (
                       <div className="mt-4 p-3 bg-blue-900/20 border border-blue-600/30 rounded-lg">
@@ -1015,7 +1015,7 @@ const RegisterPage: React.FC = () => {
                         </div>
                       )}
                     </div>
-
+                    
                     <div className="mt-8 flex justify-end">
                       <button
                         type="button"
@@ -1027,12 +1027,12 @@ const RegisterPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-
+                
                 {/* Step 2: Tournament Rules */}
                 {step === 2 && (
                   <div>
                     <h2 className="text-xl font-heading font-semibold mb-4">Règles du tournoi</h2>
-
+                    
                     <div className="bg-dark-200 p-4 rounded-lg mb-6 max-h-60 overflow-y-auto">
                       <p className="text-sm text-gray-300">
                         En participant à ce tournoi, vous acceptez les conditions suivantes:
@@ -1052,7 +1052,7 @@ const RegisterPage: React.FC = () => {
                         )}
                       </ul>
                     </div>
-
+                    
                     <div className="mb-8">
                       <label className="flex items-start">
                         <input
@@ -1067,7 +1067,7 @@ const RegisterPage: React.FC = () => {
                         </span>
                       </label>
                     </div>
-
+                    
                     <div className="mt-8 flex justify-between">
                       <button
                         type="button"
@@ -1087,15 +1087,15 @@ const RegisterPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-
+                
                 {/* Step 3: Confirmation */}
                 {step === 3 && (
                   <div>
                     <h2 className="text-xl font-heading font-semibold mb-4">Confirmation</h2>
-
+                    
                     <div className="bg-dark-200 p-4 rounded-lg mb-6">
                       <h3 className="font-medium mb-2">Récapitulatif de l'inscription</h3>
-
+                      
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span className="text-gray-400">Tournoi:</span>
@@ -1123,7 +1123,7 @@ const RegisterPage: React.FC = () => {
                             <span>{formData.teamName}</span>
                           </div>
                         )}
-
+                        
                         {/* Gaming Account Summary */}
                         {gamePublisherFields.filter(field => field.value && field.value.trim() !== '').length > 0 && (
                           <div className="mt-4 pt-4 border-t border-gray-700">
@@ -1157,13 +1157,13 @@ const RegisterPage: React.FC = () => {
                         )}
                       </div>
                     </div>
-
+                    
                     <div className="bg-primary-600/10 border border-primary-600/30 p-4 rounded-lg mb-6">
                       <p className="text-sm text-primary-300">
                         En confirmant votre inscription, vous vous engagez à participer au tournoi selon les règles établies. Vous recevrez un email de confirmation avec les détails de votre inscription.
                       </p>
                     </div>
-
+                    
                     <div className="mt-8 flex justify-between">
                       <button
                         type="button"

@@ -45,8 +45,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, children 
                 {requiredRole === 'admin' && ` ${t('auth.adminOnly')}`}
               </p>
               <div className="flex items-center justify-center space-x-4">
-                <button
-                  onClick={() => window.history.back()}
+                <button 
+                  onClick={() => window.history.back()} 
                   className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-dark-200 dark:hover:bg-dark-300 text-gray-700 dark:text-white rounded-lg transition-colors"
                 >
                   {t('auth.back')}
@@ -59,7 +59,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, children 
       </div>
     );
   }
-
+  
   // If user is authenticated and has the required role (or no role required), render the child routes
   return children ? <>{children}</> : <Outlet />;
 };

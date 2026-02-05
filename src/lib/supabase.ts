@@ -45,19 +45,19 @@ let connectionMonitor: NodeJS.Timeout | null = null;
 // Helper function to create a timeout promise that can be cancelled
 const createTimeoutPromise = (ms: number): { promise: Promise<never>, cancel: () => void } => {
   let timeoutId: NodeJS.Timeout;
-
+  
   const promise = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
       reject(new Error(`Query timeout after ${ms}ms`));
     }, ms);
   });
-
+  
   const cancel = () => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
   };
-
+  
   return { promise, cancel };
 };
 
@@ -68,17 +68,17 @@ export const executeQuery = async <T>(
   timeoutMs = 8000
 ): Promise<{ data: T | null; error: any }> => {
   const { promise: timeoutPromise, cancel: cancelTimeout } = createTimeoutPromise(timeoutMs);
-
+  
   try {
     // Check if we have a valid session before making queries that require auth
     const { data: { session } } = await supabase.auth.getSession();
-
+    
     // Execute query with timeout
     const result = await Promise.race([queryFn(), timeoutPromise]);
-
+    
     // Clear timeout since query completed
     cancelTimeout();
-
+    
     // Mark connection as healthy on success
     if (!result.error) {
       isConnected = true;
@@ -88,7 +88,7 @@ export const executeQuery = async <T>(
         console.warn('Query returned error:', result.error);
       }
     }
-
+    
     return result;
   } catch (error) {
     // Always clear timeout when catching errors
@@ -98,29 +98,29 @@ export const executeQuery = async <T>(
     if (error instanceof Error && error.message.includes('timeout')) {
       console.warn(`Query timeout after ${timeoutMs}ms`);
       isConnected = false;
-
+      
       // Return a specific timeout error
-      return {
-        data: null,
-        error: {
-          message: 'Query timeout',
+      return { 
+        data: null, 
+        error: { 
+          message: 'Query timeout', 
           code: 'TIMEOUT',
           details: `Query timed out after ${timeoutMs}ms`
-        }
+        } 
       };
     } else {
       console.warn('Query error:', error);
     }
-
+    
     isConnected = false;
-
+    
     // Retry logic for timeout errors only
     if (retries > 0 && (error instanceof Error && error.message.includes('timeout'))) {
       console.log(`Retrying query... (${retries} attempts left)`);
       await new Promise(resolve => setTimeout(resolve, 1000));
       return executeQuery(queryFn, retries - 1, timeoutMs);
     }
-
+    
     return { data: null, error };
   }
 };
@@ -130,10 +130,10 @@ export const startConnectionMonitoring = () => {
   if (connectionMonitor) {
     clearInterval(connectionMonitor);
   }
-
+  
   // Mark as connected initially
   isConnected = true;
-
+  
   // Minimal monitoring - just reset connection state periodically
   connectionMonitor = setInterval(() => {
     // Reset connection state to allow fresh attempts

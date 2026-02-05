@@ -41,7 +41,7 @@ const AccountIntegrationCard: React.FC<AccountIntegrationCardProps> = ({
           )}
         </div>
       </button>
-
+      
       {isExpanded && (
         <div className="p-4 border-t border-gray-300 dark:border-gray-600 bg-white dark:bg-dark-100">
           {children}

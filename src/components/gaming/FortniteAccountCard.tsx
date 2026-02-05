@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Trophy, Target, Calendar, Loader2, AlertCircle, CheckCircle, RefreshCw, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getGameTheme, getCardClipPath } from '../../utils/gameThemes';
 
 interface FortniteAccountCardProps {
   account: {
@@ -22,6 +23,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
   statsData
 }) => {
   const { t, i18n } = useTranslation();
+  const theme = getGameTheme('Fortnite');
   const [platform, setPlatform] = useState<'epic' | 'psn' | 'xbl'>('epic');
   const [username, setUsername] = useState(account.username || '');
   const [error, setError] = useState<string | null>(null);
@@ -65,21 +67,36 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-10 h-10 bg-accent-600/20 rounded-lg flex items-center justify-center">
-          <User className="w-5 h-5 text-accent-500" />
+    <div
+      className="bg-white dark:bg-gray-800/90 shadow-md p-6 relative overflow-hidden"
+      style={{
+        clipPath: getCardClipPath(theme.shape),
+        borderRadius: '0',
+        border: `1px solid ${theme.colors.border}30`,
+      }}
+    >
+      <div
+        className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{ background: `linear-gradient(135deg, ${theme.colors.primary}20, transparent 50%, ${theme.colors.border}20)` }}
+      />
+      <div className="relative z-10">
+        <div className="flex items-center gap-2 mb-4">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            style={{ backgroundColor: `${theme.colors.primary}20` }}
+          >
+            <User className="w-5 h-5" style={{ color: theme.colors.primary }} />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {t('gaming.fortniteAccount')}
+            {isAccountValidated && (
+              <span className="ml-2 text-xs bg-success-500/20 text-success-400 px-2 py-1 rounded-full">
+                <CheckCircle className="h-3 w-3 inline mr-1" />
+                {t('gaming.validated')}
+              </span>
+            )}
+          </h3>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {t('gaming.fortniteAccount')}
-          {isAccountValidated && (
-            <span className="ml-2 text-xs bg-success-500/20 text-success-400 px-2 py-1 rounded-full">
-              <CheckCircle className="h-3 w-3 inline mr-1" />
-              {t('gaming.validated')}
-            </span>
-          )}
-        </h3>
-      </div>
 
       {/* Account Configuration Section */}
       {(!isAccountValidated || !statsData) && (
@@ -92,7 +109,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
               </div>
             </div>
           )}
-
+          
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('gaming.epicGamesUsernameLabel')}
@@ -102,7 +119,8 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder={t('gaming.enterYourUsername')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+              style={{ '--tw-ring-color': theme.colors.primary } as React.CSSProperties}
               disabled={isAccountValidated}
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -117,7 +135,8 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value as 'epic' | 'psn' | 'xbl')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 dark:bg-gray-700 dark:text-white"
+              style={{ '--tw-ring-color': theme.colors.primary } as React.CSSProperties}
               disabled={isAccountValidated}
             >
               <option value="epic">{t('gaming.epicGames')}</option>
@@ -143,7 +162,8 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
           <button
             onClick={handleLoadStats}
             disabled={isLoadingStats}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+            className="w-full text-white px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 font-medium hover:brightness-110 disabled:opacity-50"
+            style={{ backgroundColor: theme.colors.primary }}
           >
             {isLoadingStats ? (
               <>
@@ -163,8 +183,17 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
       {/* Stats Display Section */}
       {statsData && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg">
-            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+          <div
+            className="flex items-center gap-3 p-4 rounded-lg"
+            style={{
+              background: `linear-gradient(135deg, ${theme.colors.primary}15, ${theme.colors.border}15)`,
+              border: `1px solid ${theme.colors.primary}30`,
+            }}
+          >
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: theme.colors.primary }}
+            >
               <User className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -174,7 +203,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {t('gaming.platform')}: {platform.toUpperCase()}
               </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
+              <p className="text-xs" style={{ color: theme.colors.border }}>
                 {t('gaming.lastUpdated')} {new Date().toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
               </p>
             </div>
@@ -261,7 +290,8 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
             <button
               onClick={handleLoadStats}
               disabled={isLoadingStats}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+              className="flex-1 text-white px-4 py-2 rounded-lg transition-all flex items-center justify-center gap-2 font-medium hover:brightness-110 disabled:opacity-50"
+              style={{ backgroundColor: theme.colors.primary }}
             >
               {isLoadingStats ? (
                 <>
@@ -278,7 +308,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
 
             {!isAccountValidated && (
               <Link
-                to="/profile/edit"
+                to="/profile/settings#gaming-accounts"
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 font-medium"
               >
                 <User className="w-4 h-4" />
@@ -292,19 +322,24 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
       {/* Empty State when no stats loaded */}
       {!statsData && isAccountValidated && !isLoadingStats && !error && (
         <div className="text-center py-8">
-          <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Trophy className="w-8 h-8 text-purple-500" />
+          <div
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ backgroundColor: `${theme.colors.primary}20` }}
+          >
+            <Trophy className="w-8 h-8" style={{ color: theme.colors.primary }} />
           </div>
-          <p className="text-blue-800">{t('gaming.fortniteStatsComingSoon')}</p>
+          <p style={{ color: theme.colors.border }}>{t('gaming.fortniteStatsComingSoon')}</p>
           <button
             onClick={handleLoadStats}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2 mx-auto font-medium"
+            className="text-white px-6 py-2 rounded-lg transition-all flex items-center gap-2 mx-auto font-medium hover:brightness-110"
+            style={{ backgroundColor: theme.colors.primary }}
           >
             <Trophy className="w-4 h-4" />
             {t('gaming.viewMyStatistics')}
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -78,7 +78,7 @@ const getValorantRankName = (competitiveTier: number) => {
 const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLoadMatchHistory, isLoadingMatches }) => {
   const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
-
+  
   if (!account.is_validated || !account.validation_data?.rankedData) {
     return (
       <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
@@ -123,7 +123,7 @@ const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLo
             </p>
           </div>
         </div>
-
+        
         <div className="flex space-x-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -150,7 +150,7 @@ const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLo
           )}
         </div>
       </div>
-
+      
       {validationError && (
         <div className="bg-error-500/20 border border-error-600 text-white px-4 py-3 rounded-lg mb-4">
           <div className="flex items-center">
@@ -163,9 +163,9 @@ const ValorantAccountCard: React.FC<ValorantAccountCardProps> = ({ account, onLo
       {rankedData && (
         <>
           <div className="flex items-center justify-center mb-4">
-            <img
-              src={getValorantRankIcon(rankedData.competitiveTier)}
-              alt={getValorantRankName(rankedData.competitiveTier)}
+            <img 
+              src={getValorantRankIcon(rankedData.competitiveTier)} 
+              alt={getValorantRankName(rankedData.competitiveTier)} 
               className="h-20 w-20 object-contain"
             />
           </div>

@@ -547,13 +547,13 @@ export const fetchLeaderboardByGameId = async (gameId: string) => {
         offset: 0
       })
     });
-
+    
     const result = await response.json();
-
+    
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch leaderboard data');
     }
-
+    
     return result.data;
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
@@ -575,13 +575,13 @@ export const fetchUserProfile = async (userId: string) => {
         user_id: userId
       })
     });
-
+    
     const result = await response.json();
-
+    
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch user profile');
     }
-
+    
     return result.data;
   } catch (error) {
     console.error('Error fetching user profile:', error);
@@ -1066,7 +1066,7 @@ export const fetchUserGamingAccounts = async (userId: string): Promise<UserGameP
 export const validateRiotId = async (gameName: string, tagline: string, region: string = 'euw1') => {
   try {
     console.log('Calling Riot ID validation Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-riot-id`, {
       method: 'POST',
       headers: {
@@ -1079,10 +1079,10 @@ export const validateRiotId = async (gameName: string, tagline: string, region: 
         region
       })
     });
-
+    
     const result = await response.json();
     console.log('Riot ID validation result:', result);
-
+    
     return result;
   } catch (error) {
     console.error('Error validating Riot ID:', error);
@@ -1093,7 +1093,7 @@ export const validateRiotId = async (gameName: string, tagline: string, region: 
 export const validateUserProfile = async (userId: string, profileData: any) => {
   try {
     console.log('Calling user profile validation Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-user-profile`, {
       method: 'POST',
       headers: {
@@ -1105,10 +1105,10 @@ export const validateUserProfile = async (userId: string, profileData: any) => {
         ...profileData
       })
     });
-
+    
     const result = await response.json();
     console.log('User profile validation result:', result);
-
+    
     return result;
   } catch (error) {
     console.error('Error validating user profile:', error);
@@ -1119,7 +1119,7 @@ export const validateUserProfile = async (userId: string, profileData: any) => {
 export const validateTeamApplicationAcceptance = async (applicationId: string, teamId: string, userId: string) => {
   try {
     console.log('Calling team application acceptance validation Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/validate-team-application-acceptance`, {
       method: 'POST',
       headers: {
@@ -1132,10 +1132,10 @@ export const validateTeamApplicationAcceptance = async (applicationId: string, t
         user_id: userId
       })
     });
-
+    
     const result = await response.json();
     console.log('Team application acceptance validation result:', result);
-
+    
     return result;
   } catch (error) {
     console.error('Error validating team application acceptance:', error);
@@ -1147,7 +1147,7 @@ export const validateTeamApplicationAcceptance = async (applicationId: string, t
 export const fetchValorantRankedStats = async (puuid: string, region: string = 'eu') => {
   try {
     console.log('Calling Valorant ranked stats Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-valorant-ranked-stats`, {
       method: 'POST',
       headers: {
@@ -1159,10 +1159,10 @@ export const fetchValorantRankedStats = async (puuid: string, region: string = '
         region
       })
     });
-
+    
     const result = await response.json();
     console.log('Valorant ranked stats result:', result);
-
+    
     return result;
   } catch (error) {
     console.error('Error fetching Valorant ranked stats:', error);
@@ -1173,7 +1173,7 @@ export const fetchValorantRankedStats = async (puuid: string, region: string = '
 export const fetchValorantMatchHistory = async (puuid: string, region: string = 'eu', count: number = 5) => {
   try {
     console.log('Calling Valorant match history Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-valorant-match-history`, {
       method: 'POST',
       headers: {
@@ -1186,10 +1186,10 @@ export const fetchValorantMatchHistory = async (puuid: string, region: string = 
         count
       })
     });
-
+    
     const result = await response.json();
     console.log('Valorant match history result:', result);
-
+    
     return result;
   } catch (error) {
     console.error('Error fetching Valorant match history:', error);
@@ -1201,7 +1201,7 @@ export const fetchValorantMatchHistory = async (puuid: string, region: string = 
 export const fetchFortniteStats = async (playerIdentifier: string, platform: string = 'epic') => {
   try {
     console.log('Calling Fortnite stats Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-fortnite-stats`, {
       method: 'POST',
       headers: {
@@ -1213,14 +1213,14 @@ export const fetchFortniteStats = async (playerIdentifier: string, platform: str
         platform
       })
     });
-
+    
     const result = await response.json();
     console.log('Fortnite stats result:', result);
-
+    
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch Fortnite stats');
     }
-
+    
     return result.data;
   } catch (error) {
     console.error('Error fetching Fortnite stats:', error);
@@ -1232,7 +1232,7 @@ export const fetchFortniteStats = async (playerIdentifier: string, platform: str
 export const fetchTrackerGGProfile = async (gameId: string, playerIdentifier: string, platform: string) => {
   try {
     console.log('Calling Tracker.gg profile Edge Function...');
-
+    
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-tracker-gg-profile`, {
       method: 'POST',
       headers: {
@@ -1245,14 +1245,14 @@ export const fetchTrackerGGProfile = async (gameId: string, playerIdentifier: st
         platform
       })
     });
-
+    
     const result = await response.json();
     console.log('Tracker.gg profile result:', result);
-
+    
     if (!result.success) {
       throw new Error(result.error || 'Failed to fetch Tracker.gg profile');
     }
-
+    
     return result.data;
   } catch (error) {
     console.error('Error fetching Tracker.gg profile:', error);
@@ -1267,7 +1267,7 @@ export const fetchGameContent = async (gameId: string, options: {
   limit?: number;
 } = {}) => {
   const { contentType, page = 1, limit = 10 } = options;
-
+  
   let query = supabase
     .from('game_contents')
     .select('*')
@@ -1306,10 +1306,10 @@ export const fetchGameContentTypesWithCounts = async (gameId: string) => {
   const result = await executeQuery(
     () => supabase.rpc('execute_sql', {
       query: `
-        SELECT
+        SELECT 
           content_type,
           COUNT(*) as count
-        FROM game_contents
+        FROM game_contents 
         WHERE game_id = '${gameId}'
         GROUP BY content_type
         ORDER BY count DESC

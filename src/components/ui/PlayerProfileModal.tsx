@@ -191,14 +191,14 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                       )}
                     </div>
                   </div>
-
+                  
                   {userProfile?.bio && (
                     <div className="mt-4 p-3 bg-white/50 dark:bg-dark-100/50 rounded-lg">
                       <p className="text-gray-700 dark:text-gray-300">{userProfile.bio}</p>
                     </div>
                   )}
                 </div>
-
+                
                 {/* Action Buttons */}
                 {currentUser && currentUser.id !== userId && (
                   <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex space-x-3">
@@ -224,7 +224,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                         </>
                       )}
                     </button>
-
+                    
                     <button
                       onClick={() => setShowChatModal(true)}
                       className="bg-secondary-600 hover:bg-secondary-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center"
@@ -234,14 +234,14 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                     </button>
                   </div>
                 )}
-
+                
                 {/* Tabs Navigation */}
                 <div className="flex border-b border-gray-200 dark:border-gray-800">
                   <button
                     onClick={() => setActiveTab('profile')}
                     className={`flex-1 py-3 px-4 text-sm font-medium ${
-                      activeTab === 'profile'
-                        ? 'text-primary-500 border-b-2 border-primary-500'
+                      activeTab === 'profile' 
+                        ? 'text-primary-500 border-b-2 border-primary-500' 
                         : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
@@ -251,8 +251,8 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                   <button
                     onClick={() => setActiveTab('stats')}
                     className={`flex-1 py-3 px-4 text-sm font-medium ${
-                      activeTab === 'stats'
-                        ? 'text-primary-500 border-b-2 border-primary-500'
+                      activeTab === 'stats' 
+                        ? 'text-primary-500 border-b-2 border-primary-500' 
                         : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
@@ -262,8 +262,8 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                   <button
                     onClick={() => setActiveTab('tournaments')}
                     className={`flex-1 py-3 px-4 text-sm font-medium ${
-                      activeTab === 'tournaments'
-                        ? 'text-primary-500 border-b-2 border-primary-500'
+                      activeTab === 'tournaments' 
+                        ? 'text-primary-500 border-b-2 border-primary-500' 
                         : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
                     }`}
                   >
@@ -271,7 +271,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                     {t('profile.tournamentsTab')}
                   </button>
                 </div>
-
+                
                 {/* Tab Content */}
                 <div className="p-6">
                   {/* Profile Tab */}
@@ -302,7 +302,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                                       ({account?.game_publisher_ids?.games?.name || t('profile.unknownGame')})
                                     </span>
                                   </div>
-
+                                  
                                   <div className="flex items-center">
                                     {account?.is_validated ? (
                                       <CheckCircle className="h-4 w-4 text-success-400" />
@@ -316,7 +316,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                           </div>
                         </div>
                       )}
-
+                      
                       {/* Social Links */}
                       {(userProfile?.discord_handle || userProfile?.twitter_handle) && (
                         <div>
@@ -339,7 +339,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                       )}
                     </div>
                   )}
-
+                  
                   {/* Stats Tab */}
                   {activeTab === 'stats' && (
                     <div className="space-y-6">
@@ -402,7 +402,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                           <p className="text-gray-600 dark:text-gray-400">{t('profile.noGameStats')}</p>
                         </div>
                       )}
-
+                      
                       {/* Aim Trainer Scores */}
                       {userProfile?.aim_trainer_scores && userProfile.aim_trainer_scores.length > 0 && (
                         <div>
@@ -430,7 +430,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                       )}
                     </div>
                   )}
-
+                  
                   {/* Tournaments Tab */}
                   {activeTab === 'tournaments' && (
                     <div className="space-y-6">
@@ -461,7 +461,7 @@ const PlayerProfileModal: React.FC<PlayerProfileModalProps> = ({
                           </div>
                         </div>
                       )}
-
+                      
                       {/* Recent Tournament Registrations */}
                       {userProfile?.tournament_registrations && userProfile.tournament_registrations.length > 0 && (
                         <div>

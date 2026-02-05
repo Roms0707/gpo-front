@@ -47,9 +47,9 @@ const FriendRequestItem: React.FC<FriendRequestItemProps> = ({
         <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
             {request.sender_avatar ? (
-              <img
-                src={request.sender_avatar}
-                alt=""
+              <img 
+                src={request.sender_avatar} 
+                alt="" 
                 className="w-full h-full object-cover"
                 aria-hidden="true"
               />
@@ -67,7 +67,7 @@ const FriendRequestItem: React.FC<FriendRequestItemProps> = ({
             </p>
           </div>
         </div>
-
+        
         <div className="flex space-x-2">
           <button
             onClick={handleAccept}

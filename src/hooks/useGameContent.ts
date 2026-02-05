@@ -33,7 +33,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
           setIsLoadingTypes(true);
           const types = await fetchGameContentTypesWithCounts(gameId);
           setContentTypes(types);
-
+          
           // Initialize grouped content state for each type
           const initialGroupedContent: Record<string, ContentGroup> = {};
           for (const type of types) {
@@ -46,7 +46,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
             };
           }
           setGroupedContent(initialGroupedContent);
-
+          
           // Load initial content for "All" view
           loadAllContent(1, true);
         } catch (error) {
@@ -67,7 +67,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
 
     try {
       setIsLoadingAllContent(true);
-
+      
       const result = await fetchGameContent(gameId, {
         page,
         limit: 5
@@ -79,7 +79,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
       } else {
         setAllContent(prev => [...prev, ...result.data]);
       }
-
+      
       setAllContentHasMore(result.hasMore);
       setAllContentPage(page);
     } catch (error) {
@@ -125,7 +125,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
       }));
     } catch (error) {
       console.error(`Error loading more content for type ${contentType}:`, error);
-
+      
       // Reset loading state on error
       setGroupedContent(prev => ({
         ...prev,
@@ -168,7 +168,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
       }));
     } catch (error) {
       console.error(`Error loading content for type ${contentType}:`, error);
-
+      
       setGroupedContent(prev => ({
         ...prev,
         [contentType]: {
@@ -212,7 +212,7 @@ export const useGameContent = (activeTab: string, gameId?: string) => {
     // Legacy support (for backward compatibility)
     gameContent: getCurrentContent(),
     isLoadingContent: getCurrentLoadingState(),
-
+    
     // New enhanced API
     contentTypes,
     isLoadingTypes,

@@ -20,7 +20,7 @@ interface SteamGamesCardProps {
 const SteamGamesCard: React.FC<SteamGamesCardProps> = ({ games }) => {
   const { t } = useTranslation();
   const [showAllGames, setShowAllGames] = useState(false);
-
+  
   const formatPlaytime = (minutes: number) => {
     if (minutes === 0) return '0h';
     const hours = Math.floor(minutes / 60);
@@ -58,9 +58,9 @@ const SteamGamesCard: React.FC<SteamGamesCardProps> = ({ games }) => {
             <div key={game.appid} className="flex items-center p-3 bg-gray-50 dark:bg-dark-200 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-300 transition-colors">
               <div className="w-10 h-10 rounded bg-gray-200 dark:bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                 {getGameIconUrl(game) ? (
-                  <img
-                    src={getGameIconUrl(game)!}
-                    alt={game.name}
+                  <img 
+                    src={getGameIconUrl(game)!} 
+                    alt={game.name} 
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
@@ -73,7 +73,7 @@ const SteamGamesCard: React.FC<SteamGamesCardProps> = ({ games }) => {
                   </div>
                 )}
               </div>
-
+              
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-900 dark:text-white truncate">
                   {game.name}
@@ -83,7 +83,7 @@ const SteamGamesCard: React.FC<SteamGamesCardProps> = ({ games }) => {
                   <span>{formatPlaytime(game.playtime_forever)}</span>
                 </div>
               </div>
-
+              
               <div className="text-right">
                 <div className="text-sm font-medium text-primary-400">
                   {formatPlaytime(game.playtime_forever)}
@@ -94,7 +94,7 @@ const SteamGamesCard: React.FC<SteamGamesCardProps> = ({ games }) => {
               </div>
             </div>
           ))}
-
+          
           {games.games.length > 5 && (
             <button
               onClick={() => setShowAllGames(!showAllGames)}

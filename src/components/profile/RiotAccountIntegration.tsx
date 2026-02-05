@@ -37,14 +37,14 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
   useEffect(() => {
     const gameNameField = initialRiotFields.find(f => f.id_name.includes('game_name-riot'));
     const taglineField = initialRiotFields.find(f => f.id_name.includes('tagline-riot'));
-
+    
     if (gameNameField) {
       setLocalGameName(gameNameField.value || '');
     }
     if (taglineField) {
       setLocalTagline(taglineField.value || '');
     }
-
+    
     setRiotFields(initialRiotFields);
   }, [initialRiotFields]);
 
@@ -53,15 +53,15 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
     const timeoutId = setTimeout(() => {
       onDataChange(riotFields);
     }, 100);
-
+    
     return () => clearTimeout(timeoutId);
   }, [riotFields, onDataChange]);
 
   const handleGameNameChange = (value: string) => {
     setLocalGameName(value);
-
-    setRiotFields(prev =>
-      prev.map(field =>
+    
+    setRiotFields(prev => 
+      prev.map(field => 
         field.id_name.includes('game_name-riot') ? { ...field, value, isValidated: false } : field
       )
     );
@@ -69,9 +69,9 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
 
   const handleTaglineChange = (value: string) => {
     setLocalTagline(value);
-
-    setRiotFields(prev =>
-      prev.map(field =>
+    
+    setRiotFields(prev => 
+      prev.map(field => 
         field.id_name.includes('tagline-riot') ? { ...field, value, isValidated: false } : field
       )
     );
@@ -80,7 +80,7 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
   const validateRiotAccount = async () => {
     const gameNameField = riotFields.find(f => f.id_name.includes('game_name-riot'));
     const taglineField = riotFields.find(f => f.id_name.includes('tagline-riot'));
-
+    
     if (!localGameName || !localTagline) {
       toast.error(t('gaming.fillGameNameAndTagline'));
       return;
@@ -88,54 +88,54 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
 
     try {
       // Set validating state for all fields
-      setRiotFields(prev =>
+      setRiotFields(prev => 
         prev.map(f => ({ ...f, isValidating: true, isValidated: false }))
       );
 
       console.log('Validating Riot ID:', localGameName, localTagline);
-
+      
       const result = await validateRiotId(localGameName, localTagline);
-
+      
       if (result.valid) {
         // Set validated state for all fields
-        setRiotFields(prev =>
-          prev.map(f => ({
-            ...f,
-            isValidating: false,
+        setRiotFields(prev => 
+          prev.map(f => ({ 
+            ...f, 
+            isValidating: false, 
             isValidated: true,
             validation_data: result,
             validation_date: new Date().toISOString()
           }))
         );
-
+        
         toast.success(t('gaming.accountValidatedSuccess', { account: `${localGameName}#${localTagline}` }));
       } else {
         // Reset validation state for all fields
-        setRiotFields(prev =>
-          prev.map(f => ({
-            ...f,
-            isValidating: false,
+        setRiotFields(prev => 
+          prev.map(f => ({ 
+            ...f, 
+            isValidating: false, 
             isValidated: false,
             validation_data: undefined,
             validation_date: undefined
           }))
         );
-
+        
         toast.error(result.error || t('gaming.errorValidatingRiotAccount'));
       }
     } catch (error) {
       console.error('Error validating Riot account:', error);
-
+      
       // Reset validation state for all fields
-      setRiotFields(prev =>
-        prev.map(f => ({
-          ...f,
-          isValidating: false,
+      setRiotFields(prev => 
+        prev.map(f => ({ 
+          ...f, 
+          isValidating: false, 
           isValidated: false,
           validation_date: undefined
         }))
       );
-
+      
       toast.error(t('gaming.errorValidatingAccount'));
     }
   };
@@ -187,7 +187,7 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
               disabled={disabled}
             />
           </div>
-
+          
           {/* Validation button for Riot ID */}
           {bothFieldsHaveValues && (
             <div className="flex justify-end mt-2">
@@ -197,7 +197,7 @@ const RiotAccountIntegration: React.FC<RiotAccountIntegrationProps> = ({
                 disabled={isValidating || isValidated || disabled}
                 className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
                   isValidated
-                    ? 'bg-success-600 text-white cursor-default'
+                    ? 'bg-success-600 text-white cursor-default' 
                     : isValidating
                       ? 'bg-primary-600/50 text-white cursor-wait'
                       : 'bg-primary-600 hover:bg-primary-700 text-white'

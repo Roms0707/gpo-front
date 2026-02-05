@@ -24,11 +24,11 @@ const TicketList: React.FC = () => {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  
   useEffect(() => {
     const loadTickets = async () => {
       if (!user?.id) return;
-
+      
       try {
         setIsLoading(true);
         const data = await getUserSupportTickets(user.id);
@@ -39,10 +39,10 @@ const TicketList: React.FC = () => {
         setIsLoading(false);
       }
     };
-
+    
     loadTickets();
   }, [user?.id]);
-
+  
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: fr });
@@ -50,7 +50,7 @@ const TicketList: React.FC = () => {
       return t('support.unknownDate');
     }
   };
-
+  
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
@@ -83,7 +83,7 @@ const TicketList: React.FC = () => {
         );
     }
   };
-
+  
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -92,7 +92,7 @@ const TicketList: React.FC = () => {
       </div>
     );
   }
-
+  
   if (tickets.length === 0) {
     return (
       <div className="text-center py-8 bg-dark-200 rounded-lg">
@@ -104,7 +104,7 @@ const TicketList: React.FC = () => {
       </div>
     );
   }
-
+  
   return (
     <div className="space-y-4">
       {tickets.map((ticket) => (

@@ -11,13 +11,13 @@ const ChatButton: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [newMessage, setNewMessage] = useState<any | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-
+  
   useEffect(() => {
     if (!user?.id) return;
-
+    
     // Load initial unread count
     loadUnreadCount();
-
+    
     // Set up real-time subscription for new messages
     const subscription = supabase
       .channel('chat-messages')
@@ -39,36 +39,36 @@ const ChatButton: React.FC = () => {
         loadUnreadCount();
       })
       .subscribe();
-
+    
     return () => {
       supabase.removeChannel(subscription);
     };
   }, [user?.id]);
-
+  
   const loadUnreadCount = async () => {
     if (!user?.id) return;
-
+    
     try {
       const { count, error } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
         .eq('receiver_id', user.id)
         .eq('read', false);
-
+      
       if (error) {
         console.error('Error loading unread message count:', error);
         return;
       }
-
+      
       setUnreadCount(count || 0);
     } catch (error) {
       console.error('Error loading unread message count:', error);
     }
   };
-
+  
   const handleNewMessage = async (message: any) => {
     if (!message || !user?.id || isOpen) return;
-
+    
     try {
       // Get sender information
       const { data: senderData, error: senderError } = await supabase
@@ -76,12 +76,12 @@ const ChatButton: React.FC = () => {
         .select('username, avatar_url')
         .eq('id', message.sender_id)
         .single();
-
+      
       if (senderError) {
         console.error('Error fetching sender info:', senderError);
         return;
       }
-
+      
       // Set the new message with sender info for notification
       setNewMessage({
         ...message,
@@ -90,7 +90,7 @@ const ChatButton: React.FC = () => {
           avatar_url: senderData.avatar_url
         }
       });
-
+      
       // Clear the notification after 5 seconds
       setTimeout(() => {
         setNewMessage(null);
@@ -99,7 +99,7 @@ const ChatButton: React.FC = () => {
       console.error('Error handling new message:', error);
     }
   };
-
+  
   const toggleChat = () => {
     setIsOpen(!isOpen);
     // Clear new message notification when opening chat
@@ -107,27 +107,27 @@ const ChatButton: React.FC = () => {
       setNewMessage(null);
     }
   };
-
+  
   // Close chat when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen &&
-          buttonRef.current &&
+      if (isOpen && 
+          buttonRef.current && 
           !buttonRef.current.contains(event.target as Node) &&
           !(event.target as Element).closest('.chat-list-modal') &&
           !(event.target as Element).closest('.chat-modal-content')) {
         setIsOpen(false);
       }
     };
-
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
-
+  
   if (!user) return null;
-
+  
   return (
     <>
       <button
@@ -158,11 +158,11 @@ const ChatButton: React.FC = () => {
           </div>
         )}
       </button>
-
+      
       {/* New Message Notification */}
       {newMessage && !isOpen && (
-        <LiveMessageNotification
-          message={newMessage}
+        <LiveMessageNotification 
+          message={newMessage} 
           onClose={() => setNewMessage(null)}
           onClick={() => {
             setNewMessage(null);
@@ -170,7 +170,7 @@ const ChatButton: React.FC = () => {
           }}
         />
       )}
-
+      
       <ChatListModal isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </>
   );

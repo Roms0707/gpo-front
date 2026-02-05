@@ -50,7 +50,7 @@ const VideoPlayerPage: React.FC = () => {
   useEffect(() => {
     // Scroll to top when component mounts
     window.scrollTo(0, 0);
-
+    
     if (contentId) {
       loadVideoContent();
     }
@@ -110,7 +110,7 @@ const VideoPlayerPage: React.FC = () => {
     if (content && videoRef.current) {
       initializeHLSPlayer();
     }
-
+    
     // Cleanup HLS instance on unmount or content change
     return () => {
       if (hlsRef.current) {
@@ -126,23 +126,23 @@ const VideoPlayerPage: React.FC = () => {
 
   const initializeHLSPlayer = useCallback(() => {
     if (!content || !videoRef.current) return;
-
+    
     const video = videoRef.current;
     const videoUrl = content.content_url;
-
+    
     // Clean up existing HLS instance
     if (hlsRef.current) {
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
-
+    
     // Check if the URL is an M3U8 file (HLS stream)
     const isHLS = videoUrl.includes('.m3u8') || videoUrl.includes('m3u8');
-
+    
     if (isHLS) {
       // Use hls.js for HLS streams
       console.log('Initializing HLS player for:', videoUrl);
-
+      
       // Dynamically load HLS.js
       loadHls().then(({ default: Hls }) => {
         if (Hls.isSupported()) {
@@ -151,13 +151,13 @@ const VideoPlayerPage: React.FC = () => {
             lowLatencyMode: false,
             backBufferLength: 90
           });
-
+          
           hlsRef.current = hls;
-
+          
           // Load the HLS stream
           hls.loadSource(videoUrl);
           hls.attachMedia(video);
-
+          
           // Handle HLS events
           hls.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('HLS manifest parsed successfully');
@@ -165,7 +165,7 @@ const VideoPlayerPage: React.FC = () => {
             setIsVideoLoading(false);
             setVideoError(null);
           });
-
+          
           hls.on(Hls.Events.ERROR, (event, data) => {
             if (data.fatal) {
               switch (data.type) {
@@ -176,7 +176,7 @@ const VideoPlayerPage: React.FC = () => {
                     setVideoError(null);
                     hls.destroy();
                     hlsRef.current = null;
-
+                    
                     retryTimeoutRef.current = setTimeout(() => {
                       initializeHLSPlayer();
                     }, 2000);
@@ -204,11 +204,11 @@ const VideoPlayerPage: React.FC = () => {
               console.warn('HLS non-fatal error:', data.type, data.details);
             }
           });
-
+          
           hls.on(Hls.Events.FRAG_LOADING, () => {
             setIsVideoLoading(true);
           });
-
+          
           hls.on(Hls.Events.FRAG_LOADED, () => {
             setIsVideoLoading(false);
           });
@@ -221,7 +221,7 @@ const VideoPlayerPage: React.FC = () => {
         setVideoError('Erreur lors du chargement du lecteur vidéo');
         setIsVideoLoading(false);
       });
-
+      
     } else if (isHLS && video.canPlayType('application/vnd.apple.mpegurl')) {
       // Native HLS support (Safari)
       console.log('Using native HLS support for:', videoUrl);
@@ -244,11 +244,11 @@ const VideoPlayerPage: React.FC = () => {
 
   const loadVideoContent = async () => {
     if (!contentId) return;
-
+    
     try {
       setIsLoading(true);
       setError(null);
-
+      
       const data = await fetchVideoContentById(contentId);
       setContent(data);
     } catch (err) {
@@ -261,18 +261,18 @@ const VideoPlayerPage: React.FC = () => {
 
   const loadRelatedVideos = async () => {
     if (!content || !content.game_id || !content.galaxy_rubric_id) return;
-
+    
     try {
       setIsLoadingRelated(true);
-
+      
       // Load initial 4 videos
       const result = await fetchRelatedGameContent(content.game_id, content.galaxy_rubric_id, content.id, 1, 4);
-
+      
       setRelatedVideos(result.data);
       setHasMoreRelatedVideos(result.hasMore);
       setTotalRelatedVideos(result.totalCount);
       setCurrentPageRelatedVideos(1);
-
+      
       console.log('Related videos loaded:', {
         count: result.data.length,
         hasMore: result.hasMore,
@@ -291,18 +291,18 @@ const VideoPlayerPage: React.FC = () => {
 
   const loadMoreRelatedVideos = async () => {
     if (!content || !content.game_id || !content.galaxy_rubric_id || !hasMoreRelatedVideos || isLoadingRelated) return;
-
+    
     try {
       setIsLoadingRelated(true);
-
+      
       const nextPage = currentPageRelatedVideos + 1;
       const result = await fetchRelatedGameContent(content.game_id, content.galaxy_rubric_id, content.id, nextPage, 4);
-
+      
       // Append new videos to existing ones
       setRelatedVideos(prev => [...prev, ...result.data]);
       setHasMoreRelatedVideos(result.hasMore);
       setCurrentPageRelatedVideos(nextPage);
-
+      
       console.log('More related videos loaded:', {
         newCount: result.data.length,
         totalLoaded: relatedVideos.length + result.data.length,
@@ -328,7 +328,7 @@ const VideoPlayerPage: React.FC = () => {
 
   const togglePlay = () => {
     if (!videoRef.current) return;
-
+    
     if (isPlaying) {
       videoRef.current.pause();
     } else {
@@ -338,14 +338,14 @@ const VideoPlayerPage: React.FC = () => {
 
   const toggleMute = () => {
     if (!videoRef.current) return;
-
+    
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
   };
 
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
-
+    
     try {
       if (isFullscreen) {
         await document.exitFullscreen();
@@ -379,7 +379,7 @@ const VideoPlayerPage: React.FC = () => {
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current) return;
-
+    
     const newTime = parseFloat(e.target.value);
     videoRef.current.currentTime = newTime;
     setCurrentTime(newTime);
@@ -387,7 +387,7 @@ const VideoPlayerPage: React.FC = () => {
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current) return;
-
+    
     const newVolume = parseFloat(e.target.value);
     videoRef.current.volume = newVolume;
     setVolume(newVolume);
@@ -402,7 +402,7 @@ const VideoPlayerPage: React.FC = () => {
 
   const handleVideoError = () => {
     console.error('Video element error event fired');
-
+    
     // Don't override HLS-specific errors
     if (!hlsRef.current) {
       setVideoError('Erreur lors du chargement de la vidéo');
@@ -417,7 +417,7 @@ const VideoPlayerPage: React.FC = () => {
 
   const restartVideo = () => {
     if (!videoRef.current) return;
-
+    
     videoRef.current.currentTime = 0;
     videoRef.current.play().catch(error => {
       console.error('Error playing video:', error);
@@ -445,15 +445,15 @@ const VideoPlayerPage: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour à l'accueil
             </Link>
-
+            
             <div className="bg-white dark:bg-dark-100 rounded-xl p-8 border border-gray-200 dark:border-gray-800">
               <AlertTriangle className="h-16 w-16 text-error-500 mx-auto mb-4" />
               <h1 className="font-heading font-bold text-2xl mb-4 text-gray-900 dark:text-white">Vidéo non trouvée</h1>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 {error || 'La vidéo demandée n\'a pas pu être trouvée.'}
               </p>
-              <button
-                onClick={() => navigate(-1)}
+              <button 
+                onClick={() => navigate(-1)} 
                 className="btn btn-primary"
               >
                 Retour
@@ -472,7 +472,7 @@ const VideoPlayerPage: React.FC = () => {
           {/* Navigation */}
           <div className="mb-6">
             <div className="flex items-center justify-between">
-              <button
+              <button 
                 onClick={() => navigate(-1)}
                 className="inline-flex items-center text-white hover:text-gray-300 transition-colors bg-dark-100/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-700/50"
               >
@@ -483,7 +483,7 @@ const VideoPlayerPage: React.FC = () => {
           </div>
 
           {/* Video Player Container */}
-          <div
+          <div 
             ref={containerRef}
             className={`relative bg-black rounded-xl overflow-hidden ${
               isFullscreen ? 'fixed inset-0 z-50 rounded-none' : 'aspect-video'
@@ -642,7 +642,7 @@ const VideoPlayerPage: React.FC = () => {
                     <h1 className="font-heading font-bold text-2xl mb-4 text-gray-900 dark:text-white">
                       {content.title}
                     </h1>
-
+                    
                     {content.description && (
                       <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
                         {content.description}
@@ -749,7 +749,7 @@ const VideoPlayerPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-
+                  
                   {isLoadingRelated && relatedVideos.length === 0 ? (
                     <div className="flex justify-center items-center py-8">
                       <Loader className="h-8 w-8 animate-spin text-primary-500" />
@@ -767,7 +767,7 @@ const VideoPlayerPage: React.FC = () => {
                           />
                         ))}
                       </div>
-
+                      
                       {/* Load More Button */}
                       {hasMoreRelatedVideos && (
                         <div className="text-center mt-8">
@@ -805,7 +805,7 @@ const VideoPlayerPage: React.FC = () => {
           )}
         </div>
       </div>
-
+      
       {/* Share Video Modal */}
       <ShareVideoModal
         isOpen={showShareModal}

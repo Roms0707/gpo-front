@@ -23,7 +23,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { countries } from '../utils/countries';
 import { validateUserProfile, fetchGames } from '../services/api';
-import { Game, ProfileFrameWithUnlockStatus, ProfileBadgeWithUnlockStatus, ProfileFrame, ProfileBadge } from '../types';
+import { Game, ProfileFrameWithUnlockStatus, ProfileBadgeWithUnlockStatus, ProfileAvatarWithUnlockStatus, ProfileFrame, ProfileBadge } from '../types';
 import FavoriteGameSelector from '../components/profile/FavoriteGameSelector';
 import ProfilePreviewModal from '../components/profile/ProfilePreviewModal';
 import AvatarWithFrame from '../components/profile/AvatarWithFrame';
@@ -35,6 +35,7 @@ import {
   fetchUserCustomization,
   saveUserCustomization
 } from '../services/profileCustomizationService';
+import { fetchAvatarsWithUnlockStatus } from '../services/avatarService';
 import toast from 'react-hot-toast';
 
 const MAX_BIO_LENGTH = 500;
@@ -65,12 +66,17 @@ const ProfileEditPage: React.FC = () => {
   const [avatarFrames, setAvatarFrames] = useState<ProfileFrameWithUnlockStatus[]>([]);
   const [modalFrames, setModalFrames] = useState<ProfileFrameWithUnlockStatus[]>([]);
   const [badges, setBadges] = useState<ProfileBadgeWithUnlockStatus[]>([]);
+  const [presetAvatars, setPresetAvatars] = useState<ProfileAvatarWithUnlockStatus[]>([]);
   const [selectedAvatarFrameId, setSelectedAvatarFrameId] = useState<string | null>(null);
   const [selectedModalFrameId, setSelectedModalFrameId] = useState<string | null>(null);
   const [selectedBadgeId, setSelectedBadgeId] = useState<string | null>(null);
+  const [selectedPresetAvatarId, setSelectedPresetAvatarId] = useState<string | null>(null);
+  const [usePresetAvatar, setUsePresetAvatar] = useState(false);
   const [initialAvatarFrameId, setInitialAvatarFrameId] = useState<string | null>(null);
   const [initialModalFrameId, setInitialModalFrameId] = useState<string | null>(null);
   const [initialBadgeId, setInitialBadgeId] = useState<string | null>(null);
+  const [initialPresetAvatarId, setInitialPresetAvatarId] = useState<string | null>(null);
+  const [initialUsePresetAvatar, setInitialUsePresetAvatar] = useState(false);
   const [isLoadingCustomization, setIsLoadingCustomization] = useState(true);
 
   const hasUnsavedChanges = useMemo(() => {
@@ -85,9 +91,11 @@ const ProfileEditPage: React.FC = () => {
       avatar !== null ||
       selectedAvatarFrameId !== initialAvatarFrameId ||
       selectedModalFrameId !== initialModalFrameId ||
-      selectedBadgeId !== initialBadgeId
+      selectedBadgeId !== initialBadgeId ||
+      selectedPresetAvatarId !== initialPresetAvatarId ||
+      usePresetAvatar !== initialUsePresetAvatar
     );
-  }, [user, username, bio, discordHandle, twitterHandle, phoneNumber, favoriteGameId, avatar, selectedAvatarFrameId, selectedModalFrameId, selectedBadgeId, initialAvatarFrameId, initialModalFrameId, initialBadgeId]);
+  }, [user, username, bio, discordHandle, twitterHandle, phoneNumber, favoriteGameId, avatar, selectedAvatarFrameId, selectedModalFrameId, selectedBadgeId, selectedPresetAvatarId, usePresetAvatar, initialAvatarFrameId, initialModalFrameId, initialBadgeId, initialPresetAvatarId, initialUsePresetAvatar]);
 
   const selectedAvatarFrame = useMemo(() => {
     return avatarFrames.find(f => f.id === selectedAvatarFrameId) || null;
@@ -96,6 +104,17 @@ const ProfileEditPage: React.FC = () => {
   const selectedBadge = useMemo(() => {
     return badges.find(b => b.id === selectedBadgeId) || null;
   }, [badges, selectedBadgeId]);
+
+  const selectedPresetAvatarData = useMemo(() => {
+    return presetAvatars.find(a => a.id === selectedPresetAvatarId) || null;
+  }, [presetAvatars, selectedPresetAvatarId]);
+
+  const displayAvatarUrl = useMemo(() => {
+    if (usePresetAvatar && selectedPresetAvatarData) {
+      return selectedPresetAvatarData.image_url;
+    }
+    return avatarPreview;
+  }, [usePresetAvatar, selectedPresetAvatarData, avatarPreview]);
 
   const selectedGame = useMemo(() => {
     if (!favoriteGameId) return null;
@@ -151,24 +170,30 @@ const ProfileEditPage: React.FC = () => {
       try {
         setIsLoadingCustomization(true);
 
-        const [avatarFramesData, modalFramesData, badgesData, userCustomization] = await Promise.all([
+        const [avatarFramesData, modalFramesData, badgesData, presetAvatarsData, userCustomization] = await Promise.all([
           fetchAvailableFrames(user.id, 'avatar'),
           fetchAvailableFrames(user.id, 'modal'),
           fetchAvailableBadges(user.id),
+          fetchAvatarsWithUnlockStatus(user.id, user.xp || 0),
           fetchUserCustomization(user.id),
         ]);
 
         setAvatarFrames(avatarFramesData);
         setModalFrames(modalFramesData);
         setBadges(badgesData);
+        setPresetAvatars(presetAvatarsData);
 
         if (userCustomization) {
           setSelectedAvatarFrameId(userCustomization.avatar_frame_id || null);
           setSelectedModalFrameId(userCustomization.modal_frame_id || null);
           setSelectedBadgeId(userCustomization.avatar_badge_id || null);
+          setSelectedPresetAvatarId(userCustomization.selected_avatar_id || null);
+          setUsePresetAvatar(userCustomization.use_preset_avatar || false);
           setInitialAvatarFrameId(userCustomization.avatar_frame_id || null);
           setInitialModalFrameId(userCustomization.modal_frame_id || null);
           setInitialBadgeId(userCustomization.avatar_badge_id || null);
+          setInitialPresetAvatarId(userCustomization.selected_avatar_id || null);
+          setInitialUsePresetAvatar(userCustomization.use_preset_avatar || false);
         }
       } catch (error) {
         console.error('Error loading customization data:', error);
@@ -178,7 +203,7 @@ const ProfileEditPage: React.FC = () => {
     };
 
     loadCustomizationData();
-  }, [user?.id]);
+  }, [user?.id, user?.xp]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -270,7 +295,9 @@ const ProfileEditPage: React.FC = () => {
       }
 
       let avatarUrl = user.avatar_url;
-      if (avatar) {
+      if (usePresetAvatar && selectedPresetAvatarData) {
+        avatarUrl = selectedPresetAvatarData.image_url;
+      } else if (avatar) {
         const uploadedUrl = await uploadAvatar();
         if (uploadedUrl) {
           avatarUrl = uploadedUrl;
@@ -299,17 +326,23 @@ const ProfileEditPage: React.FC = () => {
       const hasCustomizationChanges =
         selectedAvatarFrameId !== initialAvatarFrameId ||
         selectedModalFrameId !== initialModalFrameId ||
-        selectedBadgeId !== initialBadgeId;
+        selectedBadgeId !== initialBadgeId ||
+        selectedPresetAvatarId !== initialPresetAvatarId ||
+        usePresetAvatar !== initialUsePresetAvatar;
 
       if (hasCustomizationChanges) {
         await saveUserCustomization(user.id, {
           avatar_frame_id: selectedAvatarFrameId,
           modal_frame_id: selectedModalFrameId,
           avatar_badge_id: selectedBadgeId,
+          selected_avatar_id: selectedPresetAvatarId,
+          use_preset_avatar: usePresetAvatar,
         });
         setInitialAvatarFrameId(selectedAvatarFrameId);
         setInitialModalFrameId(selectedModalFrameId);
         setInitialBadgeId(selectedBadgeId);
+        setInitialPresetAvatarId(selectedPresetAvatarId);
+        setInitialUsePresetAvatar(usePresetAvatar);
       }
 
       if (favoriteGameId) {
@@ -417,9 +450,9 @@ const ProfileEditPage: React.FC = () => {
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
                       >
-                        {avatarPreview ? (
+                        {displayAvatarUrl ? (
                           <img
-                            src={avatarPreview}
+                            src={displayAvatarUrl}
                             alt="Avatar"
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                           />
@@ -740,7 +773,7 @@ const ProfileEditPage: React.FC = () => {
                   >
                     <div className="flex flex-col items-center text-center">
                       <AvatarWithFrame
-                        avatarUrl={avatarPreview}
+                        avatarUrl={displayAvatarUrl}
                         username={username}
                         frame={selectedAvatarFrame}
                         badge={selectedBadge}
@@ -852,12 +885,19 @@ const ProfileEditPage: React.FC = () => {
                   avatarFrames={avatarFrames}
                   modalFrames={modalFrames}
                   badges={badges}
+                  presetAvatars={presetAvatars}
                   selectedAvatarFrameId={selectedAvatarFrameId}
                   selectedModalFrameId={selectedModalFrameId}
                   selectedBadgeId={selectedBadgeId}
+                  selectedPresetAvatarId={selectedPresetAvatarId}
+                  usePresetAvatar={usePresetAvatar}
                   onSelectAvatarFrame={setSelectedAvatarFrameId}
                   onSelectModalFrame={setSelectedModalFrameId}
                   onSelectBadge={setSelectedBadgeId}
+                  onSelectPresetAvatar={(avatarId) => {
+                    setSelectedPresetAvatarId(avatarId);
+                    setUsePresetAvatar(avatarId !== null);
+                  }}
                   userXp={user?.xp || 0}
                   themeColor={theme.colors.primary}
                   avatarUrl={avatarPreview}
@@ -958,7 +998,7 @@ const ProfileEditPage: React.FC = () => {
         onClose={() => setShowPreviewModal(false)}
         username={username}
         bio={bio}
-        avatarPreview={avatarPreview}
+        avatarPreview={displayAvatarUrl}
         discordHandle={discordHandle}
         twitchHandle={twitterHandle}
         country={country}

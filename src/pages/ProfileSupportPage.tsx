@@ -11,7 +11,7 @@ const ProfileSupportPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = React.useState(false);
-
+  
   React.useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -21,7 +21,7 @@ const ProfileSupportPage: React.FC = () => {
       navigate('/login?redirect=/profile/support');
     }
   }, [user, navigate]);
-
+  
   return (
     <div className="min-h-screen pt-28 pb-16">
       <div className="container mx-auto px-4">
@@ -30,7 +30,7 @@ const ProfileSupportPage: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('support.backToProfile')}
           </Link>
-
+          
           <div className="bg-dark-100 rounded-xl overflow-hidden">
             <div className="bg-gradient-to-r from-primary-600/20 to-secondary-600/20 px-6 py-6 border-b border-gray-800">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -38,7 +38,7 @@ const ProfileSupportPage: React.FC = () => {
                   <LifeBuoy className="h-6 w-6 text-primary-500 mr-2" />
                   {t('support.mySupportTickets')}
                 </h1>
-
+                
                 <button
                   onClick={() => setShowCreateModal(true)}
                   className="inline-flex items-center bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
@@ -48,12 +48,12 @@ const ProfileSupportPage: React.FC = () => {
                 </button>
               </div>
             </div>
-
+            
             <div className="p-6">
               <TicketList />
             </div>
           </div>
-
+          
           <div className="mt-8 bg-dark-200 p-6 rounded-xl">
             <h2 className="font-heading font-semibold text-xl mb-4">
               {t('support.needHelp')}
@@ -76,7 +76,7 @@ const ProfileSupportPage: React.FC = () => {
           </div>
         </div>
       </div>
-
+      
       <CreateTicketModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}

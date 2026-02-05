@@ -23,19 +23,19 @@ const RulesTab: React.FC<RulesTabProps> = ({
       try {
         setIsLoading(true);
         setError(null);
-
+        
         // Fetch tournament rules from the database
         const { data, error } = await supabase
           .from('tournaments')
           .select('rules')
           .eq('id', tournament.id)
           .single();
-
+        
         if (error) {
           console.error('Error loading tournament rules:', error);
           throw new Error(t('rulesTab.loadError'));
         }
-
+        
         setRules(data.rules);
       } catch (err) {
         console.error('Error loading tournament rules:', err);
@@ -44,7 +44,7 @@ const RulesTab: React.FC<RulesTabProps> = ({
         setIsLoading(false);
       }
     };
-
+    
     loadTournamentRules();
   }, [tournament.id, t]);
 
@@ -86,12 +86,12 @@ const RulesTab: React.FC<RulesTabProps> = ({
           </p>
         </div>
       )}
-
+      
       {/* General Rules Section */}
       {!rules && (
         <div className="mt-6 sm:mt-8 bg-gray-50 dark:bg-dark-200 p-4 sm:p-5 md:p-6 rounded-lg border border-gray-200 dark:border-gray-700">
           <h3 className="font-heading font-semibold text-lg sm:text-xl mb-3 sm:mb-4 text-gray-900 dark:text-white">{t('rulesTab.generalRulesTitle')}</h3>
-
+          
           <div className="space-y-4 sm:space-y-6">
             <div>
               <h4 className="font-medium text-accent-600 dark:text-accent-400 mb-2 text-sm sm:text-base">{t('rulesTab.eligibility.title')}</h4>
@@ -141,7 +141,7 @@ const RulesTab: React.FC<RulesTabProps> = ({
               </ul>
             </div>
           </div>
-
+          
           <div className="mt-6 p-4 bg-accent-50 dark:bg-accent-900/20 border border-accent-200 dark:border-accent-800 rounded-lg">
             <p className="text-accent-800 dark:text-accent-200 text-sm">
               <strong>{t('rulesTab.noteTitle')}</strong> {t('rulesTab.noteText')}

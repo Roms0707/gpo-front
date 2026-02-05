@@ -44,7 +44,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
   const [communities, setCommunities] = useState<Channel[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
-
+  
   // Chat and channel modal states
   const [showChatModal, setShowChatModal] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<{id: string, name: string, avatar?: string}>({id: '', name: ''});
@@ -59,14 +59,14 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
 
   const loadFriendsAndCommunities = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsLoading(true);
-
+      
       // Load friends
       const friendsData = await fetchFriends(user.id);
       setFriends(friendsData);
-
+      
       // Load user's communities
       const communitiesData = await getUserChannels();
       setCommunities(communitiesData);
@@ -94,7 +94,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
 
   const handleShareWithFriend = (friend: UserRelationship) => {
     if (!friend.related_user) return;
-
+    
     setSelectedFriend({
       id: friend.related_user.id,
       name: friend.related_user.username,
@@ -120,11 +120,11 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
 
   return (
     <>
-      <div
+      <div 
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
         onClick={onClose}
       >
-        <div
+        <div 
           className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800"
           onClick={stopPropagation}
         >
@@ -136,7 +136,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                 {t('shareVideoModal.title')}
               </h2>
             </div>
-            <button
+            <button 
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
               aria-label={t('shareVideoModal.close')}
@@ -144,15 +144,15 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
               <X className="h-5 w-5" />
             </button>
           </div>
-
+          
           {/* Video Preview */}
           <div className="p-4 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center space-x-3">
               {videoThumbnail && (
                 <div className="w-16 h-12 rounded overflow-hidden bg-gray-200 dark:bg-dark-300 flex-shrink-0">
-                  <img
-                    src={videoThumbnail}
-                    alt={videoTitle}
+                  <img 
+                    src={videoThumbnail} 
+                    alt={videoTitle} 
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -165,14 +165,14 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
               </div>
             </div>
           </div>
-
+          
           {/* Tabs */}
           <div className="flex border-b border-gray-200 dark:border-gray-800">
             <button
               onClick={() => setActiveTab('friends')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'friends'
-                  ? 'text-primary-500 border-b-2 border-primary-500'
+                activeTab === 'friends' 
+                  ? 'text-primary-500 border-b-2 border-primary-500' 
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
@@ -182,8 +182,8 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
             <button
               onClick={() => setActiveTab('communities')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'communities'
-                  ? 'text-primary-500 border-b-2 border-primary-500'
+                activeTab === 'communities' 
+                  ? 'text-primary-500 border-b-2 border-primary-500' 
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
@@ -193,8 +193,8 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
             <button
               onClick={() => setActiveTab('link')}
               className={`flex-1 py-3 px-4 text-sm font-medium ${
-                activeTab === 'link'
-                  ? 'text-primary-500 border-b-2 border-primary-500'
+                activeTab === 'link' 
+                  ? 'text-primary-500 border-b-2 border-primary-500' 
                   : 'text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
@@ -202,7 +202,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
               {t('shareVideoModal.linkTab')}
             </button>
           </div>
-
+          
           {/* Content */}
           <div className="p-4 max-h-80 overflow-y-auto">
             {isLoading ? (
@@ -224,9 +224,9 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                         >
                           <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-3 flex-shrink-0">
                             {friend.related_user?.avatar_url ? (
-                              <img
-                                src={friend.related_user.avatar_url}
-                                alt={friend.related_user.username}
+                              <img 
+                                src={friend.related_user.avatar_url} 
+                                alt={friend.related_user.username} 
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -257,7 +257,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                     )}
                   </div>
                 )}
-
+                
                 {/* Communities Tab */}
                 {activeTab === 'communities' && (
                   <div className="space-y-3">
@@ -302,7 +302,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                     )}
                   </div>
                 )}
-
+                
                 {/* Link Tab */}
                 {activeTab === 'link' && (
                   <div className="space-y-4">
@@ -314,7 +314,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                         <div className="flex-1 bg-gray-100 dark:bg-dark-200 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300 break-all">
                           {videoUrl}
                         </div>
-                        <button
+                        <button 
                           onClick={handleCopyLink}
                           className="bg-primary-600 hover:bg-primary-700 text-white p-3 rounded-lg transition-colors flex-shrink-0"
                         >
@@ -326,7 +326,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
                         </button>
                       </div>
                     </div>
-
+                    
                     <div className="bg-info-100 dark:bg-info-500/20 border border-info-300 dark:border-info-600/30 p-3 rounded-lg">
                       <p className="text-info-700 dark:text-info-300 text-sm">
                         {t('shareVideoModal.linkShareTip')}
@@ -339,7 +339,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
           </div>
         </div>
       </div>
-
+      
       {/* Chat Modal */}
       {showChatModal && selectedFriend.id && (
         <ChatModal
@@ -357,7 +357,7 @@ const ShareVideoModal: React.FC<ShareVideoModalProps> = ({
           initialSharedVideoThumbnail={videoThumbnail}
         />
       )}
-
+      
       {/* Channel Modal */}
       {showChannelModal && selectedChannel.id && (
         <ChannelModal

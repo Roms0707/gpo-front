@@ -53,7 +53,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
       setIsSyncing(false);
     }
   };
-
+  
   // Get content type label from translations
   const getContentTypeLabel = (type: string): string => {
     const translationKey = `trainingTab.contentTypes.${type}`;
@@ -61,7 +61,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
     // Fallback to capitalized type if translation key doesn't exist
     return translated !== translationKey ? translated : type.charAt(0).toUpperCase() + type.slice(1);
   };
-
+  
   // Get icon for content type
   const getContentTypeIcon = (type: string): React.ReactNode => {
     switch (type.toLowerCase()) {
@@ -76,22 +76,22 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
         return <BookOpen className="h-4 w-4" />;
     }
   };
-
+  
   // Load more content for a specific type
   const handleLoadMoreContentType = async (type: string) => {
     await loadMoreContent(type);
   };
-
+  
   // Load initial content for a specific type when it's selected
   const handleContentTypeSelect = (type: string | null) => {
     setSelectedContentType(type);
-
+    
     // Load initial content for this type if not already loaded
     if (type && (!groupedContent[type] || groupedContent[type].videos.length === 0)) {
       loadContentType(type);
     }
   };
-
+  
   const currentContent = getCurrentContent();
   const isLoadingContent = getCurrentLoadingState();
   const hasMoreContent = getCurrentHasMore();
@@ -121,7 +121,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
           <span className="hidden sm:inline">{isSyncing ? t('trainingTab.syncing') : t('trainingTab.syncGalaxy')}</span>
         </button>
       </div>
-
+      
       {isLoadingTypes ? (
         <div className="flex justify-center items-center py-12">
           <Loader className="h-8 w-8 animate-spin text-primary-500" />
@@ -171,7 +171,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
               </div>
             </div>
           )}
-
+          
           {/* Content Display */}
           <div className="space-y-8">
             {selectedContentType ? (
@@ -188,7 +188,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
                     </span>
                   </h3>
                 </div>
-
+                
                 {/* Loading state for initial content load */}
                 {isLoadingContent && currentContent.length === 0 ? (
                   <div className="flex justify-center items-center py-12">
@@ -206,7 +206,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
                         />
                       ))}
                     </div>
-
+                    
                     {/* Load More Button for Single Type */}
                     {hasMoreContent && (
                       <div className="text-center mt-8">
@@ -254,7 +254,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
                         />
                       ))}
                     </div>
-
+                    
                     {/* Load More Button for All Content */}
                     {hasMoreContent && (
                       <div className="text-center mt-8">
@@ -283,7 +283,7 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
               </>
             )}
           </div>
-
+          
           {/* Back to All Button when filtering */}
           {selectedContentType && (
             <div className="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">

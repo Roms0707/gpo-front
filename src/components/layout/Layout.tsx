@@ -18,6 +18,8 @@ const Layout: React.FC = () => {
     subscriptionRedirectUrl,
     showSuspendedModal,
     setShowSuspendedModal,
+    refreshSubscription,
+    subscriptionStatus,
   } = useSubscription();
   const [showProfileModal, setShowProfileModal] = useState(false);
 
@@ -72,6 +74,8 @@ const Layout: React.FC = () => {
       <AccountSuspendedModal
         isOpen={showSuspendedModal}
         onClose={() => setShowSuspendedModal(false)}
+        onRefresh={refreshSubscription}
+        subscriptionStatus={subscriptionStatus}
       />
     </div>
   );

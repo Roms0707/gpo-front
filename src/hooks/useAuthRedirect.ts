@@ -16,7 +16,7 @@ interface UseAuthRedirectProps {
 export const useAuthRedirect = ({ user, isLoading }: UseAuthRedirectProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   // Get query params
   const params = new URLSearchParams(location.search);
   const redirectPath = params.get('redirect');
@@ -26,7 +26,7 @@ export const useAuthRedirect = ({ user, isLoading }: UseAuthRedirectProps) => {
     if (user && !isLoading) {
       console.log('User is logged in, redirecting...');
       const locationState = location.state as LocationState;
-
+      
       // Handle team invitation flow
       if (teamId && redirectPath) {
         const fullRedirectUrl = `${decodeURIComponent(redirectPath)}?teamId=${teamId}`;

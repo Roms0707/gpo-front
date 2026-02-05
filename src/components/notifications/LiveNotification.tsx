@@ -24,13 +24,13 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
   const { t, i18n } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     // Animate in
     setTimeout(() => {
       setIsVisible(true);
     }, 100);
-
+    
     // Auto-dismiss after 8 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
@@ -38,10 +38,10 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
         onClose(notification.id);
       }, 300); // Wait for animation to complete
     }, 8000);
-
+    
     return () => clearTimeout(timer);
   }, [notification.id, onClose]);
-
+  
   const getNotificationIcon = () => {
     switch (notification.type) {
       case 'team_application':
@@ -71,7 +71,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
         return <XCircle className="h-5 w-5 text-error-400" aria-hidden="true" />;
     }
   };
-
+  
   const formatTimeAgo = (dateString: string) => {
     try {
       const currentLanguage = i18n.language || 'en';
@@ -84,24 +84,24 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
       return t('notifications.justNow');
     }
   };
-
+  
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(() => {
       onClose(notification.id);
     }, 300); // Wait for animation to complete
   };
-
+  
   const handleLinkClick = (e: React.MouseEvent) => {
     e.preventDefault();
-
+    
     // Close the notification
     setIsVisible(false);
-
+    
     // Extract the base URL and add the tab parameter for specific notifications
     if (notification.link) {
       let targetUrl = notification.link;
-
+      
       // For team application notifications, ensure we navigate to the LFP tab
       if (notification.type === 'team_application') {
         // Check if the URL already has query parameters
@@ -113,7 +113,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
           targetUrl = `${targetUrl}?tab=lfp`;
         }
       }
-
+      
       // For bracket notifications, ensure we navigate to the bracket tab
       if (notification.type === 'bracket_advance' || notification.type === 'bracket_eliminated') {
         // Check if the URL already has query parameters
@@ -125,7 +125,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
           targetUrl = `${targetUrl}?tab=bracket`;
         }
       }
-
+      
       // For friend request notifications, ensure we navigate to the requests tab
       if (notification.type === 'friend_request') {
         // Check if the URL already has query parameters
@@ -137,7 +137,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
           targetUrl = `${targetUrl}?tab=requests`;
         }
       }
-
+      
       // Navigate after the animation completes
       setTimeout(() => {
         navigate(targetUrl);
@@ -150,9 +150,9 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
       }, 300);
     }
   };
-
+  
   return (
-    <div
+    <div 
       className={`fixed bottom-4 right-4 z-50 max-w-sm w-full bg-dark-100 rounded-lg shadow-lg border border-gray-800 transform transition-all duration-300 ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
       }`}
@@ -170,7 +170,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
           <div className="flex-1 min-w-0">
             <div className="flex justify-between">
               <h3 className="font-medium text-white">{notification.title}</h3>
-              <button
+              <button 
                 onClick={handleClose}
                 className="text-gray-300 hover:text-white"
                 aria-label={t('notifications.close')}
@@ -184,7 +184,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
                 {formatTimeAgo(notification.created_at)}
               </span>
               {notification.link && (
-                <button
+                <button 
                   onClick={handleLinkClick}
                   className="text-primary-400 hover:text-primary-300 text-xs"
                   aria-label={`${notification.type === 'friend_request' ? t('notifications.viewRequest') :

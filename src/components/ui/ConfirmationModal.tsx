@@ -58,11 +58,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const typeStyles = getTypeStyles();
 
   return (
-    <div
+    <div 
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
-      <div
+      <div 
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -71,7 +71,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
             {title}
           </h2>
-          <button
+          <button 
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
             aria-label="Fermer"
@@ -80,17 +80,17 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-
+        
         {/* Content */}
         <div className="p-6 text-center">
           <div className={`inline-flex items-center justify-center w-16 h-16 ${typeStyles.iconBg} rounded-full mb-4`}>
             {typeStyles.icon}
           </div>
-
+          
           <p className="text-gray-700 dark:text-gray-300 mb-6">
             {message}
           </p>
-
+          
           <div className="flex space-x-3">
             <button
               onClick={onClose}

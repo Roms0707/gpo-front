@@ -35,7 +35,7 @@ export const discordVerificationService = {
 
       return {
         isConnected: true,
-        isMember: data.is_member,
+        isMember: data.is_verified,
         discordUsername: data.discord_username,
         lastVerified: data.last_verified_at,
       };
@@ -68,8 +68,8 @@ export const discordVerificationService = {
 
       const { data, error } = await supabase.functions.invoke('verify-discord-membership', {
         body: {
-          userId,
-          tournamentId,
+          user_id: userId,
+          tournament_id: tournamentId,
         },
       });
 
@@ -90,7 +90,17 @@ export const discordVerificationService = {
 
       return {
         success: true,
-        data: data.verification,
+        data: {
+          id: '',
+          tournament_id: tournamentId,
+          user_id: userId,
+          discord_user_id: data.discord_user_id || '',
+          discord_username: '',
+          is_verified: data.is_verified === true,
+          last_verified_at: data.verified_at || data.last_checked_at || '',
+          created_at: '',
+          updated_at: '',
+        },
       };
     } catch (err) {
       console.error('Unexpected error verifying Discord membership:', err);
@@ -130,7 +140,7 @@ export const discordVerificationService = {
           } else {
             callback({
               isConnected: true,
-              isMember: record.is_member,
+              isMember: record.is_verified,
               discordUsername: record.discord_username,
               lastVerified: record.last_verified_at,
             });
@@ -229,6 +239,7 @@ export const discordVerificationService = {
   },
 
   /**
+   * @deprecated Use initiateDiscordOAuthPopup instead. This method requires Supabase Discord provider to be enabled.
    * Initiate Discord OAuth from registration modal with redirect back to tournament page
    */
   async initiateDiscordOAuthFromModal(
@@ -291,15 +302,16 @@ export const discordVerificationService = {
   },
 
   /**
-   * Initiate Discord OAuth for Kliento users via popup window
-   * This method opens a popup for Discord authorization without disrupting the Kliento session
+   * Initiate Discord OAuth via popup window
+   * This method opens a popup for Discord authorization without disrupting the user session
+   * Works for all authentication methods (email/password, Kliento, etc.)
    */
-  async initiateKlientoDiscordOAuth(
+  async initiateDiscordOAuthPopup(
     userId: string
   ): Promise<{ success: boolean; error?: string; discord_user?: { id: string; username: string; handle: string } }> {
     return new Promise(async (resolve) => {
       try {
-        console.log('[DiscordVerificationService] Initiating Kliento Discord OAuth for user:', userId);
+        console.log('[DiscordVerificationService] Initiating Discord OAuth popup for user:', userId);
 
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -411,7 +423,7 @@ export const discordVerificationService = {
           });
         }, 300000);
       } catch (err) {
-        console.error('[DiscordVerificationService] Unexpected error in Kliento Discord OAuth:', err);
+        console.error('[DiscordVerificationService] Unexpected error in Discord OAuth popup:', err);
         resolve({
           success: false,
           error: err instanceof Error ? err.message : 'Unknown error',

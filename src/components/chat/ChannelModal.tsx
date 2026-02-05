@@ -88,7 +88,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
   const [showMembersList, setShowMembersList] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-
+  
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,7 +101,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
       loadMessages();
       loadMembers();
       loadChannelInfo();
-
+      
       // Set up real-time subscription for new messages
       const subscription = supabase
         .channel(`channel-${channelId}`)
@@ -112,12 +112,12 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
           filter: `channel_id=eq.${channelId}`
         }, handleNewMessage)
         .subscribe();
-
+      
       // Focus the input field
       if (inputRef.current) {
         inputRef.current.focus();
       }
-
+      
       // Pre-fill message with shared video if provided
       if (initialSharedVideoUrl && initialSharedVideoTitle) {
         let sharedMessage = `🎬 ${initialSharedVideoTitle}\n\n`;
@@ -130,7 +130,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
         // Pre-fill message with provided content (for stats sharing)
         setNewMessage(initialMessageContent);
       }
-
+      
       return () => {
         supabase.removeChannel(subscription);
       };
@@ -163,10 +163,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        showEmojiPicker &&
-        emojiPickerRef.current &&
+        showEmojiPicker && 
+        emojiPickerRef.current && 
         !emojiPickerRef.current.contains(event.target as Node) &&
-        event.target instanceof Element &&
+        event.target instanceof Element && 
         !event.target.closest('[data-testid="emoji-picker-button"]')
       ) {
         setShowEmojiPicker(false);
@@ -185,13 +185,13 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const handleNewMessage = (payload: any) => {
     const newMessage = payload.new as Message;
-
+    
     // Skip messages that were sent by the current user
     // These are already added to the messages state in the sendMessage function
     if (newMessage.sender_id === user?.id) {
       return;
     }
-
+    
     // Get sender info
     supabase
       .from('users')
@@ -205,7 +205,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
             username: data.username,
             avatar_url: data.avatar_url
           };
-
+          
           setMessages(prev => [...prev, newMessage]);
         }
       });
@@ -213,29 +213,29 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const loadChannelInfo = async () => {
     if (!channelId) return;
-
+    
     try {
       const { data, error } = await supabase
         .from('channels')
         .select('is_community, is_private, created_at, image_url')
         .eq('id', channelId)
         .single();
-
+      
       if (error) {
         console.error('Error loading channel info:', error);
         return;
       }
-
+      
       // Get member count
       const { count, error: countError } = await supabase
         .from('channel_members')
         .select('*', { count: 'exact', head: true })
         .eq('channel_id', channelId);
-
+      
       if (countError) {
         console.error('Error loading member count:', countError);
       }
-
+      
       setChannelInfo({
         ...data,
         member_count: count || 0
@@ -247,16 +247,16 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const loadMessages = async () => {
     if (!user?.id || !channelId) return;
-
+    
     try {
       setIsLoading(true);
-
+      
       const messages = await getChannelMessages(channelId, 1, MESSAGES_PER_PAGE);
       setMessages(messages);
-
+      
       // Check if there are more messages to load
       setHasMore(messages.length === MESSAGES_PER_PAGE);
-
+      
     } catch (error) {
       console.error('Error loading channel messages:', error);
       toast.error(t('chat.errorLoadingMessages'));
@@ -267,18 +267,18 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const loadMoreMessages = async () => {
     if (!user?.id || !channelId || !hasMore) return;
-
+    
     try {
       setIsLoadingMore(true);
-
+      
       const nextPage = page + 1;
       const olderMessages = await getChannelMessages(channelId, nextPage, MESSAGES_PER_PAGE);
-
+      
       if (olderMessages.length > 0) {
         // Prepend older messages
         setMessages(prev => [...olderMessages, ...prev]);
         setPage(nextPage);
-
+        
         // Check if there are more messages to load
         setHasMore(olderMessages.length === MESSAGES_PER_PAGE);
       } else {
@@ -293,15 +293,15 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const loadMembers = async () => {
     if (!user?.id || !channelId) return;
-
+    
     try {
       const members = await getChannelMembers(channelId);
       setMembers(members);
-
+      
       // Check if current user is an admin
       const currentUserMember = members.find(member => member.user_id === user.id);
       setIsAdmin(currentUserMember?.role === 'admin');
-
+      
     } catch (error) {
       console.error('Error loading channel members:', error);
     }
@@ -310,41 +310,41 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-
+      
       // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast.error(t('chat.fileTooLarge'));
         return;
       }
-
+      
       setSelectedFile(file);
     }
   };
 
   const uploadFile = async (): Promise<{ url: string; name: string; type: string } | null> => {
     if (!selectedFile || !user?.id) return null;
-
+    
     try {
       setIsUploading(true);
-
+      
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `chat-attachments/${fileName}`;
-
+      
       // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('chat-attachments')
         .upload(filePath, selectedFile);
-
+      
       if (uploadError) {
         throw uploadError;
       }
-
+      
       // Get the public URL
       const { data } = supabase.storage
         .from('chat-attachments')
         .getPublicUrl(filePath);
-
+      
       return {
         url: data.publicUrl,
         name: selectedFile.name,
@@ -361,10 +361,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const sendMessage = async () => {
     if (!user?.id || !channelId || (!newMessage.trim() && !selectedFile)) return;
-
+    
     try {
       setIsSending(true);
-
+      
       let fileData = null;
       if (selectedFile) {
         fileData = await uploadFile();
@@ -373,10 +373,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
           return;
         }
       }
-
+      
       const messageContent = newMessage.trim() || (fileData ? t('chat.fileSent') : '');
       let messageType = 'channel';
-
+      
       // Check if this is a shared video message
       if (initialSharedVideoUrl && initialSharedVideoTitle && messageContent.includes(initialSharedVideoUrl)) {
         messageType = 'shared_video';
@@ -385,7 +385,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
           initialSharedVideoUrl,
           `<a href="${initialSharedVideoUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${initialSharedVideoUrl}</a>`
         );
-
+        
         // Send the formatted message
         const sentMessage = await sendChannelMessage(
           channelId,
@@ -394,7 +394,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
           fileData?.name,
           fileData?.type
         );
-
+        
         // Add sender info to the message for immediate display
         if (sentMessage) {
           const messageWithSender = {
@@ -405,22 +405,22 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
               avatar_url: user.avatar_url || null
             }
           };
-
+          
           // Add the message to the state
           setMessages(prev => [...prev, messageWithSender]);
         }
-
+        
         setNewMessage('');
         setSelectedFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
-
+        
         // Close emoji picker when sending a message
         setShowEmojiPicker(false);
         return;
       }
-
+      
       // Send the message
       const sentMessage = await sendChannelMessage(
         channelId,
@@ -429,7 +429,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
         fileData?.name,
         fileData?.type
       );
-
+      
       // Add sender info to the message for immediate display
       if (sentMessage) {
         const messageWithSender = {
@@ -439,17 +439,17 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
             avatar_url: user.avatar_url || null
           }
         };
-
+        
         // Add the message to the state
         setMessages(prev => [...prev, messageWithSender]);
       }
-
+      
       setNewMessage('');
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-
+      
       // Close emoji picker when sending a message
       setShowEmojiPicker(false);
     } catch (error) {
@@ -478,17 +478,17 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
     try {
       const date = new Date(dateString);
       const now = new Date();
-
+      
       // If it's today, just show the time
       if (date.toDateString() === now.toDateString()) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-
+      
       // If it's within the last week, show relative time
       if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
         return formatDistanceToNow(date, { addSuffix: true, locale: fr });
       }
-
+      
       // Otherwise show the date
       return date.toLocaleDateString();
     } catch (error) {
@@ -498,11 +498,11 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const handleLeaveChannel = async () => {
     if (!channelId) return;
-
+    
     if (confirm(t('chat.confirmLeaveChannel'))) {
       try {
         const result = await leaveChannel(channelId);
-
+        
         if (result.success) {
           toast.success(result.message);
           onClose();
@@ -522,21 +522,21 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
   const renderFilePreview = (message: Message) => {
     if (!message.file_url) return null;
-
+    
     const isImage = message.file_type?.startsWith('image/');
-
+    
     if (isImage) {
       return (
         <div className="mt-2 rounded-lg overflow-hidden max-w-xs">
-          <a
-            href={message.file_url}
-            target="_blank"
+          <a 
+            href={message.file_url} 
+            target="_blank" 
             rel="noopener noreferrer"
             className="block"
             aria-label={message.file_name || t('chat.attachedImage')}
           >
-            <img
-              src={message.file_url}
+            <img 
+              src={message.file_url} 
               alt={message.file_name || t('chat.attachedImage')}
               className="w-full h-auto rounded-lg"
             />
@@ -544,15 +544,15 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
         </div>
       );
     }
-
+    
     return (
       <div className="mt-2 bg-dark-300/50 rounded-lg p-2 flex items-center max-w-xs">
         <File className="h-5 w-5 mr-2 text-gray-400" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">{message.file_name}</p>
         </div>
-        <a
-          href={message.file_url}
+        <a 
+          href={message.file_url} 
           download={message.file_name}
           className="ml-2 text-primary-400 hover:text-primary-300"
           aria-label={t('chat.downloadFile', { filename: message.file_name })}
@@ -572,7 +572,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
     } else {
       document.body.classList.remove('modal-open');
     }
-
+    
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('modal-open');
@@ -582,8 +582,8 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 chat-modal-content">
       <div className="fixed inset-0 bg-black/75 z-49" onClick={onClose}></div>
-
-      <div
+      
+      <div 
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col chat-modal-content border border-gray-200 dark:border-gray-800 relative z-50"
         onClick={stopPropagation}
       >
@@ -591,24 +591,24 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center flex-1 min-w-0">
             <div className={`w-10 h-10 rounded-full overflow-hidden mr-3 flex items-center justify-center ${
-              channelInfo?.is_community
+              channelInfo?.is_community 
                 ? 'bg-indigo-100 dark:bg-indigo-600/20'
-                : channelInfo?.is_private
-                  ? 'bg-gray-200 dark:bg-gray-600/20'
+                : channelInfo?.is_private 
+                  ? 'bg-gray-200 dark:bg-gray-600/20' 
                   : 'bg-primary-100 dark:bg-primary-600/20'
             }`}>
               {channelInfo?.image_url ? (
-                <img
-                  src={channelInfo?.image_url}
-                  alt={channelName}
+                <img 
+                  src={channelInfo?.image_url} 
+                  alt={channelName} 
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <MessageSquare className={`h-5 w-5 ${
-                  channelInfo?.is_community
-                    ? 'text-indigo-600 dark:text-indigo-500'
-                    : channelInfo?.is_private
-                      ? 'text-gray-600 dark:text-gray-400'
+                  channelInfo?.is_community 
+                    ? 'text-indigo-600 dark:text-indigo-500' 
+                    : channelInfo?.is_private 
+                      ? 'text-gray-600 dark:text-gray-400' 
                       : 'text-primary-600 dark:text-primary-500'
                 }`} />
               )}
@@ -641,7 +641,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <button
+            <button 
               onClick={() => setShowMembersList(!showMembersList)}
               className={`text-gray-300 hover:text-white transition-colors p-2 rounded ${
                 showMembersList ? 'bg-dark-200' : ''
@@ -651,7 +651,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
               <Users className="h-5 w-5" />
             </button>
             {isAdmin && (
-              <button
+              <button 
                 onClick={() => setShowSettingsModal(true)}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-dark-200 rounded"
                 aria-label={t('chat.channelSettingsLabel')}
@@ -659,14 +659,14 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                 <Settings className="h-5 w-5" aria-hidden="true" />
               </button>
             )}
-            <button
+            <button 
               onClick={handleLeaveChannel}
               className="text-gray-500 hover:text-error-600 dark:text-gray-300 dark:hover:text-error-400 transition-colors p-2"
               aria-label={t('chat.leaveChannelLabel')}
             >
               <LogOut className="h-5 w-5" aria-hidden="true" />
             </button>
-            <button
+            <button 
               onClick={onClose}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors"
               aria-label={t('common.close')}
@@ -675,12 +675,12 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
             </button>
           </div>
         </div>
-
+        
         <div className="flex flex-1 overflow-hidden">
           {/* Main Chat Area */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* Messages */}
-            <div
+            <div 
               ref={messagesContainerRef}
               className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-dark-200/50"
               tabIndex={0}
@@ -692,7 +692,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary-500"></div>
                 </div>
               )}
-
+              
               {isLoading ? (
                 <div className="flex justify-center items-center h-full">
                   <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
@@ -702,10 +702,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                 <>
                   {messages.map((message) => {
                     const isCurrentUser = message.sender_id === user?.id;
-
+                    
                     return (
-                      <div
-                        key={message.id}
+                      <div 
+                        key={message.id} 
                         className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                         aria-label={`Message from ${isCurrentUser ? 'you' : message.sender?.username}`}
                       >
@@ -713,9 +713,9 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                           {!isCurrentUser && (
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-2 flex-shrink-0">
                               {message.sender?.avatar_url ? (
-                                <img
-                                  src={message.sender.avatar_url}
-                                  alt=""
+                                <img 
+                                  src={message.sender.avatar_url} 
+                                  alt="" 
                                   className="w-full h-full object-cover"
                                   aria-hidden="true"
                                 />
@@ -726,10 +726,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                               )}
                             </div>
                           )}
-
+                          
                           <div className={`rounded-lg px-4 py-2 ${
-                            isCurrentUser
-                              ? 'bg-primary-600 text-white'
+                            isCurrentUser 
+                              ? 'bg-primary-600 text-white' 
                               : 'bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-transparent'
                           }`}>
                             {!isCurrentUser && (
@@ -737,32 +737,32 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                                 {message.sender?.username || t('chat.unknownUser2')}
                               </div>
                             )}
-
+                            
                             {message.type === 'shared_video' || message.content.includes('<a href=') ? (
-                              <div
+                              <div 
                                 className="whitespace-pre-wrap break-words"
                                 dangerouslySetInnerHTML={{ __html: message.content }}
                               />
                             ) : (
                               <p className="whitespace-pre-wrap break-words">{message.content}</p>
                             )}
-
+                            
                             {/* File attachment */}
                             {renderFilePreview(message)}
-
+                            
                             <div className={`text-xs mt-1 flex items-center ${
                               isCurrentUser ? 'text-primary-300 justify-end' : 'text-gray-500 dark:text-gray-400'
                             }`}>
                               <span>{formatMessageTime(message.created_at)}</span>
                             </div>
                           </div>
-
+                          
                           {isCurrentUser && (
                             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden ml-2 flex-shrink-0">
                               {user?.avatar_url ? (
-                                <img
-                                  src={user.avatar_url}
-                                  alt=""
+                                <img 
+                                  src={user.avatar_url} 
+                                  alt="" 
                                   className="w-full h-full object-cover"
                                   aria-hidden="true"
                                 />
@@ -796,7 +796,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                 </div>
               )}
             </div>
-
+            
             {/* Selected File Preview */}
             {selectedFile && (
               <div className="px-4 py-2 bg-dark-200 border-t border-gray-800">
@@ -805,7 +805,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                     <File className="h-5 w-5 mr-2 text-gray-400" aria-hidden="true" />
                     <span className="text-sm truncate">{selectedFile.name}</span>
                   </div>
-                  <button
+                  <button 
                     onClick={() => setSelectedFile(null)}
                     className="ml-2 text-gray-400 hover:text-white"
                     aria-label={t('chat.removeFile')}
@@ -815,10 +815,10 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                 </div>
               </div>
             )}
-
+            
             {/* Emoji Picker */}
             {showEmojiPicker && (
-              <div
+              <div 
                 ref={emojiPickerRef}
                 className="absolute bottom-20 right-4 z-10"
                 role="dialog"
@@ -834,7 +834,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                 </React.Suspense>
               </div>
             )}
-
+            
             {/* Message Input */}
             <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-dark-100">
               <div className="flex items-center">
@@ -851,7 +851,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                     aria-label={t('chat.messageInput')}
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                    <button
+                    <button 
                       type="button"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                       className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1"
@@ -861,7 +861,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                     >
                       <Smile className="h-5 w-5" aria-hidden="true" />
                     </button>
-                    <button
+                    <button 
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1"
@@ -895,7 +895,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
               </div>
             </div>
           </div>
-
+          
           {/* Members Sidebar - Only shown when showMembersList is true */}
           {showMembersList && (
             <div className="w-64 border-l border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-dark-200 overflow-y-auto">
@@ -905,7 +905,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                   {t('chat.members')} ({members.length})
                 </h3>
               </div>
-
+              
               <div className="overflow-y-auto max-h-[calc(90vh-120px)]">
                 {/* Admins */}
                 <div className="mb-4">
@@ -917,9 +917,9 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                         <div key={member.id} className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300">
                           <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-2">
                             {member.users.avatar_url ? (
-                              <img
-                                src={member.users.avatar_url}
-                                alt=""
+                              <img 
+                                src={member.users.avatar_url} 
+                                alt="" 
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -932,7 +932,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                     }
                   </div>
                 </div>
-
+                
                 {/* Regular Members */}
                 <div>
                   <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 px-2 py-1 bg-gray-200 dark:bg-dark-300/50">{t('chat.members')}</h4>
@@ -943,9 +943,9 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
                         <div key={member.id} className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-dark-300">
                           <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-2">
                             {member.users.avatar_url ? (
-                              <img
-                                src={member.users.avatar_url}
-                                alt=""
+                              <img 
+                                src={member.users.avatar_url} 
+                                alt="" 
                                 className="w-full h-full object-cover"
                               />
                             ) : (
@@ -963,7 +963,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
           )}
         </div>
       </div>
-
+      
       {/* Channel Settings Modal */}
       {showSettingsModal && (
         <ChannelSettingsModal

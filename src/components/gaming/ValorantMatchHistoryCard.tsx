@@ -80,17 +80,17 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
         <div className="space-y-3">
           {matches.map((match) => {
             const isExpanded = expandedMatch === match.matchId;
-
+            
             return (
-              <div
+              <div 
                 key={match.matchId}
                 className={`border rounded-lg transition-all duration-200 ${
-                  match.stats.won
-                    ? 'border-success-500/30 bg-success-500/5'
+                  match.stats.won 
+                    ? 'border-success-500/30 bg-success-500/5' 
                     : 'border-error-500/30 bg-error-500/5'
                 }`}
               >
-                <div
+                <div 
                   className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-200/50 transition-colors"
                   onClick={() => toggleMatchDetails(match.matchId)}
                 >
@@ -98,7 +98,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                     <div className="flex items-center space-x-4">
                       {/* Agent Icon */}
                       <div className="relative">
-                        <img
+                        <img 
                           src={getValorantAgentIcon(match.agent.id)}
                           alt={match.agent.name}
                           className="w-12 h-12 rounded-lg"
@@ -151,7 +151,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                         <div className="text-sm text-gray-500 dark:text-gray-400">Rounds</div>
                       </div>
 
-                      <ChevronDown
+                      <ChevronDown 
                         className={`h-5 w-5 text-gray-400 transition-transform ${
                           isExpanded ? 'rotate-180' : ''
                         }`}
@@ -190,9 +190,9 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                           {match.teammates.map((teammate, index) => (
                             <div key={index} className="flex items-center justify-between text-sm">
                               <div className="flex items-center space-x-2">
-                                <img
-                                  src={getValorantAgentIcon(teammate.agent)}
-                                  alt={teammate.agent}
+                                <img 
+                                  src={getValorantAgentIcon(teammate.agent)} 
+                                  alt={teammate.agent} 
                                   className="w-6 h-6 rounded-full"
                                   onError={(e) => {
                                     const target = e.target as HTMLImageElement;

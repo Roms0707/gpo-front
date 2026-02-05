@@ -21,7 +21,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAllGames, setShowAllGames] = useState(false);
-
+  
   // Tracker.gg test state
   const [isTestingTrackerGG, setIsTestingTrackerGG] = useState(false);
   const [trackerGGTestResult, setTrackerGGTestResult] = useState<any | null>(null);
@@ -31,11 +31,11 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!isOpen || !user?.id) return;
-
+      
       try {
         setIsLoading(true);
         setError(null);
-
+        
         const data = await fetchUserProfile(user.id);
         setUserProfile(data);
       } catch (error) {
@@ -45,7 +45,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
         setIsLoading(false);
       }
     };
-
+    
     loadUserProfile();
   }, [isOpen, user?.id]);
 
@@ -56,7 +56,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
     } else {
       document.body.classList.remove('modal-open');
     }
-
+    
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('modal-open');
@@ -64,30 +64,30 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
-
+  
   const handleTrackerGGTest = async () => {
     if (!testPlayerName.trim()) {
       toast.error(t('gaming.enterPlayerName'));
       return;
     }
-
+    
     try {
       setIsTestingTrackerGG(true);
       setTrackerGGTestResult(null);
       setTrackerGGTestError(null);
-
+      
       console.log('Testing Tracker.gg API for Fortnite...');
-
+      
       const result = await fetchTrackerGGProfile(
         'ad0d9c5c-5d81-44e2-9a3f-8009e310bf53', // Fortnite game ID
         testPlayerName.trim(),
         'epic'
       );
-
+      
       setTrackerGGTestResult(result);
       toast.success(t('gaming.trackerGGTestSuccess'));
       console.log('Tracker.gg test result:', result);
-
+      
     } catch (error) {
       console.error('Tracker.gg test error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -108,7 +108,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
     if (!userProfile || !userProfile.gaming_accounts) {
       return {};
     }
-
+    
     return userProfile.gaming_accounts.reduce((acc: any, account: any) => {
       const gameName = account.game_publisher_ids.games.name;
       if (!acc[gameName]) {
@@ -121,12 +121,12 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
 
   return (
     <>
-    <div
+    <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75"
       style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
       onClick={onClose}
     >
-      <div
+      <div 
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-800 flex flex-col relative"
         style={{ position: 'relative', zIndex: 51 }}
         onClick={stopPropagation}
@@ -147,7 +147,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
             <X className="h-6 w-6" />
           </button>
         </div>
-
+        
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
           {isLoading ? (
@@ -169,7 +169,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
                   <Trophy className="h-5 w-5 text-warning-500 mr-2" />
                   {t('gaming.tournamentStatistics')}
                 </h3>
-
+                
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-primary-400">
@@ -205,7 +205,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
                     <Award className="h-5 w-5 text-primary-500 mr-2" />
                     {t('gaming.gameRankings')}
                   </h3>
-
+                  
                   <div className="space-y-4">
                     {userProfile.game_rankings.slice(0, showAllGames ? undefined : 3).map((ranking: any, index: number) => {
                       return (
@@ -241,7 +241,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
                         </div>
                       );
                     })}
-
+                    
                     {userProfile.game_rankings.length > 3 && (
                       <div className="text-center">
                         <button
@@ -260,7 +260,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
               )}
 
               {/* Empty State */}
-              {(!userProfile.game_rankings || userProfile.game_rankings.length === 0) &&
+              {(!userProfile.game_rankings || userProfile.game_rankings.length === 0) && 
                (!userProfile.gaming_accounts || userProfile.gaming_accounts.filter((account: any) => {
                  const isRiotAccount = account.game_publisher_ids?.games?.name === 'League of Legends';
                  return isRiotAccount && account.is_validated && account.validation_data;
@@ -289,9 +289,9 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
             </div>
           )}
         </div>
-
+        
         {/* Footer - Only show when there are stats */}
-        {((userProfile?.game_rankings && userProfile.game_rankings.length > 0) ||
+        {((userProfile?.game_rankings && userProfile.game_rankings.length > 0) || 
           (userProfile?.gaming_accounts && userProfile.gaming_accounts.filter((account: any) => {
             const isRiotAccount = account.game_publisher_ids?.games?.name === 'League of Legends';
             return isRiotAccount && account.is_validated && account.validation_data;

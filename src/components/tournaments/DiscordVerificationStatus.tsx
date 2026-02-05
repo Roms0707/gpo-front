@@ -8,12 +8,14 @@ import toast from 'react-hot-toast';
 interface DiscordVerificationStatusProps {
   userId: string;
   tournamentId: string;
+  discordHandle?: string;
   onStatusChange?: (status: DiscordStatus) => void;
 }
 
 export const DiscordVerificationStatus: React.FC<DiscordVerificationStatusProps> = ({
   userId,
   tournamentId,
+  discordHandle,
   onStatusChange,
 }) => {
   const { t } = useTranslation();
@@ -87,12 +89,13 @@ export const DiscordVerificationStatus: React.FC<DiscordVerificationStatusProps>
   }
 
   if (!status.isMember) {
+    if (!discordHandle) return null;
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm">
           <XCircle className="w-4 h-4 text-red-500" />
           <span className="text-gray-700 dark:text-gray-300">
-            {t('discord.status.notMember', { username: status.discordUsername })}
+            {t('discord.status.notMember', { username: discordHandle })}
           </span>
         </div>
         <button
@@ -113,11 +116,13 @@ export const DiscordVerificationStatus: React.FC<DiscordVerificationStatusProps>
     );
   }
 
+  if (!discordHandle) return null;
+
   return (
     <div className="flex items-center gap-2 text-sm">
       <CheckCircle className="w-4 h-4 text-green-500" />
       <span className="text-gray-700 dark:text-gray-300">
-        {t('discord.status.verified', { username: status.discordUsername })}
+        {t('discord.status.verified', { username: discordHandle })}
       </span>
       <button
         onClick={handleVerify}

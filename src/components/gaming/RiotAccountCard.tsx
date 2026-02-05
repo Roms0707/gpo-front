@@ -16,7 +16,7 @@ interface RiotAccountCardProps {
 const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchHistory, isLoadingMatches }) => {
   const { t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
-
+  
   if (!account.is_validated || !account.validation_data) {
     return (
       <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
@@ -41,7 +41,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
 
   const { summonerInfo, rankedStats } = account.validation_data;
   const soloQueueStats = rankedStats?.find((stat: any) => stat.queueType === 'RANKED_SOLO_5x5');
-
+  
   return (
     <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
@@ -61,7 +61,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
             </p>
           </div>
         </div>
-
+        
         <div className="flex space-x-2">
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -88,7 +88,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
           )}
         </div>
       </div>
-
+      
       {showDetails && soloQueueStats && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -102,7 +102,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
               <div className="font-bold text-lg text-accent-500">{soloQueueStats.leaguePoints} LP</div>
             </div>
           </div>
-
+          
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-lg font-bold text-success-400">{soloQueueStats.wins}</div>
@@ -119,7 +119,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
               <div className="text-xs text-gray-500 dark:text-gray-400">{t('gaming.winRate')}</div>
             </div>
           </div>
-
+          
           {(soloQueueStats.hotStreak || soloQueueStats.veteran) && (
             <div className="flex items-center justify-center space-x-2 pt-2">
               {soloQueueStats.hotStreak && (
@@ -138,7 +138,7 @@ const RiotAccountCard: React.FC<RiotAccountCardProps> = ({ account, onLoadMatchH
           )}
         </div>
       )}
-
+      
       {!showDetails && soloQueueStats && (
         <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-200 rounded-lg">
           <div className="flex items-center justify-between">

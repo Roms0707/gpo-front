@@ -18,7 +18,7 @@ const LegalContentLayout: React.FC<LegalContentLayoutProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const currentYear = new Date().getFullYear();
-
+  
   return (
     <div className="min-h-screen pt-28 pb-16 bg-gray-50 dark:bg-dark-200">
       <div className="container mx-auto px-4">
@@ -38,13 +38,13 @@ const LegalContentLayout: React.FC<LegalContentLayoutProps> = ({
                 })}
               </p>
             </div>
-
+            
             <div className="p-6">
               <div className="prose prose-gray dark:prose-invert max-w-none">
                 {children}
               </div>
             </div>
-
+            
             <div className="p-6 bg-gray-100 dark:bg-dark-200 border-t border-gray-200 dark:border-gray-800">
               <div className="flex flex-col md:flex-row justify-between items-center">
                 <p className="text-gray-600 dark:text-gray-400 mb-4 md:mb-0">

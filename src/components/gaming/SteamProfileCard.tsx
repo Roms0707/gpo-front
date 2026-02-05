@@ -41,9 +41,9 @@ const SteamProfileCard: React.FC<SteamProfileCardProps> = ({ profile }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center">
           <div className="w-16 h-16 rounded-lg overflow-hidden mr-4 bg-gray-200 dark:bg-dark-300">
-            <img
-              src={profile.avatarfull || profile.avatar}
-              alt={profile.personaname}
+            <img 
+              src={profile.avatarfull || profile.avatar} 
+              alt={profile.personaname} 
               className="w-full h-full object-cover"
             />
           </div>
@@ -62,7 +62,7 @@ const SteamProfileCard: React.FC<SteamProfileCardProps> = ({ profile }) => {
             </div>
           </div>
         </div>
-
+        
         <a
           href={profile.profileurl}
           target="_blank"

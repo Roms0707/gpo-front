@@ -96,15 +96,15 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
     if (savedStats) {
       setGameStats(JSON.parse(savedStats));
     }
-
+    
     // Load leaderboard on component mount
     loadLeaderboard();
-
+    
     // Load personal stats if user is logged in
     if (user?.id) {
       loadPersonalStats();
     }
-
+    
     // Listen for messages from the iframe
     const handleMessage = (event: MessageEvent) => {
       console.log('Parent: Received message from iframe:', event.data);
@@ -126,9 +126,9 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
         }
       }
     };
-
+    
     window.addEventListener('message', handleMessage);
-
+    
     return () => {
       window.removeEventListener('message', handleMessage);
     };
@@ -137,7 +137,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
   const loadLeaderboard = async () => {
     try {
       setIsLoadingLeaderboard(true);
-
+      
       const { data, error } = await supabase
         .from('aim_trainer_scores')
         .select(`
@@ -151,12 +151,12 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
         `)
         .order('score', { ascending: false })
         .limit(10);
-
+      
       if (error) {
         console.error('Error loading leaderboard:', error);
         return;
       }
-
+      
       setLeaderboard(data || []);
     } catch (error) {
       console.error('Error loading leaderboard:', error);
@@ -167,10 +167,10 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
 
   const loadPersonalStats = async () => {
     if (!user?.id) return;
-
+    
     try {
       setIsLoadingPersonalStats(true);
-
+      
       // Get user's score history
       const { data: historyData, error: historyError } = await supabase
         .from('aim_trainer_scores')
@@ -186,14 +186,14 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
-
+      
       if (historyError) {
         console.error('Error loading personal history:', historyError);
         return;
       }
-
+      
       setPersonalHistory(historyData || []);
-
+      
       // Calculate personal statistics
       if (historyData && historyData.length > 0) {
         const scores = historyData.map(entry => entry.score);
@@ -201,7 +201,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
         const totalScore = scores.reduce((sum, score) => sum + score, 0);
         const averageScore = Math.round(totalScore / totalGames);
         const bestScore = Math.max(...scores);
-
+        
         // Calculate improvement (compare last 5 games vs previous 5 games)
         let improvement = 0;
         if (totalGames >= 10) {
@@ -211,7 +211,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
           const previousAvg = previous5.reduce((sum, score) => sum + score, 0) / 5;
           improvement = Math.round(((recentAvg - previousAvg) / previousAvg) * 100);
         }
-
+        
         setPersonalStats({
           totalGames,
           averageScore,
@@ -247,10 +247,10 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
       bestScore: Math.max(gameStats.bestScore, score),
       gamesPlayed: gameStats.gamesPlayed + 1
     };
-
+    
     setGameStats(newStats);
     localStorage.setItem(`aimTrainer_${gameName}`, JSON.stringify(newStats));
-
+    
     // Save score to database only if user is logged in
     if (user?.id && score > 0) {
       saveScoreToDatabase(score).then(() => {
@@ -266,7 +266,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
       loadLeaderboard();
     }
   };
-
+  
   const saveScoreToDatabase = async (score: number) => {
     try {
       const { error } = await supabase
@@ -277,13 +277,13 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
             score: score
           }
         ]);
-
+      
       if (error) {
         console.error('Error saving aim trainer score:', error);
         // Don't show error toast to avoid disrupting the game experience
         return;
       }
-
+      
       console.log('Aim trainer score saved successfully:', score);
     } catch (error) {
       console.error('Error saving aim trainer score:', error);
@@ -338,7 +338,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
               </p>
             </div>
           </div>
-
+          
           <div className="flex items-center space-x-2">
             <button
               onClick={handleFullscreen}
@@ -347,7 +347,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
             >
               <Crosshair className="h-4 w-4" />
             </button>
-
+            
             <button
               onClick={() => setShowLeaderboard(!showLeaderboard)}
               className="bg-gray-200 dark:bg-dark-200 hover:bg-gray-300 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300 p-2 rounded-lg transition-colors"
@@ -355,7 +355,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
             >
               <Trophy className="h-4 w-4" />
             </button>
-
+            
             {user && (
               <button
                 onClick={() => setShowPersonalStats(!showPersonalStats)}
@@ -365,7 +365,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                 <TrendingUp className="h-4 w-4" />
               </button>
             )}
-
+            
             <button
               onClick={resetStats}
               className="bg-gray-200 dark:bg-dark-200 hover:bg-gray-300 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300 p-2 rounded-lg transition-colors"
@@ -417,7 +417,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
               {isLoadingPersonalStats ? t('gaming.loading') : t('gaming.refresh')}
             </button>
           </div>
-
+          
           {isLoadingPersonalStats ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-500"></div>
@@ -445,7 +445,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                 </div>
                 <div className="text-center p-3 bg-white dark:bg-dark-200 rounded-lg">
                   <div className={`text-xl font-bold ${
-                    personalStats.improvement > 0 ? 'text-green-500' :
+                    personalStats.improvement > 0 ? 'text-green-500' : 
                     personalStats.improvement < 0 ? 'text-red-500' : 'text-gray-500'
                   }`}>
                     {personalStats.improvement > 0 ? '+' : ''}{personalStats.improvement}%
@@ -453,17 +453,17 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                   <div className="text-xs text-gray-600 dark:text-gray-400">{t('gaming.improvement')}</div>
                 </div>
               </div>
-
+              
               {/* Score History */}
               <div>
                 <h5 className="font-medium text-gray-900 dark:text-white mb-3">{t('gaming.recentScores')}</h5>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {personalHistory.map((entry, index) => (
-                    <div
+                    <div 
                       key={entry.id}
                       className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                        entry.score === personalStats.bestScore
-                          ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30'
+                        entry.score === personalStats.bestScore 
+                          ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30' 
                           : 'bg-white dark:bg-dark-200 hover:bg-gray-50 dark:hover:bg-dark-300'
                       }`}
                     >
@@ -475,11 +475,11 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                             <span className="font-medium text-gray-500 dark:text-gray-400">#{index + 1}</span>
                           )}
                         </div>
-
+                        
                         <div>
                           <div className={`font-medium ${
-                            entry.score === personalStats.bestScore
-                              ? 'text-yellow-600 dark:text-yellow-400'
+                            entry.score === personalStats.bestScore 
+                              ? 'text-yellow-600 dark:text-yellow-400' 
                               : 'text-gray-900 dark:text-white'
                           }`}>
                             {entry.score.toLocaleString()} {t('gaming.points')}
@@ -494,7 +494,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                           </div>
                         </div>
                       </div>
-
+                      
                       <div className="text-right">
                         <div className="text-sm text-gray-600 dark:text-gray-400">
                           {t('gaming.game', { number: personalHistory.length - index })}
@@ -516,7 +516,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
           )}
         </div>
       )}
-
+      
       {/* Login prompt for non-authenticated users */}
       {!user?.id && (
         <div className="p-4 bg-info-50 dark:bg-info-900/20 border-b border-gray-200 dark:border-gray-800">
@@ -551,7 +551,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
               {isLoadingLeaderboard ? t('gaming.loading') : t('gaming.refresh')}
             </button>
           </div>
-
+          
           {isLoadingLeaderboard ? (
             <div className="flex justify-center items-center py-8">
               <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary-500"></div>
@@ -560,7 +560,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
           ) : leaderboard.length > 0 ? (
             <div className="space-y-2">
               {leaderboard.map((entry, index) => (
-                <div
+                <div 
                   key={entry.id}
                   className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                     index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30' :
@@ -581,19 +581,19 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                         <span className="font-bold text-gray-500 dark:text-gray-400">#{index + 1}</span>
                       )}
                     </div>
-
+                    
                     <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-3 flex items-center justify-center">
                       {entry.users.avatar_url ? (
-                        <img
-                          src={entry.users.avatar_url}
-                          alt={entry.users.username}
+                        <img 
+                          src={entry.users.avatar_url} 
+                          alt={entry.users.username} 
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <User className="h-4 w-4 text-gray-400" />
                       )}
                     </div>
-
+                    
                     <div>
                       <div className={`font-medium ${
                         index === 0 ? 'text-yellow-600 dark:text-yellow-400' :
@@ -613,7 +613,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
                       </div>
                     </div>
                   </div>
-
+                  
                   <div className="text-right">
                     <div className={`text-lg font-bold ${
                       index === 0 ? 'text-yellow-600 dark:text-yellow-400' :
@@ -649,7 +649,7 @@ const AimTrainerGame: React.FC<AimTrainerGameProps> = ({ gameName }) => {
           title="Aim Trainer Game"
           allow="fullscreen"
         />
-
+        
         {/* Overlay Instructions */}
         {showTipsOverlay && (
          console.log('Parent: Rendering tips overlay, showTipsOverlay =', showTipsOverlay),

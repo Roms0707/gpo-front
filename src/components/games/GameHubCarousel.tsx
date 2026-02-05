@@ -15,6 +15,7 @@ interface Game {
   twitch_cover_url?: string;
   igdb_artwork_url?: string;
   trailer_url?: string;
+  is_collection?: boolean;
 }
 
 interface GameStats {
@@ -152,11 +153,17 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   };
 
   const getGameCover = (game: Game): string => {
+    if (game.is_collection) {
+      return game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
+    }
     return game.twitch_cover_url || game.image_url ||
       'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
   };
 
   const getGameBackground = (game: Game): string => {
+    if (game.is_collection) {
+      return game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
+    }
     return game.igdb_artwork_url || game.twitch_cover_url || game.image_url ||
       'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
   };
