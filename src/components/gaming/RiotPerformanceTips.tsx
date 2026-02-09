@@ -38,11 +38,11 @@ const RiotPerformanceTips: React.FC<RiotPerformanceTipsProps> = ({ matches, rank
 
     const recentMatches = matches.slice(0, 10);
     const totalMatches = recentMatches.length;
-    
+
     // Calculate averages
     const avgKDA = recentMatches.reduce((sum, match) => {
-      const kda = match.stats.deaths === 0 
-        ? match.stats.kills + match.stats.assists 
+      const kda = match.stats.deaths === 0
+        ? match.stats.kills + match.stats.assists
         : (match.stats.kills + match.stats.assists) / match.stats.deaths;
       return sum + kda;
     }, 0) / totalMatches;
@@ -182,7 +182,7 @@ const RiotPerformanceTips: React.FC<RiotPerformanceTipsProps> = ({ matches, rank
       {tips.length > 0 ? (
         <div className="space-y-4">
           {tips.map((tip, index) => (
-            <div 
+            <div
               key={index}
               className={`p-4 rounded-lg border-l-4 ${
                 tip.priority === 'high' ? 'border-error-500 bg-error-500/5' :

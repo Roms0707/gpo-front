@@ -84,54 +84,54 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
   // Check if user can register (including team invitation scenarios)
   const canUserRegister = () => {
     if (!tournament) return false;
-    
+
     const regStatus = getRegistrationStatus();
     if (regStatus !== t('tournamentPage.registrationStatus.open')) return false;
-    
+
     if (user && registrationStatus.registered) return false;
-    
+
     // Check if tournament is full (only if max participants is specified)
     if (maxParticipants && currentParticipants >= maxParticipants) return false;
-    
+
     // For team tournaments with team invitation, allow registration even without user
     if (isTeamTournament && teamIdFromUrl) {
       return true;
     }
-    
+
     // For regular registration, user must be logged in
     if (!user) return false;
-    
+
     // Check country eligibility
     if (tournament.eligible_countries && user.country) {
       const eligibleCountries = tournament.eligible_countries.split(',').map(c => c.trim());
       if (!eligibleCountries.includes(user.country)) return false;
     }
-    
+
     // Check age eligibility
     if (tournament.minimum_age && user.dateOfBirth) {
       const birthDate = new Date(user.dateOfBirth);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      
+
       if (age < tournament.minimum_age) return false;
     }
-    
+
     return true;
   };
 
   // Check if tournament has started and user can join
   const canJoinTournament = () => {
     if (!tournament || !user || !registrationStatus.registered) return false;
-    
+
     const now = new Date();
     const startDate = new Date(tournament.startDate);
     const endDate = new Date(tournament.endDate);
-    
+
     // Tournament must be ongoing (started but not ended)
     return now >= startDate && now <= endDate;
   };
@@ -254,7 +254,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                     </div>
                   )}
                 </div>
-                
+
                 {/* Cancel Registration Button - Only show if tournament hasn't started */}
                 {!isTournamentStartedOrFinished() && (
                   <button
@@ -300,7 +300,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
                 )}
               </div>
             )}
-            
+
             {/* Support Button */}
             <div className="mt-4 border-t border-gray-200 dark:border-gray-800 pt-4">
               <button
@@ -314,7 +314,7 @@ const TournamentSidebar: React.FC<TournamentSidebarProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Support Modal */}
       <CreateTicketModal
         isOpen={showSupportModal}

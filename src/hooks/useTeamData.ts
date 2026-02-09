@@ -13,7 +13,7 @@ export const useTeamData = (tournament: any, user: any, registrationStatus: any)
   const loadUserTeamInfo = async (tournamentId: string, userId: string) => {
     try {
       setIsLoadingTeamInfo(true);
-      
+
       // Get user's team information
       const { data: teamData, error: teamError } = await supabase
         .from('tournament_registrations')
@@ -29,24 +29,24 @@ export const useTeamData = (tournament: any, user: any, registrationStatus: any)
         .eq('user_id', userId)
         .not('team_id', 'is', null)
         .maybeSingle();
-      
+
       if (teamError) {
         console.error('Error loading user team info:', teamError);
         return;
       }
-      
+
       if (teamData && teamData.teams) {
         setUserTeamId(teamData.team_id);
         setUserTeamName(teamData.teams.name);
         setIsTeamCaptain(teamData.teams.captain_id === userId);
-        
+
         // Get current team size
         const { count: teamSize, error: sizeError } = await supabase
           .from('team_members')
           .select('*', { count: 'exact', head: true })
           .eq('team_id', teamData.team_id)
           .eq('status', 'accepted');
-        
+
         if (sizeError) {
           console.error('Error loading team size:', sizeError);
           setCurrentTeamSize(0);

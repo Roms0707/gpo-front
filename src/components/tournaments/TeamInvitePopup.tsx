@@ -27,13 +27,13 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
   const [copied, setCopied] = useState(false);
   const [isTeamLfp, setIsTeamLfp] = useState(false);
   const [isUpdatingLfp, setIsUpdatingLfp] = useState(false);
-  
+
   useEffect(() => {
     if (isOpen && teamId) {
       checkTeamLfpStatus();
     }
   }, [isOpen, teamId]);
-  
+
   const checkTeamLfpStatus = async () => {
     try {
       const { data, error } = await supabase
@@ -41,35 +41,35 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
         .select('is_looking_for_players')
         .eq('id', teamId)
         .single();
-      
+
       if (error) {
         console.error('Error checking LFP status:', error);
         return;
       }
-      
+
       setIsTeamLfp(data?.is_looking_for_players || false);
     } catch (error) {
       console.error('Error checking LFP status:', error);
     }
   };
-  
+
   const toggleLfpStatus = async () => {
     try {
       setIsUpdatingLfp(true);
-      
+
       const newStatus = !isTeamLfp;
-      
+
       const { error } = await supabase
         .from('teams')
         .update({ is_looking_for_players: newStatus })
         .eq('id', teamId);
-      
+
       if (error) {
         console.error('Error updating LFP status:', error);
         toast.error(t('teamInvite.errorUpdatingStatus'));
         return;
       }
-      
+
       setIsTeamLfp(newStatus);
       toast.success(newStatus ? t('teamInvite.teamNowSearching') : t('teamInvite.teamNoLongerSearching'));
     } catch (error) {
@@ -79,33 +79,33 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
       setIsUpdatingLfp(false);
     }
   };
-  
+
   if (!isOpen) return null;
-  
+
   // Generate invite link
   const generateInviteLink = (recipientEmail?: string) => {
     const baseUrl = window.location.origin;
     const path = `/tournaments/${tournamentId}`;
-    
+
     // Add query parameters
     const params = new URLSearchParams();
     params.append('teamId', teamId);
-    
+
     // Add email parameter if provided
     if (recipientEmail) {
       params.append('email', recipientEmail);
     }
-    
+
     return `${baseUrl}${path}?${params.toString()}`;
   };
-  
+
   const handleCopyLink = () => {
     const link = generateInviteLink();
     navigator.clipboard.writeText(link)
       .then(() => {
         setCopied(true);
         toast.success(t('teamInvite.linkCopied'));
-        
+
         // Reset copied state after 2 seconds
         setTimeout(() => {
           setCopied(false);
@@ -115,36 +115,36 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
         toast.error(t('teamInvite.cannotCopyLink'));
       });
   };
-  
+
   const handleSendEmail = () => {
     // Validate email
     if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       toast.error(t('teamInvite.validEmailRequired'));
       return;
     }
-    
+
     const link = generateInviteLink(email);
     const subject = encodeURIComponent(t('teamInvite.emailSubject', { teamName, tournamentName }));
     const body = encodeURIComponent(t('teamInvite.emailBody', { teamName, tournamentName, link }));
-    
+
     // Open mail client with pre-filled content
     window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-    
+
     toast.success(t('teamInvite.invitePrepared'));
     setEmail('');
   };
-  
+
   // Prevent clicks inside the modal from closing it
   const stopPropagation = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-  
+
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-dark-300/80 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -153,7 +153,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
             <Trophy className="text-primary-500 h-5 w-5 mr-2" />
             <h2 className="font-heading font-semibold text-xl text-gray-900 dark:text-white">{t('teamInvite.title')}</h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
             aria-label={t('teamInvite.close')}
@@ -161,7 +161,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         <div className="p-6 space-y-6">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-success-600/20 text-success-500 rounded-full mb-4">
@@ -173,20 +173,20 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
               {t('teamInvite.inviteFriends')}
             </p>
           </div>
-          
+
           <div className="space-y-4">
             <div className="flex items-center justify-center">
               <Users className="text-primary-500 h-5 w-5 mr-2" />
               <span className="font-medium text-gray-900 dark:text-white">{teamName}</span>
             </div>
-            
+
             {/* Team LFP Toggle */}
             <button
               onClick={toggleLfpStatus}
               disabled={isUpdatingLfp}
               className={`w-full py-2 px-3 rounded-lg transition-colors flex items-center justify-center ${
-                isTeamLfp 
-                  ? 'bg-success-600 hover:bg-success-700 text-white' 
+                isTeamLfp
+                  ? 'bg-success-600 hover:bg-success-700 text-white'
                   : 'bg-dark-300 hover:bg-dark-400 text-gray-300'
               }`}
             >
@@ -199,7 +199,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
               )}
               {isTeamLfp ? t('teamInvite.searchActive') : t('teamInvite.activatePlayerSearch')}
             </button>
-            
+
             {/* Copy link section */}
             <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg">
               <label className="text-sm text-gray-700 dark:text-gray-300 block mb-2">
@@ -209,7 +209,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
                 <div className="flex-1 bg-gray-200 dark:bg-dark-300 rounded-lg p-2 px-3 text-sm text-gray-600 dark:text-gray-400 truncate">
                   {generateInviteLink()}
                 </div>
-                <button 
+                <button
                   type="button"
                   onClick={handleCopyLink}
                   className="bg-primary-600 hover:bg-primary-700 text-white p-2 rounded-lg transition-colors"
@@ -222,7 +222,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
                 </button>
               </div>
             </div>
-            
+
             {/* Email invitation section */}
             <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg">
               <label className="text-sm text-gray-700 dark:text-gray-300 block mb-2">
@@ -236,7 +236,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
                   placeholder={t('teamInvite.emailPlaceholder')}
                   className="flex-1 bg-gray-200 dark:bg-dark-300 border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-                <button 
+                <button
                   type="button"
                   onClick={handleSendEmail}
                   disabled={!email}
@@ -247,7 +247,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="bg-info-100 dark:bg-info-500/10 border border-info-300 dark:border-info-600/30 p-3 rounded-lg flex items-start">
             <LinkIcon className="h-5 w-5 text-info-500 mr-2 flex-shrink-0 mt-0.5" />
             <div>
@@ -261,7 +261,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
               </ul>
             </div>
           </div>
-          
+
           <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg text-center">
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
               {t('teamInvite.shareOnSocial')}
@@ -310,7 +310,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-end">
           <button
             type="button"

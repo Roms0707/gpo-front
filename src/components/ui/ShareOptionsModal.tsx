@@ -27,11 +27,11 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-md overflow-hidden border border-gray-200 dark:border-gray-800"
         onClick={stopPropagation}
       >
@@ -43,7 +43,7 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
               {t('shareModal.title')}
             </h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors"
             aria-label={t('shareModal.close')}
@@ -51,13 +51,13 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
             {t('shareModal.description')}
           </p>
-          
+
           {/* Share with Friend Option */}
           <button
             onClick={() => {
@@ -69,7 +69,7 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
             <MessageSquare className="h-5 w-5" />
             <span className="font-medium">{t('shareModal.shareWithFriend')}</span>
           </button>
-          
+
           {/* Share to Community Option */}
           <button
             onClick={() => {
@@ -81,7 +81,7 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
             <MessageSquare className="h-5 w-5" />
             <span className="font-medium">{t('shareModal.shareToCommunity')}</span>
           </button>
-          
+
           {/* View Public Profile Option */}
           <button
             onClick={() => {
@@ -93,7 +93,7 @@ const ShareOptionsModal: React.FC<ShareOptionsModalProps> = ({
             <Eye className="h-5 w-5" />
             <span className="font-medium">{t('shareModal.viewPublicProfile')}</span>
           </button>
-          
+
           {/* Info text */}
           <div className="mt-6 p-4 bg-gray-100 dark:bg-dark-200 rounded-lg">
             <p className="text-sm text-gray-600 dark:text-gray-400">

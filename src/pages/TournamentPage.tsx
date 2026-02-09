@@ -72,7 +72,7 @@ const TournamentPage: React.FC = () => {
   const params = new URLSearchParams(location.search);
   const teamId = params.get('teamId');
   const tabParam = params.get('tab');
-  
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -136,13 +136,13 @@ const TournamentPage: React.FC = () => {
       }
     }
   }, [tabParam]);
-  
+
   useEffect(() => {
     if (teamId) {
       setTeamIdFromUrl(teamId);
     }
   }, [teamId]);
-  
+
   // Load tournament data
   const {
     tournament,
@@ -158,7 +158,7 @@ const TournamentPage: React.FC = () => {
     isLoadingParticipants,
     loadParticipantsCount
   } = useTournamentData(user);
-  
+
   // Load team data
   const {
     userTeamId,
@@ -169,7 +169,7 @@ const TournamentPage: React.FC = () => {
     isLoadingTeamInfo,
     loadUserTeamInfo
   } = useTeamData(tournament, user, registrationStatus);
-  
+
   // Load tournament rankings
   const {
     tournamentRankings,
@@ -213,45 +213,45 @@ const TournamentPage: React.FC = () => {
       return unsubscribe;
     }
   }, [user, tournament?.id, tournament?.discord_url, registrationStatus.registered]);
-  
+
   // Load game content
   const {
     gameContent,
     isLoadingContent
   } = useGameContent(activeTab, tournament?.game_id);
-  
+
   // Handle team invitation flow when user logs in
   useEffect(() => {
     if (user && teamIdFromUrl && tournament) {
       // If user is already registered, show registration modal to handle team change
       if (registrationStatus.registered) {
         setShowRegistrationModal(true);
-      } 
+      }
       // If user is not registered, show registration modal to register and join team
       else if (!registrationStatus.registered) {
         setShowRegistrationModal(true);
       }
     }
   }, [user, teamIdFromUrl, tournament, registrationStatus.registered]);
-  
+
   // Check if tournament is started or finished
   const isTournamentStartedOrFinished = () => {
     if (!tournament) return false;
-    
+
     const now = new Date();
     const startDate = new Date(tournament.startDate);
-    
+
     return now >= startDate; // Tournament has started or finished
   };
 
   // Determine tournament status for bracket display
   const getTournamentStatus = () => {
     if (!tournament) return 'upcoming';
-    
+
     const now = new Date();
     const startDate = new Date(tournament.startDate);
     const endDate = new Date(tournament.endDate);
-    
+
     if (now > endDate) {
       return 'completed';
     } else if (now >= startDate && now <= endDate) {
@@ -260,75 +260,75 @@ const TournamentPage: React.FC = () => {
       return 'upcoming';
     }
   };
-  
+
   const getRegistrationStatus = () => {
     if (!tournament) return t('tournamentPage.registrationStatus.closed');
-    
+
     const now = new Date();
     const regStartDate = tournament.registrationStartDate ? new Date(tournament.registrationStartDate) : null;
     const regEndDate = tournament.registrationEndDate ? new Date(tournament.registrationEndDate) : null;
-    
+
     if (regStartDate && now < regStartDate) {
       return t('tournamentPage.registrationStatus.openingSoon');
     }
-    
+
     if (regEndDate && now > regEndDate) {
       return t('tournamentPage.registrationStatus.closed');
     }
-    
+
     if ((!regStartDate || now >= regStartDate) && (!regEndDate || now <= regEndDate)) {
       return t('tournamentPage.registrationStatus.open');
     }
-    
+
     return t('tournamentPage.registrationStatus.closed');
   };
-  
+
   const canRegister = () => {
     if (!tournament || !user) return false;
-    
+
     const regStatus = getRegistrationStatus();
     if (regStatus !== t('tournamentPage.registrationStatus.open')) return false;
-    
+
     if (registrationStatus.registered) return false;
-    
+
     // Check if tournament is full (only if max participants is specified)
     if (maxParticipants && currentParticipants >= maxParticipants) return false;
-    
+
     // Check country eligibility
     if (tournament.eligible_countries && user.country) {
       const eligibleCountries = tournament.eligible_countries.split(',').map(c => c.trim());
       if (!eligibleCountries.includes(user.country)) return false;
     }
-    
+
     // Check age eligibility
     if (tournament.minimum_age && user.dateOfBirth) {
       const birthDate = new Date(user.dateOfBirth);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
-      
+
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
         age--;
       }
-      
+
       if (age < tournament.minimum_age) return false;
     }
-    
+
     return true;
   };
-  
+
   // Check if tournament has started and user can join
   const canJoinTournament = () => {
     if (!tournament || !user || !registrationStatus.registered) return false;
-    
+
     const now = new Date();
     const startDate = new Date(tournament.startDate);
     const endDate = new Date(tournament.endDate);
-    
+
     // Tournament must be ongoing (started but not ended)
     return now >= startDate && now <= endDate;
   };
-  
+
   const handleRegister = async () => {
     if (!user) {
       const currentUrl = encodeURIComponent(location.pathname + location.search);
@@ -355,7 +355,7 @@ const TournamentPage: React.FC = () => {
 
     setShowRegistrationModal(true);
   };
-  
+
   const handleRegistrationConfirm = async (newRegistrationStatus: { registered: boolean, status: string }) => {
     if (!tournament?.id || !user?.id) return;
 
@@ -409,42 +409,42 @@ const TournamentPage: React.FC = () => {
       setIsRegistering(false);
     }
   };
-  
+
   const handleTeamInvite = () => {
     if (!userTeamId || !userTeamName || !tournament?.id) return;
-    
+
     setShowTeamInvitePopup(true);
   };
-  
+
   const handleLfpClick = () => {
     setShowLfpModal(true);
   };
-  
+
   const handleCancelRegistration = async () => {
     if (!user?.id || !tournament?.id) return;
-    
+
     // Check if tournament hasn't started yet
     if (isTournamentStartedOrFinished()) {
       toast.error(t('tournamentPage.errors.cancelOnlyBeforeStart'));
       return;
     }
-    
+
     try {
       setIsCancelling(true);
-      
+
       await cancelTournamentRegistration(tournament.id, user.id);
-      
+
       // Update registration status
       setRegistrationStatus({ registered: false, status: null });
-      
+
       // Reload participants count
       await loadParticipantsCount(tournament.id, tournament.mode);
-      
+
       // Load team info if this is a team tournament
       if (tournament.mode?.toLowerCase().includes('team')) {
         await loadUserTeamInfo(tournament.id, user.id);
       }
-      
+
       toast.success(t('tournamentPage.success.cancelSuccess'));
     } catch (error) {
       console.error('Error cancelling registration:', error);
@@ -453,7 +453,7 @@ const TournamentPage: React.FC = () => {
       setIsCancelling(false);
     }
   };
-  
+
   // Check if this is a team tournament
   const isTeamTournament = tournament?.mode?.toLowerCase().includes('team');
 
@@ -551,7 +551,7 @@ const TournamentPage: React.FC = () => {
       </div>
     );
   }
-  
+
   if (!tournament) {
     return (
       <div className="container mx-auto px-4 pt-32 pb-16">
@@ -569,7 +569,7 @@ const TournamentPage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen pt-20 pb-16">
       {/* Hero Section */}
@@ -669,13 +669,13 @@ const TournamentPage: React.FC = () => {
           // Rewards Tab
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <RewardsTab 
+              <RewardsTab
                 tournament={tournament}
                 prizes={prizes}
                 gameName={gameName}
               />
             </div>
-            
+
             {/* Sidebar for rewards tab */}
             <div className="space-y-6">
               <TournamentSidebar
@@ -757,19 +757,19 @@ const TournamentPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Other tabs */}
             {activeTab === 'classement' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <ClassementTab 
+                  <ClassementTab
                     tournament={tournament}
                     tournamentRankings={tournamentRankings}
                     isLoadingRankings={isLoadingRankings}
                     gameName={gameName}
                   />
                 </div>
-                
+
                 {/* Sidebar for non-home tabs */}
                 <div className="space-y-6">
                   <TournamentSidebar
@@ -796,16 +796,16 @@ const TournamentPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'training' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <TrainingTab 
+                  <TrainingTab
                     tournament={tournament}
                     gameName={gameName}
                   />
                 </div>
-                
+
                 {/* Sidebar for non-home tabs */}
                 <div className="space-y-6">
                   <TournamentSidebar
@@ -832,16 +832,16 @@ const TournamentPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'rules' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <RulesTab 
+                  <RulesTab
                     tournament={tournament}
                     gameName={gameName}
                   />
                 </div>
-                
+
                 {/* Sidebar for non-home tabs */}
                 <div className="space-y-6">
                   <TournamentSidebar
@@ -868,7 +868,7 @@ const TournamentPage: React.FC = () => {
                 </div>
               </div>
             )}
-            
+
             {activeTab === 'training-games' && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
@@ -913,7 +913,7 @@ const TournamentPage: React.FC = () => {
           </>
         )}
       </div>
-      
+
       {/* Registration Modal */}
       <RegistrationModal
         tournament={tournament}
@@ -925,7 +925,7 @@ const TournamentPage: React.FC = () => {
         registrationStatus={registrationStatus}
         userTeamId={userTeamId}
       />
-      
+
       {/* Team Invite Popup */}
       <TeamInvitePopup
         isOpen={showTeamInvitePopup}
@@ -935,7 +935,7 @@ const TournamentPage: React.FC = () => {
         tournamentId={tournament?.id || ''}
         tournamentName={tournament?.title || ''}
       />
-      
+
       {/* Looking For People Modal */}
       {isTeamTournament && (
         <LookingForPeopleModal
@@ -953,7 +953,7 @@ const TournamentPage: React.FC = () => {
           isTeamCaptain={isTeamCaptain}
         />
       )}
-      
+
       {/* Discord Invite Modal */}
       <DiscordInviteModal
         isOpen={showDiscordInviteModal}
@@ -965,7 +965,7 @@ const TournamentPage: React.FC = () => {
         registrationId={currentRegistrationId}
         userId={user?.id}
       />
-      
+
       {/* Join Tournament Modal */}
       {user && (
         <JoinTournamentModal

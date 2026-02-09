@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchGames, fetchGameBySlug } from '../services/api';
+import { useConfigGames } from '../hooks/useConfigGames';
+import { ConfigGame } from '../services/configGamesService';
 import { fetchRubricsForGame, isOthersGame, RubricInfo } from '../services/othersService';
 import { getGameTheme } from '../utils/gameThemes';
 import GameHubCarousel from '../components/games/GameHubCarousel';
@@ -18,22 +19,12 @@ import OthersArticlesTab from '../components/others/OthersArticlesTab';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
 
-interface Game {
-  id: string;
-  name: string;
-  publisher: string;
-  image_url: string;
-  slug: string;
-  twitch_cover_url?: string;
-  is_collection?: boolean;
-}
-
 const GameHubPage: React.FC = () => {
   const { gameSlug } = useParams<{ gameSlug?: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { games: configGames, isLoading: configLoading } = useConfigGames();
+  const [selectedGame, setSelectedGame] = useState<ConfigGame | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<GameHubTabId>('overview');
   const [rubrics, setRubrics] = useState<RubricInfo[]>([]);
@@ -41,56 +32,59 @@ const GameHubPage: React.FC = () => {
   const [rubricsLoading, setRubricsLoading] = useState(false);
 
   useEffect(() => {
-    const loadGame = async () => {
+    if (configLoading || configGames.length === 0) return;
+
+    const resolveGame = async () => {
       try {
-        setIsLoading(true);
         setError(null);
 
-        if (gameSlug) {
-          if (selectedGame?.slug === gameSlug) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            setIsLoading(false);
-            return;
-          }
-          const game = await fetchGameBySlug(gameSlug);
-          setSelectedGame(game);
-          setActiveTab('overview');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (!gameSlug) {
+          navigate(`/hub/${configGames[0].slug}`, { replace: true });
+          return;
+        }
 
-          if (isOthersGame(game)) {
-            setRubricsLoading(true);
-            try {
-              const gameRubrics = await fetchRubricsForGame(game.id);
-              setRubrics(gameRubrics);
-              if (gameRubrics.length > 0) {
-                setOthersActiveTab(gameRubrics[0].rubric_id);
-              } else {
-                setOthersActiveTab('articles');
-              }
-            } catch (rubricErr) {
-              console.error('Error loading rubrics:', rubricErr);
+        if (selectedGame?.slug === gameSlug) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        const match = configGames.find((g) => g.slug === gameSlug);
+        if (!match) {
+          navigate(`/hub/${configGames[0].slug}`, { replace: true });
+          return;
+        }
+
+        setSelectedGame(match);
+        setActiveTab('overview');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        if (isOthersGame(match)) {
+          setRubricsLoading(true);
+          try {
+            const gameRubrics = await fetchRubricsForGame(match.id);
+            setRubrics(gameRubrics);
+            if (gameRubrics.length > 0) {
+              setOthersActiveTab(gameRubrics[0].rubric_id);
+            } else {
               setOthersActiveTab('articles');
-            } finally {
-              setRubricsLoading(false);
             }
-          }
-        } else {
-          const games = await fetchGames();
-          if (games && games.length > 0) {
-            setSelectedGame(games[0]);
-            navigate(`/hub/${games[0].slug}`, { replace: true });
+          } catch (rubricErr) {
+            console.error('Error loading rubrics:', rubricErr);
+            setOthersActiveTab('articles');
+          } finally {
+            setRubricsLoading(false);
           }
         }
       } catch (err) {
         console.error('Error loading game:', err);
         setError(t('gameHub.errorLoadingGame'));
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    loadGame();
-  }, [gameSlug, navigate, t]);
+    resolveGame();
+  }, [gameSlug, configGames, configLoading, navigate, t]);
+
+  const isLoading = configLoading || (configGames.length > 0 && !selectedGame && !error);
 
   const handleGameSelect = (newGameSlug: string) => {
     setActiveTab('overview');

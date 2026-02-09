@@ -1,41 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { fetchGames } from '../../services/api';
+import { useConfigGames } from '../../hooks/useConfigGames';
+import { ConfigGame } from '../../services/configGamesService';
 import { Gamepad2, ChevronRight } from 'lucide-react';
-
-interface Game {
-  id: string;
-  name: string;
-  publisher: string;
-  image_url: string;
-  slug: string;
-}
 
 const MobileGameGrid: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [games, setGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { games, isLoading } = useConfigGames();
 
-  useEffect(() => {
-    const loadGames = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchGames();
-        setGames(data);
-      } catch (error) {
-        console.error('Error loading games:', error);
-        setGames([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadGames();
-  }, []);
-
-  const handleGameClick = (game: Game) => {
+  const handleGameClick = (game: ConfigGame) => {
     if (game.slug) {
       navigate(`/hub/${game.slug}`);
     }

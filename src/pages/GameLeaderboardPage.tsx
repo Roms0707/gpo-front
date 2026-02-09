@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Search, Medal, Trophy, ChevronDown, ChevronUp, User, Users, Calendar } from 'lucide-react';
-import { fetchGameById, fetchLeaderboardByGameId, fetchUserProfile } from '../services/api';
-import { supabase } from '../lib/supabase';
+import { useConfigGames } from '../hooks/useConfigGames';
 import PlayerProfileModal from '../components/ui/PlayerProfileModal';
 import TeamProfileModal from '../components/ui/TeamProfileModal';
 import RecentMatchItem from '../components/ui/RecentMatchItem';
@@ -58,6 +57,13 @@ interface RecentMatch {
 const GameLeaderboardPage: React.FC = () => {
   const { t } = useTranslation();
   const { gameId } = useParams<{ gameId: string }>();
+  const { games: configGames, isLoading: configLoading } = useConfigGames();
+
+  const configGame = useMemo(
+    () => configGames.find(g => g.id === gameId && g.slug !== 'other-games' && !g.is_collection),
+    [configGames, gameId]
+  );
+
   const [game, setGame] = useState<any>(null);
   const [soloLeaderboard, setSoloLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [teamLeaderboard, setTeamLeaderboard] = useState<TeamLeaderboardEntry[]>([]);
@@ -73,41 +79,51 @@ const GameLeaderboardPage: React.FC = () => {
   const [selectedSeason, setSelectedSeason] = useState('current');
   const [selectedRankTier, setSelectedRankTier] = useState('All Ranks');
   const [isMobile, setIsMobile] = useState(false);
-  
+
   // Player profile modal state
   const [isPlayerProfileModalOpen, setIsPlayerProfileModalOpen] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
-  
+
   // Team profile modal state
   const [isTeamProfileModalOpen, setIsTeamProfileModalOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
-  
-  // Check if we're on mobile
+
+  useEffect(() => {
+    if (configGame && !game) {
+      setGame({
+        id: configGame.id,
+        name: configGame.name,
+        publisher: configGame.publisher,
+        image_url: configGame.image_url,
+      });
+    }
+  }, [configGame]);
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
-  
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   useEffect(() => {
     const loadAggregatedGameLeaderboard = async () => {
       if (!gameId) return;
-      
+
       try {
         setIsLoading(true);
-        
+
         // Call the new aggregated Edge Function
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-game-leaderboard-aggregated`, {
           method: 'POST',
@@ -126,76 +142,48 @@ const GameLeaderboardPage: React.FC = () => {
             offset: 0
           })
         });
-        
+
         const result = await response.json();
-        
+
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch leaderboard data');
         }
-        
+
         const leaderboardData = result.data;
-        
+
         // Set game data
         setGame(leaderboardData.game);
-        
+
         // Set leaderboard data
         setSoloLeaderboard(leaderboardData.solo_leaderboard || []);
         setTeamLeaderboard(leaderboardData.team_leaderboard || []);
         setHasSoloData(leaderboardData.has_solo_data);
         setHasTeamData(leaderboardData.has_team_data);
-        
+
         // Set recent matches
         setRecentMatches(leaderboardData.recent_matches || []);
-        
+
       } catch (error) {
         console.error('Error loading game or leaderboard:', error);
-        
-        // Set error state - no fallback data
+
         setHasSoloData(false);
         setHasTeamData(false);
         setSoloLeaderboard([]);
         setTeamLeaderboard([]);
         setRecentMatches([]);
-        
-        // Try to load basic game info if we don't have it
-        if (!game) {
-          try {
-            const { data: gameData, error: gameError } = await supabase
-              .from('games')
-              .select('id, name, publisher, image_url')
-              .eq('id', gameId)
-              .single();
-            
-            if (!gameError && gameData) {
-              setGame(gameData);
-            } else {
-              setGame({
-                id: gameId,
-                name: t('leaderboards.unknownGame'),
-                publisher: t('leaderboards.unknownPublisher'),
-                image_url: 'https://images.pexels.com/photos/7919/pexels-photo.jpg'
-              });
-            }
-          } catch (gameLoadError) {
-            console.error('Error loading basic game info:', gameLoadError);
-            setGame({
-              id: gameId,
-              name: t('leaderboards.unknownGame'),
-              publisher: t('leaderboards.unknownPublisher'),
-              image_url: 'https://images.pexels.com/photos/7919/pexels-photo.jpg'
-            });
-          }
-        }
       } finally {
         setIsLoading(false);
         setIsLoadingMatches(false);
       }
     };
-    
+
     loadAggregatedGameLeaderboard();
   }, [gameId, selectedSeason, searchQuery, selectedRankTier, sortField, sortDirection]);
-  
-  // Sort and filter leaderboard
+
+  if (!configLoading && configGames.length > 0 && !configGame) {
+    return <Navigate to="/leaderboards" replace />;
+  }
+
   const handleSort = (field: string) => {
     if (sortField === field) {
       // Toggle direction if clicking the same field
@@ -212,24 +200,24 @@ const GameLeaderboardPage: React.FC = () => {
       }
     }
   };
-  
+
   const getSortIcon = (field: string) => {
     if (sortField !== field) return null;
-    
-    return sortDirection === 'asc' ? 
-      <ChevronUp className="h-4 w-4" /> : 
+
+    return sortDirection === 'asc' ?
+      <ChevronUp className="h-4 w-4" /> :
       <ChevronDown className="h-4 w-4" />;
   };
-  
+
   // Apply sorting and filtering for solo leaderboard
   const filteredAndSortedSoloLeaderboard = soloLeaderboard
-    .filter(entry => 
-      entry.username.toLowerCase().includes(searchQuery.toLowerCase()) && 
+    .filter(entry =>
+      entry.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (selectedRankTier === 'All Ranks' || entry.rank_tier === selectedRankTier)
     )
     .sort((a, b) => {
       let comparison = 0;
-      
+
       switch(sortField) {
         case 'rank':
           comparison = a.rank - b.rank;
@@ -255,19 +243,19 @@ const GameLeaderboardPage: React.FC = () => {
         default:
           comparison = a.rank - b.rank;
       }
-      
+
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
   // Apply sorting and filtering for team leaderboard
   const filteredAndSortedTeamLeaderboard = teamLeaderboard
-    .filter(entry => 
-      entry.team_name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+    .filter(entry =>
+      entry.team_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
       (selectedRankTier === 'All Ranks' || entry.rank_tier === selectedRankTier)
     )
     .sort((a, b) => {
       let comparison = 0;
-      
+
       switch(sortField) {
         case 'rank':
           comparison = a.rank - b.rank;
@@ -293,10 +281,10 @@ const GameLeaderboardPage: React.FC = () => {
         default:
           comparison = a.rank - b.rank;
       }
-      
+
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-  
+
   // Get rank badge based on tier
   const getRankBadge = (rankTier: string) => {
     switch(rankTier) {
@@ -314,12 +302,12 @@ const GameLeaderboardPage: React.FC = () => {
         return null;
     }
   };
-  
+
   const formatWinLoss = (wins: number, matches: number = 0) => {
     const losses = matches - wins;
     return `${wins} - ${losses}`;
   };
-  
+
   // Format date for display
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -344,19 +332,19 @@ const GameLeaderboardPage: React.FC = () => {
   };
 
   const currentData = getCurrentData();
-  
+
   // Handle player profile click
   const handlePlayerClick = (userId: string) => {
     setSelectedPlayerId(userId);
     setIsPlayerProfileModalOpen(true);
   };
-  
+
   // Handle team profile click
   const handleTeamClick = (teamId: string) => {
     setSelectedTeamId(teamId);
     setIsTeamProfileModalOpen(true);
   };
-  
+
   const theme = getGameTheme(game?.name);
   const GameIcon = theme.icon;
   const clipPath = getCardClipPath(theme.shape);
@@ -583,7 +571,7 @@ const GameLeaderboardPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   {!currentData.hasData ? (
                     <div className="p-8 text-center">
                       <Trophy className="h-16 w-16 text-gray-700 dark:text-gray-500 mx-auto mb-4" />
@@ -597,7 +585,7 @@ const GameLeaderboardPage: React.FC = () => {
                         {t('leaderboards.rankingsWillAppear', { type: activeTab === 'solo' ? t('leaderboards.players') : t('leaderboards.teams') })}
                       </p>
                     </div>
-                  ) : ( 
+                  ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-left">
                         <thead
@@ -829,7 +817,7 @@ const GameLeaderboardPage: React.FC = () => {
                               </tr>
                             ))
                           )}
-                          
+
                           {currentData.data.length === 0 && currentData.hasData && (
                             <tr>
                               <td colSpan={activeTab === 'solo' ? 6 : 7} className="p-8 text-center text-gray-600 dark:text-gray-400">
@@ -845,7 +833,7 @@ const GameLeaderboardPage: React.FC = () => {
               </>
             )}
           </div>
-          
+
           {/* Right Sidebar */}
           <div className="w-full md:w-1/4">
             {/* Recent Matches Card */}
@@ -964,7 +952,7 @@ const GameLeaderboardPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Player Profile Modal */}
       <PlayerProfileModal
         isOpen={isPlayerProfileModalOpen}
@@ -972,7 +960,7 @@ const GameLeaderboardPage: React.FC = () => {
         userId={selectedPlayerId}
         gameId={gameId}
       />
-      
+
       {/* Team Profile Modal */}
       <TeamProfileModal
         isOpen={isTeamProfileModalOpen}

@@ -1,16 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchGames } from '../../services/api';
+import { useConfigGames } from '../../hooks/useConfigGames';
 import { LayoutGrid } from 'lucide-react';
-
-interface Game {
-  id: string;
-  name: string;
-  publisher: string;
-  image_url: string;
-  slug: string;
-}
 
 interface TooltipState {
   visible: boolean;
@@ -23,8 +15,7 @@ const GameLibrarySidebar: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [games, setGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { games, isLoading } = useConfigGames();
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     gameId: null,
@@ -38,28 +29,6 @@ const GameLibrarySidebar: React.FC = () => {
   const currentSlug = location.pathname.startsWith('/hub/')
     ? location.pathname.split('/hub/')[1]?.split('/')[0]
     : null;
-
-  useEffect(() => {
-    const loadGames = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchGames();
-        const sortedGames = (data || []).sort((a: Game, b: Game) => {
-          if (a.slug === 'other-games') return 1;
-          if (b.slug === 'other-games') return -1;
-          return 0;
-        });
-        setGames(sortedGames);
-      } catch (error) {
-        console.error('Error loading games:', error);
-        setGames([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadGames();
-  }, []);
 
   const handleMouseEnter = (game: Game, event: React.MouseEvent<HTMLDivElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();

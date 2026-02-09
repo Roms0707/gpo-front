@@ -66,7 +66,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +78,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   useEffect(() => {
     if (isOpen && user?.id && recipientId) {
       loadMessages();
-      
+
       // Set up real-time subscription for new messages
       const subscription = supabase
         .channel('private-chat')
@@ -107,12 +107,12 @@ const ChatModal: React.FC<ChatModalProps> = ({
           filter: `(sender_id=eq.${recipientId},receiver_id=eq.${user.id})`,
         }, handleUpdatedMessage)
         .subscribe();
-      
+
       // Focus the input field
       if (inputRef.current) {
         inputRef.current.focus();
       }
-      
+
       // Pre-fill message with shared video if provided
       if (initialSharedVideoUrl && initialSharedVideoTitle) {
         let sharedMessage = `🎬 ${initialSharedVideoTitle}\n\n`;
@@ -125,7 +125,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
         // Pre-fill message with provided content (for stats sharing)
         setNewMessage(initialMessageContent);
       }
-      
+
       return () => {
         supabase.removeChannel(subscription);
       };
@@ -158,10 +158,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        showEmojiPicker && 
-        emojiPickerRef.current && 
+        showEmojiPicker &&
+        emojiPickerRef.current &&
         !emojiPickerRef.current.contains(event.target as Node) &&
-        event.target instanceof Element && 
+        event.target instanceof Element &&
         !event.target.closest('[data-testid="emoji-picker-button"]')
       ) {
         setShowEmojiPicker(false);
@@ -187,40 +187,40 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const handleNewMessage = (payload: any) => {
     const newMessage = payload.new as Message;
-    
+
     // Skip messages that were sent by the current user
     // These are already added to the messages state in the sendMessage function
     if (newMessage.sender_id === user?.id) {
       return;
     }
-    
+
     // Add sender info to the message from the recipient
     newMessage.sender = {
       username: recipientName,
       avatar_url: recipientAvatar || null
     };
-    
+
     setMessages(prev => [...prev, newMessage]);
-    
+
     // Mark message as read if it's from the other user
     markMessageAsRead(newMessage.id);
   };
 
   const handleUpdatedMessage = (payload: any) => {
     const updatedMessage = payload.new as Message;
-    
+
     // Update the message in the state
-    setMessages(prev => prev.map(msg => 
+    setMessages(prev => prev.map(msg =>
       msg.id === updatedMessage.id ? { ...updatedMessage, sender: msg.sender } : msg
     ));
   };
 
   const loadMessages = async () => {
     if (!user?.id || !recipientId) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Get messages between the two users
       const { data, error } = await supabase
         .from('messages')
@@ -240,24 +240,24 @@ const ChatModal: React.FC<ChatModalProps> = ({
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: false })
         .limit(MESSAGES_PER_PAGE);
-      
+
       if (error) {
         console.error('Error loading messages:', error);
         return;
       }
-      
+
       // Reverse to show oldest first
       const sortedMessages = [...(data || [])].reverse();
       setMessages(sortedMessages);
-      
+
       // Check if there are more messages to load
       setHasMore(data && data.length === MESSAGES_PER_PAGE);
-      
+
       // Mark unread messages as read
-      const unreadMessages = data?.filter(msg => 
+      const unreadMessages = data?.filter(msg =>
         msg.sender_id === recipientId && !msg.read
       ) || [];
-      
+
       for (const msg of unreadMessages) {
         markMessageAsRead(msg.id);
       }
@@ -270,10 +270,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const loadMoreMessages = async () => {
     if (!user?.id || !recipientId || !hasMore) return;
-    
+
     try {
       setIsLoadingMore(true);
-      
+
       // Get older messages
       const { data, error } = await supabase
         .from('messages')
@@ -293,18 +293,18 @@ const ChatModal: React.FC<ChatModalProps> = ({
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${recipientId}),and(sender_id.eq.${recipientId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: false })
         .range(page * MESSAGES_PER_PAGE, (page + 1) * MESSAGES_PER_PAGE - 1);
-      
+
       if (error) {
         console.error('Error loading more messages:', error);
         return;
       }
-      
+
       if (data && data.length > 0) {
         // Reverse to show oldest first and prepend to existing messages
         const newMessages = [...data].reverse();
         setMessages(prev => [...newMessages, ...prev]);
         setPage(prev => prev + 1);
-        
+
         // Check if there are more messages to load
         setHasMore(data.length === MESSAGES_PER_PAGE);
       } else {
@@ -331,41 +331,41 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      
+
       // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast.error(t('chat.fileTooLarge'));
         return;
       }
-      
+
       setSelectedFile(file);
     }
   };
 
   const uploadFile = async (): Promise<{ url: string; name: string; type: string } | null> => {
     if (!selectedFile || !user?.id) return null;
-    
+
     try {
       setIsUploading(true);
-      
+
       const fileExt = selectedFile.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `chat-attachments/${fileName}`;
-      
+
       // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('chat-attachments')
         .upload(filePath, selectedFile);
-      
+
       if (uploadError) {
         throw uploadError;
       }
-      
+
       // Get the public URL
       const { data } = supabase.storage
         .from('chat-attachments')
         .getPublicUrl(filePath);
-      
+
       return {
         url: data.publicUrl,
         name: selectedFile.name,
@@ -382,10 +382,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const sendMessage = async () => {
     if (!user?.id || !recipientId || (!newMessage.trim() && !selectedFile)) return;
-    
+
     try {
       setIsSending(true);
-      
+
       let fileData = null;
       if (selectedFile) {
         fileData = await uploadFile();
@@ -394,10 +394,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
           return;
         }
       }
-      
+
       let messageContent = newMessage.trim() || (fileData ? t('chat.fileSent') : '');
       let messageType = 'direct';
-      
+
       // Check if this is a shared video message
       if (initialSharedVideoUrl && initialSharedVideoTitle && newMessage.includes(initialSharedVideoUrl)) {
         messageType = 'shared_video';
@@ -407,7 +407,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
           `<a href="${initialSharedVideoUrl}" target="_blank" rel="noopener noreferrer" style="color: #3b82f6; text-decoration: underline;">${initialSharedVideoUrl}</a>`
         );
       }
-      
+
       // Insert the message and get the complete message object back
       const { data, error } = await supabase
         .from('messages')
@@ -436,13 +436,13 @@ const ChatModal: React.FC<ChatModalProps> = ({
           file_type
         `)
         .single();
-      
+
       if (error) {
         console.error('Error sending message:', error);
         toast.error(t('chat.errorSendingMessage'));
         return;
       }
-      
+
       // Add the new message to the messages state immediately
       if (data) {
         // Add sender info to the message
@@ -453,17 +453,17 @@ const ChatModal: React.FC<ChatModalProps> = ({
             avatar_url: user.avatar_url || null
           }
         };
-        
+
         // Add the message to the state
         setMessages(prev => [...prev, newMessage]);
       }
-      
+
       setNewMessage('');
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      
+
       // Close emoji picker when sending a message
       setShowEmojiPicker(false);
     } catch (error) {
@@ -477,7 +477,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   const startEditingMessage = (message: Message) => {
     // Only allow editing your own messages
     if (message.sender_id !== user?.id) return;
-    
+
     setEditingMessageId(message.id);
     setEditingContent(message.content);
   };
@@ -489,7 +489,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const saveEditedMessage = async () => {
     if (!editingMessageId || !editingContent.trim() || !user?.id) return;
-    
+
     try {
       // Update the message in the database
       const { error } = await supabase
@@ -497,24 +497,24 @@ const ChatModal: React.FC<ChatModalProps> = ({
         .update({ content: editingContent.trim() })
         .eq('id', editingMessageId)
         .eq('sender_id', user.id); // Ensure only the sender can edit
-      
+
       if (error) {
         console.error('Error updating message:', error);
         toast.error(t('chat.errorEditingMessage'));
         return;
       }
-      
+
       // Update the message in the state
-      setMessages(prev => prev.map(msg => 
-        msg.id === editingMessageId 
-          ? { ...msg, content: editingContent.trim() } 
+      setMessages(prev => prev.map(msg =>
+        msg.id === editingMessageId
+          ? { ...msg, content: editingContent.trim() }
           : msg
       ));
-      
+
       // Reset editing state
       setEditingMessageId(null);
       setEditingContent('');
-      
+
       toast.success(t('chat.messageEdited'));
     } catch (error) {
       console.error('Error saving edited message:', error);
@@ -543,17 +543,17 @@ const ChatModal: React.FC<ChatModalProps> = ({
     try {
       const date = new Date(dateString);
       const now = new Date();
-      
+
       // If it's today, just show the time
       if (date.toDateString() === now.toDateString()) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-      
+
       // If it's within the last week, show relative time
       if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
         return formatDistanceToNow(date, { addSuffix: true, locale: fr });
       }
-      
+
       // Otherwise show the date
       return date.toLocaleDateString();
     } catch (error) {
@@ -577,37 +577,37 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
   const renderFilePreview = (message: Message) => {
     if (!message.file_url) return null;
-    
+
     const isImage = message.file_type?.startsWith('image/');
-    
+
     if (isImage) {
       return (
         <div className="mt-2 rounded-lg overflow-hidden max-w-xs">
-          <a 
-            href={message.file_url} 
-            target="_blank" 
+          <a
+            href={message.file_url}
+            target="_blank"
             rel="noopener noreferrer"
             className="block"
             aria-label={message.file_name || t('chat.attachedImage')}
           >
-            <img 
-              src={message.file_url} 
-              alt={message.file_name || 'Image'} 
+            <img
+              src={message.file_url}
+              alt={message.file_name || 'Image'}
               className="max-w-full h-auto"
             />
           </a>
         </div>
       );
     }
-    
+
     return (
       <div className="mt-2 bg-gray-200/50 dark:bg-dark-300/50 rounded-lg p-2 flex items-center max-w-xs">
         <File className="h-5 w-5 mr-2 text-gray-500 dark:text-gray-400" aria-hidden="true" />
         <div className="flex-1 min-w-0">
           <p className="text-sm truncate">{message.file_name}</p>
         </div>
-        <a 
-          href={message.file_url} 
+        <a
+          href={message.file_url}
           download={message.file_name}
           className="ml-2 text-primary-400 hover:text-primary-300"
           aria-label={t('chat.downloadFile', { filename: message.file_name })}
@@ -631,7 +631,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
     } else {
       document.body.classList.remove('modal-open');
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.classList.remove('modal-open');
@@ -641,8 +641,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 chat-modal-content">
       <div className="fixed inset-0 bg-black/75 z-49" onClick={onClose}></div>
-      
-      <div 
+
+      <div
         className="bg-white dark:bg-dark-100 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col chat-modal-content border border-gray-200 dark:border-gray-800 relative z-50"
         onClick={stopPropagation}
       >
@@ -663,7 +663,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
               <p className="text-xs text-gray-500 dark:text-gray-400">{t('chat.online')}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={() => {
               setShowEmojiPicker(false);
               onClose();
@@ -674,9 +674,9 @@ const ChatModal: React.FC<ChatModalProps> = ({
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        
+
         {/* Messages */}
-        <div 
+        <div
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-dark-200/50"
           tabIndex={0}
@@ -688,7 +688,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-primary-500"></div>
             </div>
           )}
-          
+
           {isLoading ? (
             <div className="flex justify-center items-center h-full">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
@@ -698,10 +698,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
               {messages.map((message) => {
                 const isCurrentUser = message.sender_id === user?.id;
                 const isEditing = message.id === editingMessageId;
-                
+
                 return (
-                  <div 
-                    key={message.id} 
+                  <div
+                    key={message.id}
                     className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     aria-label={`Message from ${isCurrentUser ? 'you' : recipientName}`}
                   >
@@ -709,9 +709,9 @@ const ChatModal: React.FC<ChatModalProps> = ({
                       {!isCurrentUser && (
                         <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden mr-2 flex-shrink-0">
                           {message.sender?.avatar_url ? (
-                            <img 
-                              src={message.sender.avatar_url} 
-                              alt="" 
+                            <img
+                              src={message.sender.avatar_url}
+                              alt=""
                               className="w-full h-full object-cover"
                               aria-hidden="true"
                             />
@@ -722,10 +722,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
                           )}
                         </div>
                       )}
-                      
+
                       <div className={`rounded-lg px-4 py-2 ${
-                        isCurrentUser 
-                          ? 'bg-primary-600 text-white' 
+                        isCurrentUser
+                          ? 'bg-primary-600 text-white'
                           : 'bg-white dark:bg-dark-300 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-transparent'
                       }`}>
                         {isEditing ? (
@@ -761,17 +761,17 @@ const ChatModal: React.FC<ChatModalProps> = ({
                         ) : (
                           <>
                             {message.type === 'shared_video' || message.content.includes('<a href=') ? (
-                              <div 
+                              <div
                                 className="whitespace-pre-wrap break-words"
                                 dangerouslySetInnerHTML={{ __html: message.content }}
                               />
                             ) : (
                               <p className="whitespace-pre-wrap break-words">{message.content}</p>
                             )}
-                            
+
                             {/* File attachment */}
                             {renderFilePreview(message)}
-                            
+
                             <div className={`text-xs mt-1 flex items-center ${
                               isCurrentUser ? 'text-primary-300 justify-end' : 'text-gray-400'
                             }`}>
@@ -779,7 +779,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                               {isCurrentUser && message.read && (
                                 <CheckCircle className="h-3 w-3 ml-1 text-primary-300" aria-hidden="true" />
                               )}
-                              
+
                               {/* Edit button - only for text messages sent by current user */}
                               {isCurrentUser && !message.file_url && (
                                 <button
@@ -797,13 +797,13 @@ const ChatModal: React.FC<ChatModalProps> = ({
                           </>
                         )}
                       </div>
-                      
+
                       {isCurrentUser && (
                         <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-300 overflow-hidden ml-2 flex-shrink-0">
                           {user?.avatar_url ? (
-                            <img 
-                              src={user.avatar_url} 
-                              alt="" 
+                            <img
+                              src={user.avatar_url}
+                              alt=""
                               className="w-full h-full object-cover"
                               aria-hidden="true"
                             />
@@ -832,7 +832,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             </div>
           )}
         </div>
-        
+
         {/* Selected File Preview */}
         {selectedFile && (
           <div className="px-4 py-2 bg-gray-100 dark:bg-dark-200 border-t border-gray-200 dark:border-gray-800">
@@ -841,7 +841,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 <File className="h-5 w-5 mr-2 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                 <span className="text-sm truncate">{selectedFile.name}</span>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedFile(null)}
                 className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white"
                 aria-label={t('chat.removeFile')}
@@ -851,10 +851,10 @@ const ChatModal: React.FC<ChatModalProps> = ({
             </div>
           </div>
         )}
-        
+
         {/* Emoji Picker */}
         {showEmojiPicker && (
-          <div 
+          <div
             ref={emojiPickerRef}
             className="absolute bottom-20 right-4 z-10"
             role="dialog"
@@ -870,7 +870,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
             </React.Suspense>
           </div>
         )}
-        
+
         {/* Message Input */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-dark-100">
           <div className="flex items-center">
@@ -887,7 +887,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 aria-label={t('chat.messageInput')}
               />
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1"
@@ -897,7 +897,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
                 >
                   <Smile className="h-5 w-5" aria-hidden="true" />
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 p-1"

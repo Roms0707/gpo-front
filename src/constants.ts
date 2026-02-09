@@ -4,16 +4,16 @@ export const APP_CONFIG = {
   MESSAGES_PER_PAGE: 20,
   TOURNAMENTS_PER_PAGE: 50,
   LEADERBOARD_LIMIT: 100,
-  
+
   // Timeouts and intervals
   QUERY_TIMEOUT_MS: 8000,
   CONNECTION_MONITOR_INTERVAL: 300000, // 5 minutes
   SLIDESHOW_INTERVAL: 5000, // 5 seconds
-  
+
   // File upload limits
   MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
   MAX_AVATAR_SIZE: 5 * 1024 * 1024, // 5MB
-  
+
   // Gaming
   AIM_TRAINER_GAME_IDS: [
     '44d38835-4666-4a02-8eb4-25589a88ebd8',
@@ -30,7 +30,7 @@ export const APP_CONFIG = {
     'a41e04cb-bded-4867-9474-555ba247ef50',
     'ca9408a6-94b1-4744-9177-834c2b63fa10'
   ],
-  
+
   // Validation
   MIN_USERNAME_LENGTH: 3,
   MAX_USERNAME_LENGTH: 20,
@@ -38,7 +38,7 @@ export const APP_CONFIG = {
   MAX_BIO_LENGTH: 500,
   MAX_DISCORD_HANDLE_LENGTH: 37,
   MAX_TWITTER_HANDLE_LENGTH: 15,
-  
+
   // Retry logic
   MAX_RETRIES: 3,
   RETRY_DELAY: 2000,
@@ -47,25 +47,25 @@ export const APP_CONFIG = {
   DEFAULT_ELO_RATING: 1000,
   DEFAULT_LEVEL: 1,
   DEFAULT_XP: 0,
-  
+
   // Supported file types
   SUPPORTED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   SUPPORTED_DOCUMENT_TYPES: ['application/pdf', 'text/plain', 'application/msword'],
-  
+
   // Storage buckets
   STORAGE_BUCKETS: {
     AVATARS: 'avatars',
     CHAT_ATTACHMENTS: 'chat-attachments',
     PARENTAL_CONSENT: 'controle-parental'
   },
-  
+
   // Local storage keys
   STORAGE_KEYS: {
     USER_DATA: 'esport_user_data',
     THEME: 'theme',
     ONBOARDING_COMPLETED: 'onboarding_completed'
   },
-  
+
   // Contact information
   CONTACT: {
     SUPPORT_EMAIL: 'support@orangearena.com',
@@ -75,7 +75,7 @@ export const APP_CONFIG = {
     COMPANY_NAME: 'Orange Arena SAS',
     COMPANY_ADDRESS: '123 Avenue du Jeu, 75001 Paris, France'
   },
-  
+
   // Social media base URLs
   SOCIAL_MEDIA: {
     TWITTER_BASE: 'https://twitter.com/intent/tweet',

@@ -7,15 +7,15 @@ export const calculateTournamentStatus = (tournament: Tournament): 'ongoing' | '
   const now = new Date();
   const startDate = new Date(tournament.startDate);
   const endDate = new Date(tournament.endDate);
-  
+
   if (now > endDate) {
     return 'completed';
   }
-  
+
   if (now >= startDate && now <= endDate) {
     return 'ongoing';
   }
-  
+
   return 'upcoming';
 };
 
@@ -24,42 +24,42 @@ export const calculateTournamentStatus = (tournament: Tournament): 'ongoing' | '
  */
 export const calculateRegistrationStatus = (tournament: Tournament): 'open' | 'closed' | 'not_started' => {
   const now = new Date();
-  
+
   // For completed tournaments, registration is always closed
   const tournamentStatus = calculateTournamentStatus(tournament);
   if (tournamentStatus === 'completed') {
     return 'closed';
   }
-  
+
   // For ongoing tournaments, use simple logic based on tournament status
   if (tournamentStatus === 'ongoing') {
     return 'closed'; // Usually registration closes when tournament starts
   }
-  
+
   // For upcoming tournaments, check registration dates if available
   if (!tournament.registrationStartDate && !tournament.registrationEndDate) {
     // If no registration dates specified, assume open for upcoming tournaments
     return tournamentStatus === 'upcoming' ? 'open' : 'closed';
   }
-  
+
   const regStartDate = tournament.registrationStartDate ? new Date(tournament.registrationStartDate) : null;
   const regEndDate = tournament.registrationEndDate ? new Date(tournament.registrationEndDate) : null;
-  
+
   // If registration hasn't started yet
   if (regStartDate && now < regStartDate) {
     return 'not_started';
   }
-  
+
   // If registration has ended
   if (regEndDate && now > regEndDate) {
     return 'closed';
   }
-  
+
   // If we're within the registration period
   if ((!regStartDate || now >= regStartDate) && (!regEndDate || now <= regEndDate)) {
     return 'open';
   }
-  
+
   return 'closed';
 };
 

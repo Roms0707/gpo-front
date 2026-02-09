@@ -42,10 +42,10 @@ const FortniteAccountIntegration: React.FC<FortniteAccountIntegrationProps> = ({
       toast.error(t('gaming.pleaseEnterEpicGamesUsername'));
       return;
     }
-    
+
     try {
       setIsValidating(true);
-      
+
       // Call the Fortnite stats Edge Function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-fortnite-stats`, {
         method: 'POST',
@@ -58,9 +58,9 @@ const FortniteAccountIntegration: React.FC<FortniteAccountIntegrationProps> = ({
           platform: 'epic'
         })
       });
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         setIsValidated(true);
         setValidationData(result.data);
@@ -110,7 +110,7 @@ const FortniteAccountIntegration: React.FC<FortniteAccountIntegrationProps> = ({
             disabled={isValidating || !epicId.trim() || disabled}
             className={`px-3 py-2 rounded-lg transition-colors flex items-center ${
               isValidated
-                ? 'bg-success-600 text-white cursor-default' 
+                ? 'bg-success-600 text-white cursor-default'
                 : isValidating
                   ? 'bg-primary-600/50 text-white cursor-wait'
                   : 'bg-primary-600 hover:bg-primary-700 text-white disabled:bg-gray-400 disabled:cursor-not-allowed'

@@ -195,7 +195,7 @@ const TwitchEmbedPage: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Retour à l'accueil
             </Link>
-            
+
             <div className="bg-white dark:bg-dark-100 rounded-xl p-8 border border-gray-200 dark:border-gray-800">
               <h1 className="font-heading font-bold text-2xl mb-4 text-gray-900 dark:text-white">
                 Stream non disponible
@@ -336,7 +336,7 @@ const TwitchEmbedPage: React.FC = () => {
                     <h2 className="font-heading font-semibold text-xl mb-4 text-gray-900 dark:text-white">
                       Informations du tournoi
                     </h2>
-                    
+
                     <div className="space-y-4">
                       <div className="flex items-center">
                         <Trophy className="h-5 w-5 text-warning-500 mr-3" />
@@ -345,7 +345,7 @@ const TwitchEmbedPage: React.FC = () => {
                           <p className="font-medium text-gray-900 dark:text-white">{tournament.game}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-primary-500 mr-3" />
                         <div>
@@ -353,7 +353,7 @@ const TwitchEmbedPage: React.FC = () => {
                           <p className="font-medium text-gray-900 dark:text-white">{formatDate(tournament.start_date)}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center">
                         <Calendar className="h-5 w-5 text-secondary-500 mr-3" />
                         <div>
@@ -361,7 +361,7 @@ const TwitchEmbedPage: React.FC = () => {
                           <p className="font-medium text-gray-900 dark:text-white">{formatDate(tournament.end_date)}</p>
                         </div>
                       </div>
-                      
+
                       {tournament.main_prize && (
                         <div className="flex items-center">
                           <Trophy className="h-5 w-5 text-warning-500 mr-3" />
@@ -372,7 +372,7 @@ const TwitchEmbedPage: React.FC = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <Link
                       to={`/tournaments/${tournament.id}`}
                       className="mt-6 w-full bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center"

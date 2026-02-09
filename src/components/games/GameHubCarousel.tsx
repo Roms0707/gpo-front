@@ -2,21 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Trophy, Users, Gamepad2 } from 'lucide-react';
-import { fetchGames } from '../../services/api';
+import { useConfigGames } from '../../hooks/useConfigGames';
+import { ConfigGame } from '../../services/configGamesService';
 import { getGameTheme } from '../../utils/gameThemes';
 import { APP_CONFIG } from '../../constants';
-
-interface Game {
-  id: string;
-  name: string;
-  publisher: string;
-  image_url: string;
-  slug: string;
-  twitch_cover_url?: string;
-  igdb_artwork_url?: string;
-  trailer_url?: string;
-  is_collection?: boolean;
-}
 
 interface GameStats {
   tournaments: number;
@@ -34,9 +23,8 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [games, setGames] = useState<Game[]>([]);
+  const { games, isLoading } = useConfigGames();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [gameStats] = useState<Record<string, GameStats>>({});
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -55,28 +43,13 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
   }, []);
 
   useEffect(() => {
-    const loadGames = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchGames();
-        setGames(data || []);
-
-        if (selectedGameId && data) {
-          const selectedIndex = data.findIndex((g: Game) => g.id === selectedGameId);
-          if (selectedIndex >= 0) {
-            setCurrentIndex(selectedIndex);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading games:', error);
-        setGames([]);
-      } finally {
-        setIsLoading(false);
+    if (selectedGameId && games.length > 0) {
+      const selectedIndex = games.findIndex((g) => g.id === selectedGameId);
+      if (selectedIndex >= 0) {
+        setCurrentIndex(selectedIndex);
       }
-    };
-
-    loadGames();
-  }, [selectedGameId]);
+    }
+  }, [selectedGameId, games]);
 
   const goToSlide = useCallback((index: number) => {
     const newIndex = ((index % games.length) + games.length) % games.length;
@@ -152,7 +125,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
     navigate(`/hub/${gameSlug}`);
   };
 
-  const getGameCover = (game: Game): string => {
+  const getGameCover = (game: ConfigGame): string => {
     if (game.is_collection) {
       return game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
     }
@@ -160,7 +133,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
   };
 
-  const getGameBackground = (game: Game): string => {
+  const getGameBackground = (game: ConfigGame): string => {
     if (game.is_collection) {
       return game.image_url || 'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
     }
@@ -168,7 +141,7 @@ const GameHubCarousel: React.FC<GameHubCarouselProps> = ({
       'https://images.pexels.com/photos/7919/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
   };
 
-  const hasWideArtwork = (game: Game): boolean => {
+  const hasWideArtwork = (game: ConfigGame): boolean => {
     return !!game.igdb_artwork_url;
   };
 

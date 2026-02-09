@@ -1,57 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchGames } from '../services/api';
-import { isOthersGame } from '../services/othersService';
+import { useConfigGames } from '../hooks/useConfigGames';
 import { ArrowRight, Search, Filter, X, Grid, List, Award } from 'lucide-react';
 import { getGameTheme, getCardClipPath, getCardBorderRadius } from '../utils/gameThemes';
 
-interface Game {
-  id: string;
-  name: string;
-  publisher: string;
-  image_url: string;
-  slug?: string;
-  is_collection?: boolean;
-}
-
 const LeaderboardsPage: React.FC = () => {
   const { t } = useTranslation();
-  const [games, setGames] = useState<Game[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { games: configGames, isLoading } = useConfigGames();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPublisher, setSelectedPublisher] = useState<string | null>(null);
-  const [publishers, setPublishers] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  useEffect(() => {
-    const loadGames = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchGames();
-        const realGames = data.filter((game: Game) => !isOthersGame(game));
-        setGames(realGames);
+  const games = useMemo(
+    () => configGames.filter(g => g.slug !== 'other-games' && !g.is_collection),
+    [configGames]
+  );
 
-        const uniquePublishers = Array.from(new Set(realGames.map(game => game.publisher))).sort();
-        setPublishers(uniquePublishers);
-      } catch (error) {
-        console.error('Error loading games:', error);
-        setGames([]);
-        setPublishers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const publishers = useMemo(
+    () => Array.from(new Set(games.map(g => g.publisher))).sort(),
+    [games]
+  );
 
-    loadGames();
-  }, []);
-
-  // Filter games based on search query and selected publisher
   const filteredGames = games.filter(game => {
     const matchesSearch = game.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          game.publisher.toLowerCase().includes(searchQuery.toLowerCase());

@@ -186,7 +186,7 @@ const FAQPage: React.FC = () => {
         return null;
     }
   };
-  
+
   return (
     <div className="min-h-screen pt-28 pb-16 bg-gray-50 dark:bg-dark-200">
       <div className="container mx-auto px-4">
