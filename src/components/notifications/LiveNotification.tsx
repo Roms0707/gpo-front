@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Users, Bell, UserPlus, CheckCircle, XCircle, Award, Target, Trophy, Heart, Video } from 'lucide-react';
+import { X, Users, Bell, UserPlus, CheckCircle, XCircle, Award, Target, Trophy, Heart, Video, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
+import { getTranslatedNotification } from '../../utils/notificationTranslation';
 
 interface Notification {
   id: string;
@@ -13,6 +14,7 @@ interface Notification {
   link?: string;
   related_id?: string;
   created_at: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface LiveNotificationProps {
@@ -63,19 +65,25 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
         return <UserPlus className="h-5 w-5 text-info-400" aria-hidden="true" />;
       case 'friend_accepted':
         return <Heart className="h-5 w-5 text-success-400" aria-hidden="true" />;
+      case 'team_invite':
+        return <UserPlus className="h-5 w-5 text-primary-400" aria-hidden="true" />;
       case 'tournament_join_now':
         return <Video className="h-5 w-5 text-red-500" aria-hidden="true" />;
-      default:
-        return <Bell className="h-5 w-5 text-gray-400" aria-hidden="true" />;
+      case 'quest_completed':
+        return <Sparkles className="h-5 w-5 text-success-400" aria-hidden="true" />;
+      case 'quest_assigned':
+        return <Target className="h-5 w-5 text-primary-400" aria-hidden="true" />;
       case 'registration_cancelled':
         return <XCircle className="h-5 w-5 text-error-400" aria-hidden="true" />;
+      default:
+        return <Bell className="h-5 w-5 text-gray-400" aria-hidden="true" />;
     }
   };
 
   const formatTimeAgo = (dateString: string) => {
     try {
       const currentLanguage = i18n.language || 'en';
-      const locale = currentLanguage.startsWith('fr') ? fr : enUS;
+      const locale = currentLanguage.startsWith('fr') ? fr : currentLanguage.startsWith('es') ? es : enUS;
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
         locale
@@ -169,7 +177,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex justify-between">
-              <h3 className="font-medium text-white">{notification.title}</h3>
+              <h3 className="font-medium text-white">{getTranslatedNotification(notification, t).title}</h3>
               <button
                 onClick={handleClose}
                 className="text-gray-300 hover:text-white"
@@ -178,7 +186,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-            <p className="text-sm text-gray-200 mt-1">{notification.message}</p>
+            <p className="text-sm text-gray-200 mt-1">{getTranslatedNotification(notification, t).message}</p>
             <div className="flex justify-between items-center mt-2">
               <span className="text-xs text-gray-300">
                 {formatTimeAgo(notification.created_at)}
@@ -189,7 +197,7 @@ const LiveNotification: React.FC<LiveNotificationProps> = ({ notification, onClo
                   className="text-primary-400 hover:text-primary-300 text-xs"
                   aria-label={`${notification.type === 'friend_request' ? t('notifications.viewRequest') :
                    notification.type === 'friend_accepted' ? t('notifications.viewFriends') :
-                   t('notifications.viewDetails')} pour ${notification.title}`}
+                   t('notifications.viewDetails')} - ${getTranslatedNotification(notification, t).title}`}
                 >
                   {notification.type === 'friend_request' ? t('notifications.viewRequest') :
                    notification.type === 'friend_accepted' ? t('notifications.viewFriends') :

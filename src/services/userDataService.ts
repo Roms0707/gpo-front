@@ -51,6 +51,7 @@ export const createUserFromData = (userData: any, sessionUser?: any): User => {
     country: userData.country || null,
     registeredTournaments: [],
     avatar_url: userData.avatar_url || null,
+    banner_url: userData.banner_url || null,
     bio: userData.bio || '',
     riot_game_name: userData.riot_game_name || '',
     riot_tagline: userData.riot_tagline || '',

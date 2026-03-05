@@ -121,9 +121,13 @@ export function useAICoachingSession(
         }
       );
 
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       const result = await response.json();
 
-      if (!result.success) {
+      if (!result.message) {
         throw new Error(result.error || 'Failed to get coaching response');
       }
 
@@ -138,25 +142,28 @@ export function useAICoachingSession(
       };
       setMessages(prev => [...prev, assistantMessage]);
 
-      if (result.video_recommendations && result.video_recommendations.length > 0) {
-        const videoIds = result.video_recommendations.map((v: any) => v.content_id);
-        const { data: videoDetails } = await supabase
-          .from('game_contents')
-          .select('id, title, playlist_image_url, duration')
-          .in('id', videoIds);
+      const recs = result.video_recommendations || result.recommended_content || [];
+      if (recs.length > 0) {
+        const videoIds = recs.map((v: any) => v.content_id).filter(Boolean);
+        if (videoIds.length > 0) {
+          const { data: videoDetails } = await supabase
+            .from('game_contents')
+            .select('id, title, playlist_image_url, duration')
+            .in('id', videoIds);
 
-        if (videoDetails) {
-          const enrichedRecs = result.video_recommendations.map((rec: any) => {
-            const details = videoDetails.find(v => v.id === rec.content_id);
-            return {
-              ...rec,
-              playlist_image_url: details?.playlist_image_url,
-              duration: details?.duration
-            };
-          });
-          setVideoRecommendations(prev => [...prev, ...enrichedRecs]);
-        } else {
-          setVideoRecommendations(prev => [...prev, ...result.video_recommendations]);
+          if (videoDetails) {
+            const enrichedRecs = recs.map((rec: any) => {
+              const details = videoDetails.find((v: any) => v.id === rec.content_id);
+              return {
+                ...rec,
+                playlist_image_url: details?.playlist_image_url,
+                duration: details?.duration
+              };
+            });
+            setVideoRecommendations(prev => [...prev, ...enrichedRecs]);
+          } else {
+            setVideoRecommendations(prev => [...prev, ...recs]);
+          }
         }
       }
 

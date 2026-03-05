@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Play, Search, Loader2, RefreshCw, BookOpen } from 'lucide-react';
+import { Play, Search, Loader2, BookOpen } from 'lucide-react';
 import { GameTheme } from '../../../utils/gameThemes';
 import { useAuth } from '../../../contexts/AuthContext';
-import {
-  fetchPlaylistsByGame,
-  fetchContinueWatching,
-  checkAndGeneratePlaylists
-} from '../../../services/playlistService';
-import {
-  PlaylistWithVideos,
-  ContinueWatchingVideo,
-  PLAYLIST_CATEGORY_LABELS,
-  PLAYLIST_CATEGORY_ORDER,
-  PlaylistCategory
-} from '../../../types/playlist';
-import PlaylistAccordion from '../../training/PlaylistAccordion';
-import ContinueWatchingSection from '../../training/ContinueWatchingSection';
+import { useGalaxyRubrics } from '../../../hooks/useGalaxyRubrics';
+import { fetchRubricContents } from '../../../services/galaxyContentService';
+import { GalaxyContentItem } from '../../../types/galaxy';
 import AuthRequiredOverlay from '../../auth/AuthRequiredOverlay';
+import GalaxyVideoCard from '../GalaxyVideoCard';
+import { getBadgesForContent, computeBadgeCounts, BadgeType } from '../../../services/badgeService';
+import BadgeFilterBar from '../../ui/BadgeFilterBar';
 
 interface GameHubTrainingTabProps {
   gameId: string;
   gameName: string;
   theme: GameTheme;
+}
+
+interface RubricVideo extends GalaxyContentItem {
+  _rubricId: string;
+  _rubricName: string;
 }
 
 const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
@@ -32,127 +29,117 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
 }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const [playlists, setPlaylists] = useState<PlaylistWithVideos[]>([]);
-  const [continueWatching, setContinueWatching] = useState<ContinueWatchingVideo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { tipsForGame, isLoading: isLoadingRubrics, error: rubricsError, configId } = useGalaxyRubrics();
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedPlaylistId, setExpandedPlaylistId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedRubricId, setSelectedRubricId] = useState<string | null>(null);
+  const [allVideos, setAllVideos] = useState<RubricVideo[]>([]);
+  const [contentsLoading, setContentsLoading] = useState(false);
+  const [selectedBadges, setSelectedBadges] = useState<Set<BadgeType>>(new Set());
 
-  const loadData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      await checkAndGeneratePlaylists(gameId);
-
-      const playlistData = await fetchPlaylistsByGame(gameId, user?.id);
-      setPlaylists(playlistData);
-
-      if (user?.id) {
-        const continueWatchingData = await fetchContinueWatching(user.id, gameId);
-        setContinueWatching(continueWatchingData);
-      }
-    } catch (err) {
-      console.error('Error loading training data:', err);
-      setError('Failed to load training content');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [gameId, user?.id]);
+  const rubrics = useMemo(() => tipsForGame(gameId), [tipsForGame, gameId]);
 
   useEffect(() => {
-    setPlaylists([]);
-    setContinueWatching([]);
-    setExpandedPlaylistId(null);
+    setSelectedRubricId(null);
     setSearchQuery('');
-    loadData();
-  }, [gameId, loadData]);
+    setAllVideos([]);
+    setSelectedBadges(new Set());
+  }, [gameId]);
 
-  const handleRegeneratePlaylists = async () => {
-    try {
-      setIsGenerating(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video-playlists`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ game_id: gameId })
-        }
-      );
-      const result = await response.json();
-      if (result.success) {
-        await loadData();
-      }
-    } catch (err) {
-      console.error('Error regenerating playlists:', err);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  useEffect(() => {
+    if (!configId || rubrics.length === 0) return;
 
-  const handleTogglePlaylist = (playlistId: string) => {
-    setExpandedPlaylistId(prev => prev === playlistId ? null : playlistId);
-  };
-
-  const filteredPlaylists = useMemo(() => {
-    if (!searchQuery.trim()) return playlists;
-
-    const query = searchQuery.toLowerCase();
-    return playlists
-      .map(playlist => {
-        const matchesPlaylistName = playlist.name.toLowerCase().includes(query);
-
-        const matchingVideos = playlist.videos.filter(pv =>
-          pv.video?.title.toLowerCase().includes(query)
+    let cancelled = false;
+    const loadAllContents = async () => {
+      setContentsLoading(true);
+      try {
+        const results = await Promise.allSettled(
+          rubrics.map(async (rubric) => {
+            const contents = await fetchRubricContents(configId, rubric.rubric_id);
+            return contents.map((item) => ({
+              ...item,
+              _rubricId: rubric.rubric_id,
+              _rubricName: rubric.name,
+            }));
+          })
         );
 
-        if (matchesPlaylistName) {
-          return playlist;
-        }
+        if (cancelled) return;
 
-        if (matchingVideos.length > 0) {
-          return {
-            ...playlist,
-            videos: matchingVideos
-          };
-        }
+        const videos: RubricVideo[] = [];
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            videos.push(...result.value);
+          }
+        });
 
-        return null;
-      })
-      .filter((p): p is PlaylistWithVideos => p !== null);
-  }, [playlists, searchQuery]);
-
-  const playlistsByCategory = useMemo(() => {
-    const grouped = new Map<string, PlaylistWithVideos[]>();
-
-    filteredPlaylists.forEach(playlist => {
-      const category = playlist.category || 'general';
-      if (!grouped.has(category)) {
-        grouped.set(category, []);
+        setAllVideos(videos);
+      } catch (err) {
+        console.error('Error loading all rubric contents:', err);
+      } finally {
+        if (!cancelled) setContentsLoading(false);
       }
-      grouped.get(category)!.push(playlist);
+    };
+
+    loadAllContents();
+    return () => { cancelled = true; };
+  }, [configId, rubrics]);
+
+  const filteredVideos = useMemo(() => {
+    let result = allVideos;
+
+    if (selectedRubricId) {
+      result = result.filter((v) => v._rubricId === selectedRubricId);
+    }
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (v) =>
+          v.title.toLowerCase().includes(query) ||
+          v.description?.toLowerCase().includes(query)
+      );
+    }
+
+    if (selectedBadges.size > 0) {
+      result = result.filter((v) => {
+        const badges = getBadgesForContent(v.content_id);
+        return badges.some((b) => selectedBadges.has(b));
+      });
+    }
+
+    return result;
+  }, [allVideos, selectedRubricId, searchQuery, selectedBadges]);
+
+  const badgeCounts = useMemo(() => {
+    let base = allVideos;
+    if (selectedRubricId) {
+      base = base.filter((v) => v._rubricId === selectedRubricId);
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      base = base.filter(
+        (v) =>
+          v.title.toLowerCase().includes(query) ||
+          v.description?.toLowerCase().includes(query)
+      );
+    }
+    return computeBadgeCounts(base, (v) => getBadgesForContent(v.content_id));
+  }, [allVideos, selectedRubricId, searchQuery]);
+
+  const handleToggleBadge = useCallback((badge: BadgeType) => {
+    setSelectedBadges((prev) => {
+      const next = new Set(prev);
+      if (next.has(badge)) {
+        next.delete(badge);
+      } else {
+        next.add(badge);
+      }
+      return next;
     });
+  }, []);
 
-    const sortedCategories = Array.from(grouped.entries()).sort((a, b) => {
-      const orderA = PLAYLIST_CATEGORY_ORDER.indexOf(a[0] as PlaylistCategory);
-      const orderB = PLAYLIST_CATEGORY_ORDER.indexOf(b[0] as PlaylistCategory);
-      const finalOrderA = orderA === -1 ? 999 : orderA;
-      const finalOrderB = orderB === -1 ? 999 : orderB;
-      return finalOrderA - finalOrderB;
-    });
-
-    return sortedCategories;
-  }, [filteredPlaylists]);
-
-  const totalVideos = playlists.reduce((acc, p) => acc + p.videos.length, 0);
-  const totalCompleted = playlists.reduce((acc, p) =>
-    acc + p.videos.filter(v => v.progress?.is_completed).length, 0
-  );
+  const showRubricTabs = rubrics.length > 1;
 
   const renderContent = () => (
     <div id="walkthrough-gamehub-training" className="space-y-6">
@@ -168,38 +155,75 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
           />
         </div>
 
-        <div className="flex items-center gap-4">
-          {user && totalVideos > 0 && (
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <BookOpen className="w-4 h-4" />
-              <span>
-                {totalCompleted}/{totalVideos} completed
-              </span>
-            </div>
-          )}
-
-          <button
-            onClick={handleRegeneratePlaylists}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-dark-300 rounded-lg transition-colors disabled:opacity-50"
-            title="Refresh playlists"
-          >
-            <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">
-              {isGenerating ? 'Generating...' : 'Refresh'}
+        {allVideos.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <BookOpen className="w-4 h-4" />
+            <span>
+              {filteredVideos.length} {filteredVideos.length === 1 ? 'video' : 'videos'}
             </span>
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
-      {user && continueWatching.length > 0 && !searchQuery && (
-        <ContinueWatchingSection
-          videos={continueWatching}
-          theme={theme}
-        />
+      <BadgeFilterBar
+        selectedBadges={selectedBadges}
+        onToggleBadge={handleToggleBadge}
+        badgeCounts={badgeCounts}
+      />
+
+      {showRubricTabs && (
+        <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <button
+            onClick={() => setSelectedRubricId(null)}
+            className={`
+              px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
+              ${!selectedRubricId
+                ? 'text-white shadow-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-300/50'
+              }
+            `}
+            style={!selectedRubricId ? {
+              backgroundColor: theme.colors.primary,
+              color: theme.colors.text,
+            } : undefined}
+          >
+            {t('gameHub.training.allSections', 'All')}
+          </button>
+          {rubrics.map((rubric) => {
+            const isActive = selectedRubricId === rubric.rubric_id;
+            return (
+              <button
+                key={rubric.rubric_id}
+                onClick={() => setSelectedRubricId(rubric.rubric_id)}
+                className={`
+                  px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
+                  ${isActive
+                    ? 'text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-300/50'
+                  }
+                `}
+                style={isActive ? {
+                  backgroundColor: theme.colors.primary,
+                  color: theme.colors.text,
+                } : undefined}
+              >
+                {rubric.name}
+              </button>
+            );
+          })}
+        </div>
       )}
 
-      {filteredPlaylists.length === 0 ? (
+      {contentsLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-40 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      ) : filteredVideos.length === 0 ? (
         <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
           <Play className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -214,66 +238,40 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
-          {playlistsByCategory.map(([category, categoryPlaylists]) => (
-            <div key={category} className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-1 h-6 rounded-full"
-                  style={{ backgroundColor: theme.colors.primary }}
-                />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {PLAYLIST_CATEGORY_LABELS[category as PlaylistCategory] || category}
-                </h2>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  ({categoryPlaylists.length} {categoryPlaylists.length === 1 ? 'playlist' : 'playlists'})
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {categoryPlaylists.map((playlist) => (
-                  <PlaylistAccordion
-                    key={playlist.id}
-                    playlist={playlist}
-                    theme={theme}
-                    isExpanded={expandedPlaylistId === playlist.id}
-                    onToggle={() => handleTogglePlaylist(playlist.id)}
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredVideos.map((video) => (
+            <GalaxyVideoCard
+              key={`${video._rubricId}-${video.content_id}`}
+              video={video}
+              rubricId={video._rubricId}
+              theme={theme}
+              rubricName={video._rubricName}
+              showRubricLabel={!selectedRubricId && showRubricTabs}
+              badges={getBadgesForContent(video.content_id)}
+            />
           ))}
-        </div>
-      )}
-
-      {isGenerating && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-dark-200 rounded-xl p-6 flex items-center gap-4 shadow-xl">
-            <Loader2 className="w-6 h-6 animate-spin" style={{ color: theme.colors.primary }} />
-            <span className="text-gray-900 dark:text-white">
-              Generating playlists from videos...
-            </span>
-          </div>
         </div>
       )}
     </div>
   );
 
-  if (isLoading) {
+  if (isLoadingRubrics) {
     return (
       <div className="space-y-6">
         <div className="h-10 max-w-md bg-gray-200 dark:bg-dark-300 rounded-lg animate-pulse" />
-        <div className="h-32 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
-        <div className="space-y-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-24 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-40 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
+            </div>
           ))}
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (rubricsError) {
     return (
       <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
         <Play className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
@@ -281,15 +279,8 @@ const GameHubTrainingTab: React.FC<GameHubTrainingTabProps> = ({
           {t('gameHub.errorLoadingContent', 'Error loading content')}
         </h3>
         <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
-          {error}
+          {rubricsError}
         </p>
-        <button
-          onClick={loadData}
-          className="px-4 py-2 rounded-lg text-white transition-colors"
-          style={{ backgroundColor: theme.colors.primary }}
-        >
-          Try Again
-        </button>
       </div>
     );
   }

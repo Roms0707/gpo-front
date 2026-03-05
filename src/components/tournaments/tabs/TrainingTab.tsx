@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Loader, ExternalLink, Video, FileText, Music, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen, Play, Search } from 'lucide-react';
 import { Tournament } from '../../../types';
-import { syncGalaxyContent } from '../../../services/api';
-import toast from 'react-hot-toast';
-import VideoCard from '../../ui/VideoCard';
-import { useGameContent } from '../../../hooks/useGameContent';
-import { useAppConfig } from '../../../contexts/AppConfigContext';
+import { useGalaxyRubrics } from '../../../hooks/useGalaxyRubrics';
+import { fetchRubricContents } from '../../../services/galaxyContentService';
+import { GalaxyContentItem } from '../../../types/galaxy';
+import GalaxyVideoCard from '../../games/GalaxyVideoCard';
+import { getGameTheme } from '../../../utils/gameThemes';
+import { getBadgesForContent, computeBadgeCounts, BadgeType } from '../../../services/badgeService';
+import BadgeFilterBar from '../../ui/BadgeFilterBar';
 
 interface TrainingTabProps {
   tournament: Tournament;
   gameName: string;
+}
+
+interface RubricVideo extends GalaxyContentItem {
+  _rubricId: string;
+  _rubricName: string;
 }
 
 const TrainingTab: React.FC<TrainingTabProps> = ({
@@ -18,316 +25,268 @@ const TrainingTab: React.FC<TrainingTabProps> = ({
   gameName
 }) => {
   const { t } = useTranslation();
-  const { configId } = useAppConfig();
-  const [isSyncing, setIsSyncing] = useState(false);
+  const { tipsForGame, isLoading: isLoadingRubrics, error: rubricsError, configId } = useGalaxyRubrics();
 
-  // Use the enhanced useGameContent hook
-  const {
-    contentTypes,
-    isLoadingTypes,
-    selectedContentType,
-    setSelectedContentType,
-    loadMoreContent,
-    loadContentType,
-    loadMoreAllContent,
-    getCurrentContent,
-    getCurrentLoadingState,
-    getCurrentHasMore,
-    groupedContent
-  } = useGameContent('training', tournament?.game_id);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedRubricId, setSelectedRubricId] = useState<string | null>(null);
+  const [allVideos, setAllVideos] = useState<RubricVideo[]>([]);
+  const [contentsLoading, setContentsLoading] = useState(false);
+  const [selectedBadges, setSelectedBadges] = useState<Set<BadgeType>>(new Set());
 
-  // Handle Galaxy content sync
-  const handleSyncGalaxyContent = async () => {
-    try {
-      setIsSyncing(true);
-      const result = await syncGalaxyContent(configId);
-      const syncCount = result.stats?.total_synced || 0;
-      toast.success(t('trainingTab.syncSuccess', { count: syncCount }));
+  const theme = useMemo(() => getGameTheme(gameName), [gameName]);
 
-      // Reload the page to show new content
-      window.location.reload();
-    } catch (error) {
-      console.error('Error syncing Galaxy content:', error);
-      toast.error(t('trainingTab.syncError'));
-    } finally {
-      setIsSyncing(false);
+  const rubrics = useMemo(
+    () => (tournament?.game_id ? tipsForGame(tournament.game_id) : []),
+    [tipsForGame, tournament?.game_id]
+  );
+
+  useEffect(() => {
+    setSelectedRubricId(null);
+    setSearchQuery('');
+    setAllVideos([]);
+    setSelectedBadges(new Set());
+  }, [tournament?.game_id]);
+
+  useEffect(() => {
+    if (!configId || rubrics.length === 0) return;
+
+    let cancelled = false;
+    const loadAllContents = async () => {
+      setContentsLoading(true);
+      try {
+        const results = await Promise.allSettled(
+          rubrics.map(async (rubric) => {
+            const contents = await fetchRubricContents(configId, rubric.rubric_id);
+            return contents.map((item) => ({
+              ...item,
+              _rubricId: rubric.rubric_id,
+              _rubricName: rubric.name,
+            }));
+          })
+        );
+
+        if (cancelled) return;
+
+        const videos: RubricVideo[] = [];
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            videos.push(...result.value);
+          }
+        });
+
+        setAllVideos(videos);
+      } catch (err) {
+        console.error('Error loading all rubric contents:', err);
+      } finally {
+        if (!cancelled) setContentsLoading(false);
+      }
+    };
+
+    loadAllContents();
+    return () => { cancelled = true; };
+  }, [configId, rubrics]);
+
+  const filteredVideos = useMemo(() => {
+    let result = allVideos;
+
+    if (selectedRubricId) {
+      result = result.filter((v) => v._rubricId === selectedRubricId);
     }
-  };
 
-  // Get content type label from translations
-  const getContentTypeLabel = (type: string): string => {
-    const translationKey = `trainingTab.contentTypes.${type}`;
-    const translated = t(translationKey);
-    // Fallback to capitalized type if translation key doesn't exist
-    return translated !== translationKey ? translated : type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  // Get icon for content type
-  const getContentTypeIcon = (type: string): React.ReactNode => {
-    switch (type.toLowerCase()) {
-      case 'video':
-        return <Video className="h-4 w-4" />;
-      case 'playlist':
-        return <Music className="h-4 w-4" />;
-      case 'news':
-      case 'article':
-        return <FileText className="h-4 w-4" />;
-      default:
-        return <BookOpen className="h-4 w-4" />;
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (v) =>
+          v.title.toLowerCase().includes(query) ||
+          v.description?.toLowerCase().includes(query)
+      );
     }
-  };
 
-  // Load more content for a specific type
-  const handleLoadMoreContentType = async (type: string) => {
-    await loadMoreContent(type);
-  };
-
-  // Load initial content for a specific type when it's selected
-  const handleContentTypeSelect = (type: string | null) => {
-    setSelectedContentType(type);
-
-    // Load initial content for this type if not already loaded
-    if (type && (!groupedContent[type] || groupedContent[type].videos.length === 0)) {
-      loadContentType(type);
+    if (selectedBadges.size > 0) {
+      result = result.filter((v) => {
+        const badges = getBadgesForContent(v.content_id);
+        return badges.some((b) => selectedBadges.has(b));
+      });
     }
-  };
 
-  const currentContent = getCurrentContent();
-  const isLoadingContent = getCurrentLoadingState();
-  const hasMoreContent = getCurrentHasMore();
-  const totalContentCount = contentTypes.reduce((sum, type) => sum + type.count, 0);
+    return result;
+  }, [allVideos, selectedRubricId, searchQuery, selectedBadges]);
+
+  const badgeCounts = useMemo(() => {
+    let base = allVideos;
+    if (selectedRubricId) {
+      base = base.filter((v) => v._rubricId === selectedRubricId);
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      base = base.filter(
+        (v) =>
+          v.title.toLowerCase().includes(query) ||
+          v.description?.toLowerCase().includes(query)
+      );
+    }
+    return computeBadgeCounts(base, (v) => getBadgesForContent(v.content_id));
+  }, [allVideos, selectedRubricId, searchQuery]);
+
+  const handleToggleBadge = useCallback((badge: BadgeType) => {
+    setSelectedBadges((prev) => {
+      const next = new Set(prev);
+      if (next.has(badge)) {
+        next.delete(badge);
+      } else {
+        next.add(badge);
+      }
+      return next;
+    });
+  }, []);
+
+  const showRubricTabs = rubrics.length > 1;
+
+  if (isLoadingRubrics) {
+    return (
+      <div className="bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" id="training-panel" aria-labelledby="training-tab">
+        <div className="h-10 max-w-md bg-gray-200 dark:bg-dark-300 rounded-lg animate-pulse mb-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-40 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (rubricsError) {
+    return (
+      <div className="bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" id="training-panel" aria-labelledby="training-tab">
+        <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+          <Play className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            {t('gameHub.errorLoadingContent', 'Error loading content')}
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+            {rubricsError}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800" role="tabpanel" id="training-panel" aria-labelledby="training-tab">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <h2 className="font-heading font-bold text-xl sm:text-2xl flex flex-wrap items-center text-gray-900 dark:text-white">
-          <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500 mr-2" />
-          <span className="break-words">{t('trainingTab.title', { gameName: gameName || tournament?.game })}</span>
-          {totalContentCount > 0 && (
-            <span className="ml-2 text-xs sm:text-sm bg-primary-600/20 text-primary-400 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full whitespace-nowrap">
-              {t('trainingTab.contents', { count: totalContentCount })}
-            </span>
-          )}
-        </h2>
-
-        {/* Sync Button for Galaxy Content */}
-        <button
-          onClick={handleSyncGalaxyContent}
-          disabled={isSyncing}
-          className="bg-secondary-600 hover:bg-secondary-700 disabled:bg-secondary-600/50 disabled:cursor-not-allowed text-white px-3 sm:px-4 py-2 rounded-lg transition-colors flex items-center text-sm sm:text-base whitespace-nowrap flex-shrink-0"
-          title={t('trainingTab.syncGalaxyContent')}
-        >
-          <RefreshCw className={`h-4 w-4 sm:mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">{isSyncing ? t('trainingTab.syncing') : t('trainingTab.syncGalaxy')}</span>
-        </button>
-      </div>
-
-      {isLoadingTypes ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader className="h-8 w-8 animate-spin text-primary-500" />
-          <span className="ml-3 text-gray-600 dark:text-gray-400">{t('trainingTab.loading')}</span>
-        </div>
-      ) : totalContentCount > 0 ? (
-        <>
-          {/* Content Type Filters */}
-          {contentTypes.length > 1 && (
-            <div className="mb-8">
-              <h3 className="font-heading font-semibold text-lg mb-4 text-gray-900 dark:text-white">
-                {t('trainingTab.filterByType')}
-              </h3>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                <button
-                  onClick={() => handleContentTypeSelect(null)}
-                  className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center whitespace-nowrap ${
-                    selectedContentType === null
-                      ? 'bg-primary-600 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-200 dark:bg-dark-200 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-dark-300 hover:shadow-md'
-                  }`}
-                >
-                  <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
-                  <span>{t('trainingTab.all')}</span>
-                  <span className="ml-1.5 sm:ml-2 bg-white/20 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
-                    {totalContentCount}
-                  </span>
-                </button>
-
-                {contentTypes.map(contentType => (
-                  <button
-                    key={contentType.type}
-                    onClick={() => handleContentTypeSelect(contentType.type)}
-                    className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center whitespace-nowrap ${
-                      selectedContentType === contentType.type
-                        ? 'bg-primary-600 text-white shadow-lg transform scale-105'
-                        : 'bg-gray-200 dark:bg-dark-200 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-dark-300 hover:shadow-md'
-                    }`}
-                  >
-                    <span className="flex-shrink-0">{getContentTypeIcon(contentType.type)}</span>
-                    <span className="ml-1.5 sm:ml-2">{getContentTypeLabel(contentType.type)}</span>
-                    <span className="ml-1.5 sm:ml-2 bg-white/20 text-xs px-1.5 sm:px-2 py-0.5 rounded-full">
-                      {contentType.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Content Display */}
-          <div className="space-y-8">
-            {selectedContentType ? (
-              /* Single content type view */
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-heading font-semibold text-xl flex items-center text-gray-900 dark:text-white">
-                    {getContentTypeIcon(selectedContentType)}
-                    <span className="ml-2">
-                      {getContentTypeLabel(selectedContentType)}
-                    </span>
-                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
-                      {t('trainingTab.contentCount', { current: groupedContent[selectedContentType]?.videos.length || 0, total: groupedContent[selectedContentType]?.totalCount || 0 })}
-                    </span>
-                  </h3>
-                </div>
-
-                {/* Loading state for initial content load */}
-                {isLoadingContent && currentContent.length === 0 ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader className="h-8 w-8 animate-spin text-primary-500" />
-                    <span className="ml-3 text-gray-600 dark:text-gray-400">{t('trainingTab.loadingType', { type: getContentTypeLabel(selectedContentType).toLowerCase() })}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {currentContent.map(content => (
-                        <VideoCard
-                          key={content.id}
-                          content={content}
-                          showMetadata={true}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Load More Button for Single Type */}
-                    {hasMoreContent && (
-                      <div className="text-center mt-8">
-                        <button
-                          onClick={() => handleLoadMoreContentType(selectedContentType)}
-                          disabled={isLoadingContent}
-                          className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors flex items-center mx-auto text-sm sm:text-base"
-                        >
-                          {isLoadingContent ? (
-                            <>
-                              <Loader className="h-4 w-4 mr-2 animate-spin" />
-                              <span className="hidden sm:inline">{t('trainingTab.loading')}</span>
-                              <span className="sm:hidden">{t('trainingTab.loading')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4 mr-2" />
-                              <span className="hidden sm:inline">{t('trainingTab.loadMoreType', { type: getContentTypeLabel(selectedContentType).toLowerCase() })}</span>
-                              <span className="sm:hidden">{t('trainingTab.loadMore')}</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ) : (
-              /* All content types view */
-              <>
-                {/* Loading state for all content */}
-                {isLoadingContent && currentContent.length === 0 ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader className="h-8 w-8 animate-spin text-primary-500" />
-                    <span className="ml-3 text-gray-600 dark:text-gray-400">{t('trainingTab.loadingAll')}</span>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {currentContent.map(content => (
-                        <VideoCard
-                          key={content.id}
-                          content={content}
-                          showMetadata={true}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Load More Button for All Content */}
-                    {hasMoreContent && (
-                      <div className="text-center mt-8">
-                        <button
-                          onClick={loadMoreAllContent}
-                          disabled={isLoadingContent}
-                          className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors flex items-center mx-auto text-sm sm:text-base"
-                        >
-                          {isLoadingContent ? (
-                            <>
-                              <Loader className="h-4 w-4 mr-2 animate-spin" />
-                              <span>{t('trainingTab.loading')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4 mr-2" />
-                              <span className="hidden sm:inline">{t('trainingTab.loadMoreContents')}</span>
-                              <span className="sm:hidden">{t('trainingTab.loadMore')}</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )}
+      <div className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t('gameHub.searchVideos', 'Search videos...')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-dark-200 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-300 dark:focus:border-gray-600 transition-colors"
+            />
           </div>
 
-          {/* Back to All Button when filtering */}
-          {selectedContentType && (
-            <div className="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => handleContentTypeSelect(null)}
-                className="bg-gray-200 dark:bg-dark-200 hover:bg-gray-300 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300 px-4 sm:px-6 py-2 rounded-lg transition-colors flex items-center mx-auto text-sm sm:text-base"
-              >
-                <ChevronUp className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">{t('trainingTab.backToAll')}</span>
-                <span className="sm:hidden">{t('trainingTab.backToAllShort')}</span>
-              </button>
+          {allVideos.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+              <BookOpen className="w-4 h-4" />
+              <span>
+                {filteredVideos.length} {filteredVideos.length === 1 ? 'video' : 'videos'}
+              </span>
             </div>
           )}
-        </>
-      ) : (
-        <div className="text-center py-12">
-          <BookOpen className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-          <h3 className="font-heading font-semibold text-lg mb-2 text-gray-900 dark:text-white">
-            {t('trainingTab.noContent')}
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t('trainingTab.noContentDescription', { gameName: gameName || tournament?.game })}
-          </p>
-          <button
-            onClick={handleSyncGalaxyContent}
-            disabled={isSyncing}
-            className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg transition-colors flex items-center mx-auto text-sm sm:text-base"
-          >
-            {isSyncing ? (
-              <>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                <span className="hidden sm:inline">{t('trainingTab.syncInProgress')}</span>
-                <span className="sm:hidden">{t('trainingTab.syncing')}</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">{t('trainingTab.syncGalaxyContent')}</span>
-                <span className="sm:hidden">{t('trainingTab.syncGalaxy')}</span>
-              </>
-            )}
-          </button>
         </div>
-      )}
+
+        <BadgeFilterBar
+          selectedBadges={selectedBadges}
+          onToggleBadge={handleToggleBadge}
+          badgeCounts={badgeCounts}
+        />
+
+        {showRubricTabs && (
+          <div className="flex items-center gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <button
+              onClick={() => setSelectedRubricId(null)}
+              className={`
+                px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
+                ${!selectedRubricId
+                  ? 'text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-300/50'
+                }
+              `}
+              style={!selectedRubricId ? {
+                backgroundColor: theme.colors.primary,
+                color: theme.colors.text,
+              } : undefined}
+            >
+              {t('gameHub.training.allSections', 'All')}
+            </button>
+            {rubrics.map((rubric) => {
+              const isActive = selectedRubricId === rubric.rubric_id;
+              return (
+                <button
+                  key={rubric.rubric_id}
+                  onClick={() => setSelectedRubricId(rubric.rubric_id)}
+                  className={`
+                    px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200
+                    ${isActive
+                      ? 'text-white shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-dark-300/50'
+                    }
+                  `}
+                  style={isActive ? {
+                    backgroundColor: theme.colors.primary,
+                    color: theme.colors.text,
+                  } : undefined}
+                >
+                  {rubric.name}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {contentsLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-40 bg-gray-200 dark:bg-dark-300 rounded-xl animate-pulse" />
+                <div className="h-4 w-3/4 bg-gray-200 dark:bg-dark-300 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        ) : filteredVideos.length === 0 ? (
+          <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-12 text-center">
+            <Play className="w-16 h-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {searchQuery
+                ? t('gameHub.noSearchResults', 'No matching videos found')
+                : t('gameHub.noTrainingContent', 'No training content available')}
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              {searchQuery
+                ? t('gameHub.tryDifferentSearch', 'Try a different search term')
+                : t('gameHub.noTrainingContentDesc', 'Training videos for this game will appear here once available.')}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {filteredVideos.map((video) => (
+              <GalaxyVideoCard
+                key={`${video._rubricId}-${video.content_id}`}
+                video={video}
+                rubricId={video._rubricId}
+                theme={theme}
+                rubricName={video._rubricName}
+                showRubricLabel={!selectedRubricId && showRubricTabs}
+                badges={getBadgesForContent(video.content_id)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

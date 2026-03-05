@@ -3,7 +3,7 @@
 /**
  * Translation Verification Script
  *
- * This script checks the synchronization between EN and FR translation files.
+ * This script checks the synchronization between EN, FR, and ES translation files.
  * It identifies missing keys, extra keys, and structural differences.
  *
  * Usage: npm run check-translations
@@ -12,7 +12,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// ANSI color codes for terminal output
 const colors = {
   reset: '\x1b[0m',
   bright: '\x1b[1m',
@@ -24,14 +23,11 @@ const colors = {
   cyan: '\x1b[36m',
 };
 
-// Path to translation files
 const localesPath = path.join(__dirname, '../src/locales');
 const enPath = path.join(localesPath, 'en.json');
 const frPath = path.join(localesPath, 'fr.json');
+const esPath = path.join(localesPath, 'es.json');
 
-/**
- * Load and parse a JSON file
- */
 function loadTranslations(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
@@ -42,9 +38,6 @@ function loadTranslations(filePath) {
   }
 }
 
-/**
- * Flatten nested translation object into dot-notation keys
- */
 function flattenKeys(obj, prefix = '') {
   const keys = [];
 
@@ -61,30 +54,21 @@ function flattenKeys(obj, prefix = '') {
   return keys;
 }
 
-/**
- * Get value from nested object using dot notation
- */
 function getNestedValue(obj, path) {
   return path.split('.').reduce((current, key) => current?.[key], obj);
 }
 
-/**
- * Compare two sets of keys and find differences
- */
-function compareKeys(enKeys, frKeys) {
-  const enSet = new Set(enKeys);
-  const frSet = new Set(frKeys);
+function compareKeys(baseKeys, targetKeys) {
+  const baseSet = new Set(baseKeys);
+  const targetSet = new Set(targetKeys);
 
-  const missingInFr = enKeys.filter(key => !frSet.has(key));
-  const missingInEn = frKeys.filter(key => !enSet.has(key));
-  const common = enKeys.filter(key => frSet.has(key));
+  const missingInTarget = baseKeys.filter(key => !targetSet.has(key));
+  const extraInTarget = targetKeys.filter(key => !baseSet.has(key));
+  const common = baseKeys.filter(key => targetSet.has(key));
 
-  return { missingInFr, missingInEn, common };
+  return { missingInTarget, extraInTarget, common };
 }
 
-/**
- * Check for empty values
- */
 function findEmptyValues(translations, keys) {
   const emptyKeys = [];
 
@@ -98,46 +82,15 @@ function findEmptyValues(translations, keys) {
   return emptyKeys;
 }
 
-/**
- * Check for duplicate values (potential copy-paste errors)
- */
-function findDuplicateValues(translations, keys) {
-  const valueMap = new Map();
-
-  for (const key of keys) {
-    const value = getNestedValue(translations, key);
-    if (typeof value === 'string' && value.trim() !== '') {
-      if (!valueMap.has(value)) {
-        valueMap.set(value, []);
-      }
-      valueMap.get(value).push(key);
-    }
-  }
-
-  // Return only values that appear more than once
-  const duplicates = [];
-  for (const [value, keys] of valueMap.entries()) {
-    if (keys.length > 1) {
-      duplicates.push({ value, keys });
-    }
-  }
-
-  return duplicates;
-}
-
-/**
- * Check for untranslated strings (EN text in FR file)
- */
-function findUntranslatedStrings(enTranslations, frTranslations, commonKeys) {
+function findUntranslatedStrings(enTranslations, targetTranslations, commonKeys) {
   const suspicious = [];
 
   for (const key of commonKeys) {
     const enValue = getNestedValue(enTranslations, key);
-    const frValue = getNestedValue(frTranslations, key);
+    const targetValue = getNestedValue(targetTranslations, key);
 
-    if (typeof enValue === 'string' && typeof frValue === 'string') {
-      // Skip keys that are expected to be the same (like interpolation variables)
-      if (enValue === frValue && !key.includes('count') && enValue.length > 3) {
+    if (typeof enValue === 'string' && typeof targetValue === 'string') {
+      if (enValue === targetValue && !key.includes('count') && enValue.length > 3) {
         suspicious.push({ key, value: enValue });
       }
     }
@@ -146,61 +99,31 @@ function findUntranslatedStrings(enTranslations, frTranslations, commonKeys) {
   return suspicious;
 }
 
-/**
- * Print section header
- */
 function printHeader(title) {
   console.log(`\n${colors.bright}${colors.cyan}${'='.repeat(80)}${colors.reset}`);
   console.log(`${colors.bright}${colors.cyan}${title}${colors.reset}`);
   console.log(`${colors.bright}${colors.cyan}${'='.repeat(80)}${colors.reset}\n`);
 }
 
-/**
- * Print subsection
- */
 function printSubsection(title, icon = '•') {
   console.log(`\n${colors.bright}${icon} ${title}${colors.reset}`);
   console.log(`${'-'.repeat(60)}`);
 }
 
-/**
- * Main verification function
- */
-function verifyTranslations() {
-  printHeader('Translation Verification Report');
+function checkLanguagePair(langName, langCode, enTranslations, enKeys, targetTranslations) {
+  const targetKeys = flattenKeys(targetTranslations);
+  const { missingInTarget, extraInTarget, common } = compareKeys(enKeys, targetKeys);
 
-  console.log(`${colors.blue}Loading translation files...${colors.reset}`);
-  console.log(`  EN: ${enPath}`);
-  console.log(`  FR: ${frPath}`);
-
-  // Load translations
-  const enTranslations = loadTranslations(enPath);
-  const frTranslations = loadTranslations(frPath);
-
-  // Flatten keys
-  const enKeys = flattenKeys(enTranslations);
-  const frKeys = flattenKeys(frTranslations);
-
-  console.log(`\n${colors.green}✓ Translation files loaded successfully${colors.reset}`);
-  console.log(`  EN keys: ${enKeys.length}`);
-  console.log(`  FR keys: ${frKeys.length}`);
-
-  // Compare keys
-  const { missingInFr, missingInEn, common } = compareKeys(enKeys, frKeys);
-
-  // Track overall status
   let hasErrors = false;
   let hasWarnings = false;
 
-  // Check for missing keys in French
-  if (missingInFr.length > 0) {
+  if (missingInTarget.length > 0) {
     hasErrors = true;
-    printSubsection(`❌ Missing Keys in French (${missingInFr.length})`, '❌');
-    console.log(`${colors.red}The following keys exist in EN but are missing in FR:${colors.reset}\n`);
+    printSubsection(`Missing Keys in ${langName} (${missingInTarget.length})`, '❌');
+    console.log(`${colors.red}The following keys exist in EN but are missing in ${langCode.toUpperCase()}:${colors.reset}\n`);
 
-    // Group by top-level key
     const grouped = {};
-    for (const key of missingInFr) {
+    for (const key of missingInTarget) {
       const topLevel = key.split('.')[0];
       if (!grouped[topLevel]) grouped[topLevel] = [];
       grouped[topLevel].push(key);
@@ -217,15 +140,13 @@ function verifyTranslations() {
     }
   }
 
-  // Check for extra keys in French (not in English)
-  if (missingInEn.length > 0) {
+  if (extraInTarget.length > 0) {
     hasWarnings = true;
-    printSubsection(`⚠️  Extra Keys in French (${missingInEn.length})`, '⚠️');
-    console.log(`${colors.yellow}The following keys exist in FR but are missing in EN:${colors.reset}\n`);
+    printSubsection(`Extra Keys in ${langName} (${extraInTarget.length})`, '⚠️');
+    console.log(`${colors.yellow}The following keys exist in ${langCode.toUpperCase()} but are missing in EN:${colors.reset}\n`);
 
-    // Group by top-level key
     const grouped = {};
-    for (const key of missingInEn) {
+    for (const key of extraInTarget) {
       const topLevel = key.split('.')[0];
       if (!grouped[topLevel]) grouped[topLevel] = [];
       grouped[topLevel].push(key);
@@ -234,42 +155,27 @@ function verifyTranslations() {
     for (const [section, keys] of Object.entries(grouped)) {
       console.log(`  ${colors.yellow}[${section}]${colors.reset}`);
       for (const key of keys) {
-        const value = getNestedValue(frTranslations, key);
+        const value = getNestedValue(targetTranslations, key);
         console.log(`    ${colors.yellow}!${colors.reset} ${key}`);
-        console.log(`      FR value: "${value}"`);
+        console.log(`      ${langCode.toUpperCase()} value: "${value}"`);
       }
       console.log();
     }
   }
 
-  // Check for empty values
-  const emptyInEn = findEmptyValues(enTranslations, enKeys);
-  const emptyInFr = findEmptyValues(frTranslations, frKeys);
-
-  if (emptyInEn.length > 0 || emptyInFr.length > 0) {
+  const emptyInTarget = findEmptyValues(targetTranslations, targetKeys);
+  if (emptyInTarget.length > 0) {
     hasWarnings = true;
-    printSubsection(`⚠️  Empty Values Found`, '⚠️');
-
-    if (emptyInEn.length > 0) {
-      console.log(`${colors.yellow}Empty values in EN (${emptyInEn.length}):${colors.reset}`);
-      emptyInEn.forEach(key => console.log(`  ${colors.yellow}!${colors.reset} ${key}`));
-      console.log();
-    }
-
-    if (emptyInFr.length > 0) {
-      console.log(`${colors.yellow}Empty values in FR (${emptyInFr.length}):${colors.reset}`);
-      emptyInFr.forEach(key => console.log(`  ${colors.yellow}!${colors.reset} ${key}`));
-      console.log();
-    }
+    printSubsection(`Empty Values in ${langName} (${emptyInTarget.length})`, '⚠️');
+    emptyInTarget.forEach(key => console.log(`  ${colors.yellow}!${colors.reset} ${key}`));
+    console.log();
   }
 
-  // Check for potential untranslated strings
-  const untranslated = findUntranslatedStrings(enTranslations, frTranslations, common);
-
+  const untranslated = findUntranslatedStrings(enTranslations, targetTranslations, common);
   if (untranslated.length > 0) {
     hasWarnings = true;
-    printSubsection(`⚠️  Potentially Untranslated Strings (${untranslated.length})`, '⚠️');
-    console.log(`${colors.yellow}The following keys have identical values in EN and FR:${colors.reset}\n`);
+    printSubsection(`Potentially Untranslated in ${langName} (${untranslated.length})`, '⚠️');
+    console.log(`${colors.yellow}Keys with identical values in EN and ${langCode.toUpperCase()}:${colors.reset}\n`);
 
     for (const { key, value } of untranslated) {
       console.log(`  ${colors.yellow}!${colors.reset} ${key}`);
@@ -278,23 +184,64 @@ function verifyTranslations() {
     console.log();
   }
 
-  // Summary
-  printSubsection('📊 Summary', '📊');
-  console.log(`Total EN keys:          ${colors.cyan}${enKeys.length}${colors.reset}`);
-  console.log(`Total FR keys:          ${colors.cyan}${frKeys.length}${colors.reset}`);
-  console.log(`Common keys:            ${colors.green}${common.length}${colors.reset}`);
-  console.log(`Missing in FR:          ${missingInFr.length > 0 ? colors.red : colors.green}${missingInFr.length}${colors.reset}`);
-  console.log(`Extra in FR:            ${missingInEn.length > 0 ? colors.yellow : colors.green}${missingInEn.length}${colors.reset}`);
-  console.log(`Empty values (EN):      ${emptyInEn.length > 0 ? colors.yellow : colors.green}${emptyInEn.length}${colors.reset}`);
-  console.log(`Empty values (FR):      ${emptyInFr.length > 0 ? colors.yellow : colors.green}${emptyInFr.length}${colors.reset}`);
-  console.log(`Potentially untranslated: ${untranslated.length > 0 ? colors.yellow : colors.green}${untranslated.length}${colors.reset}`);
+  return { targetKeys, missingInTarget, extraInTarget, common, emptyInTarget, untranslated, hasErrors, hasWarnings };
+}
 
-  // Final status
+function verifyTranslations() {
+  printHeader('Translation Verification Report');
+
+  console.log(`${colors.blue}Loading translation files...${colors.reset}`);
+  console.log(`  EN: ${enPath}`);
+  console.log(`  FR: ${frPath}`);
+  console.log(`  ES: ${esPath}`);
+
+  const enTranslations = loadTranslations(enPath);
+  const frTranslations = loadTranslations(frPath);
+  const esTranslations = loadTranslations(esPath);
+
+  const enKeys = flattenKeys(enTranslations);
+  const frKeys = flattenKeys(frTranslations);
+  const esKeys = flattenKeys(esTranslations);
+
+  console.log(`\n${colors.green}✓ Translation files loaded successfully${colors.reset}`);
+  console.log(`  EN keys: ${enKeys.length}`);
+  console.log(`  FR keys: ${frKeys.length}`);
+  console.log(`  ES keys: ${esKeys.length}`);
+
+  let globalErrors = false;
+  let globalWarnings = false;
+
+  printHeader('French (FR) Verification');
+  const frResult = checkLanguagePair('French', 'fr', enTranslations, enKeys, frTranslations);
+  if (frResult.hasErrors) globalErrors = true;
+  if (frResult.hasWarnings) globalWarnings = true;
+
+  printHeader('Spanish (ES) Verification');
+  const esResult = checkLanguagePair('Spanish', 'es', enTranslations, enKeys, esTranslations);
+  if (esResult.hasErrors) globalErrors = true;
+  if (esResult.hasWarnings) globalWarnings = true;
+
+  const emptyInEn = findEmptyValues(enTranslations, enKeys);
+
+  printSubsection('Summary', '📊');
+  console.log(`Total EN keys:            ${colors.cyan}${enKeys.length}${colors.reset}`);
+  console.log(`Total FR keys:            ${colors.cyan}${frKeys.length}${colors.reset}`);
+  console.log(`Total ES keys:            ${colors.cyan}${esKeys.length}${colors.reset}`);
+  console.log(`Empty values (EN):        ${emptyInEn.length > 0 ? colors.yellow : colors.green}${emptyInEn.length}${colors.reset}`);
+  console.log(`Missing in FR:            ${frResult.missingInTarget.length > 0 ? colors.red : colors.green}${frResult.missingInTarget.length}${colors.reset}`);
+  console.log(`Extra in FR:              ${frResult.extraInTarget.length > 0 ? colors.yellow : colors.green}${frResult.extraInTarget.length}${colors.reset}`);
+  console.log(`Empty in FR:              ${frResult.emptyInTarget.length > 0 ? colors.yellow : colors.green}${frResult.emptyInTarget.length}${colors.reset}`);
+  console.log(`Untranslated in FR:       ${frResult.untranslated.length > 0 ? colors.yellow : colors.green}${frResult.untranslated.length}${colors.reset}`);
+  console.log(`Missing in ES:            ${esResult.missingInTarget.length > 0 ? colors.red : colors.green}${esResult.missingInTarget.length}${colors.reset}`);
+  console.log(`Extra in ES:              ${esResult.extraInTarget.length > 0 ? colors.yellow : colors.green}${esResult.extraInTarget.length}${colors.reset}`);
+  console.log(`Empty in ES:              ${esResult.emptyInTarget.length > 0 ? colors.yellow : colors.green}${esResult.emptyInTarget.length}${colors.reset}`);
+  console.log(`Untranslated in ES:       ${esResult.untranslated.length > 0 ? colors.yellow : colors.green}${esResult.untranslated.length}${colors.reset}`);
+
   console.log('\n' + '='.repeat(80));
-  if (!hasErrors && !hasWarnings) {
+  if (!globalErrors && !globalWarnings) {
     console.log(`${colors.green}${colors.bright}✓ All translations are synchronized! 🎉${colors.reset}`);
     process.exit(0);
-  } else if (hasErrors) {
+  } else if (globalErrors) {
     console.log(`${colors.red}${colors.bright}✗ Translation synchronization issues found!${colors.reset}`);
     console.log(`${colors.red}Please fix the missing keys before deploying.${colors.reset}`);
     process.exit(1);
@@ -305,5 +252,4 @@ function verifyTranslations() {
   }
 }
 
-// Run verification
 verifyTranslations();

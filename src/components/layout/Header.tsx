@@ -193,6 +193,8 @@ const Header: React.FC = () => {
     { label: t('header.tournaments'), href: '/' },
     { label: t('header.leaderboards'), href: '/leaderboards' },
     { label: t('header.communities'), href: '/communities' },
+    { label: t('header.masterclasses'), href: '/masterclasses' },
+    { label: t('header.grindZone'), href: '/grind-zone' },
   ];
 
   if (user) {

@@ -13,7 +13,8 @@ import {
   Maximize2,
   Minimize2,
   X,
-  ArrowDown
+  ArrowDown,
+  AlertCircle
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
 import CoachingMessageRenderer from './CoachingMessageRenderer';
@@ -55,6 +56,9 @@ interface AICoachChatProps {
   onSendMessage: (message: string) => Promise<void>;
   onVideoClick: (contentId: string) => void;
   quickPrompts?: string[];
+  initialPrompt?: string | null;
+  onPromptConsumed?: () => void;
+  error?: string | null;
 }
 
 const QuickActionPill: React.FC<{
@@ -103,7 +107,10 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
   videoRecommendations,
   onSendMessage,
   onVideoClick,
-  quickPrompts = []
+  quickPrompts = [],
+  initialPrompt,
+  onPromptConsumed,
+  error
 }) => {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
@@ -179,6 +186,14 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
     window.addEventListener('keydown', handleEscape);
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isFullscreen]);
+
+  useEffect(() => {
+    if (initialPrompt) {
+      setInputValue(initialPrompt);
+      setTimeout(() => inputRef.current?.focus(), 100);
+      onPromptConsumed?.();
+    }
+  }, [initialPrompt, onPromptConsumed]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -479,6 +494,26 @@ const AICoachChat: React.FC<AICoachChatProps> = ({
                 </div>
               </div>
             )}
+
+            {error && !isLoading && (
+              <div className="flex justify-start animate-fade-in">
+                <div className={`flex gap-3 ${isFullscreen ? 'max-w-[75%]' : 'max-w-[85%]'}`}>
+                  <div className={`rounded-full flex-shrink-0 flex items-center justify-center bg-red-500/20 ${
+                    isFullscreen ? 'w-10 h-10' : 'w-8 h-8'
+                  }`}>
+                    <AlertCircle className={`text-red-400 ${isFullscreen ? 'w-5 h-5' : 'w-4 h-4'}`} />
+                  </div>
+                  <div className={`rounded-2xl bg-red-500/10 border border-red-500/20 rounded-tl-sm ${
+                    isFullscreen ? 'px-5 py-4' : 'px-4 py-3'
+                  }`}>
+                    <p className={`text-red-300 ${isFullscreen ? 'text-base' : 'text-sm'}`}>
+                      {error}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </>
         )}

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useConfigGames } from '../hooks/useConfigGames';
+import { useGalaxyRubrics } from '../hooks/useGalaxyRubrics';
 import { ConfigGame } from '../services/configGamesService';
-import { fetchRubricsForGame, isOthersGame, RubricInfo } from '../services/othersService';
+import { isOthersGame } from '../services/othersService';
 import { getGameTheme } from '../utils/gameThemes';
 import GameHubCarousel from '../components/games/GameHubCarousel';
 import GameHubTabs, { GameHubTabId } from '../components/games/GameHubTabs';
@@ -13,6 +14,7 @@ import GameHubLeaderboardTab from '../components/games/tabs/GameHubLeaderboardTa
 import GameHubTrainingTab from '../components/games/tabs/GameHubTrainingTab';
 import GameHubSkillLabTab from '../components/games/tabs/GameHubSkillLabTab';
 import GameHubCoachingTab from '../components/games/tabs/GameHubCoachingTab';
+import GameHubGrindZoneTab from '../components/games/tabs/GameHubGrindZoneTab';
 import OthersHubDynamicTabs from '../components/others/OthersHubDynamicTabs';
 import OthersRubricContentTab from '../components/others/OthersRubricContentTab';
 import OthersArticlesTab from '../components/others/OthersArticlesTab';
@@ -24,17 +26,16 @@ const GameHubPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { games: configGames, isLoading: configLoading } = useConfigGames();
+  const { allForGame, gameHasGrindZoneContent, isLoading: galaxyLoading } = useGalaxyRubrics();
   const [selectedGame, setSelectedGame] = useState<ConfigGame | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<GameHubTabId>('overview');
-  const [rubrics, setRubrics] = useState<RubricInfo[]>([]);
   const [othersActiveTab, setOthersActiveTab] = useState<string>('');
-  const [rubricsLoading, setRubricsLoading] = useState(false);
 
   useEffect(() => {
     if (configLoading || configGames.length === 0) return;
 
-    const resolveGame = async () => {
+    const resolveGame = () => {
       try {
         setError(null);
 
@@ -56,25 +57,8 @@ const GameHubPage: React.FC = () => {
 
         setSelectedGame(match);
         setActiveTab('overview');
+        setOthersActiveTab('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        if (isOthersGame(match)) {
-          setRubricsLoading(true);
-          try {
-            const gameRubrics = await fetchRubricsForGame(match.id);
-            setRubrics(gameRubrics);
-            if (gameRubrics.length > 0) {
-              setOthersActiveTab(gameRubrics[0].rubric_id);
-            } else {
-              setOthersActiveTab('articles');
-            }
-          } catch (rubricErr) {
-            console.error('Error loading rubrics:', rubricErr);
-            setOthersActiveTab('articles');
-          } finally {
-            setRubricsLoading(false);
-          }
-        }
       } catch (err) {
         console.error('Error loading game:', err);
         setError(t('gameHub.errorLoadingGame'));
@@ -83,6 +67,38 @@ const GameHubPage: React.FC = () => {
 
     resolveGame();
   }, [gameSlug, configGames, configLoading, navigate, t]);
+
+  const isCollectionGame = selectedGame ? isOthersGame(selectedGame) : false;
+
+  const othersRubrics = useMemo(() => {
+    if (!selectedGame || !isCollectionGame) return [];
+    return allForGame(selectedGame.id);
+  }, [selectedGame, isCollectionGame, allForGame]);
+
+  useEffect(() => {
+    if (!isCollectionGame || galaxyLoading) return;
+    if (othersActiveTab) return;
+    if (othersRubrics.length > 0) {
+      setOthersActiveTab(othersRubrics[0].rubric_id);
+    } else {
+      setOthersActiveTab('articles');
+    }
+  }, [isCollectionGame, galaxyLoading, othersRubrics, othersActiveTab]);
+
+  const hiddenTabs = useMemo(() => {
+    if (!selectedGame || galaxyLoading) return [] as GameHubTabId[];
+    const hidden: GameHubTabId[] = [];
+    if (!gameHasGrindZoneContent(selectedGame.id)) {
+      hidden.push('grindZone');
+    }
+    return hidden;
+  }, [selectedGame, galaxyLoading, gameHasGrindZoneContent]);
+
+  useEffect(() => {
+    if (hiddenTabs.includes(activeTab as GameHubTabId)) {
+      setActiveTab('overview');
+    }
+  }, [hiddenTabs, activeTab]);
 
   const isLoading = configLoading || (configGames.length > 0 && !selectedGame && !error);
 
@@ -120,7 +136,6 @@ const GameHubPage: React.FC = () => {
   }
 
   const theme = selectedGame ? getGameTheme(selectedGame.slug || selectedGame.name) : null;
-  const isCollectionGame = selectedGame ? isOthersGame(selectedGame) : false;
 
   const renderOthersTabContent = () => {
     if (!selectedGame || !theme) return null;
@@ -129,13 +144,13 @@ const GameHubPage: React.FC = () => {
       return <OthersArticlesTab theme={theme} />;
     }
 
-    const activeRubric = rubrics.find((r) => r.rubric_id === othersActiveTab);
+    const activeRubric = othersRubrics.find((r) => r.rubric_id === othersActiveTab);
     if (activeRubric) {
       return (
         <OthersRubricContentTab
           gameId={selectedGame.id}
           rubricId={activeRubric.rubric_id}
-          rubricName={activeRubric.rubric_name || activeRubric.rubric_id}
+          rubricName={activeRubric.name}
           theme={theme}
         />
       );
@@ -189,6 +204,15 @@ const GameHubPage: React.FC = () => {
             theme={theme}
           />
         );
+      case 'grindZone':
+        return (
+          <GameHubGrindZoneTab
+            gameId={selectedGame.id}
+            gameName={selectedGame.name}
+            theme={theme}
+            gameImageUrl={selectedGame.image_url}
+          />
+        );
       case 'coaching':
         return (
           <GameHubCoachingTab
@@ -224,17 +248,18 @@ const GameHubPage: React.FC = () => {
             <div className="sticky top-0 z-20">
               {isCollectionGame ? (
                 <OthersHubDynamicTabs
-                  rubrics={rubrics}
+                  rubrics={othersRubrics}
                   activeTab={othersActiveTab}
                   onTabChange={setOthersActiveTab}
                   theme={theme}
-                  isLoading={rubricsLoading}
+                  isLoading={galaxyLoading}
                 />
               ) : (
                 <GameHubTabs
                   activeTab={activeTab}
                   onTabChange={handleTabChange}
                   theme={theme}
+                  hiddenTabs={hiddenTabs}
                 />
               )}
             </div>

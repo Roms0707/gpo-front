@@ -38,9 +38,12 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
 
   const getLanguageDisplay = (lang: SupportedLanguage): { flag: string; label: string } => {
     if (lang === 'fr') {
-      return { flag: '🇫🇷', label: 'FR' };
+      return { flag: '\uD83C\uDDEB\uD83C\uDDF7', label: 'FR' };
     }
-    return { flag: '🇬🇧', label: 'EN' };
+    if (lang === 'es') {
+      return { flag: '\uD83C\uDDEA\uD83C\uDDF8', label: 'ES' };
+    }
+    return { flag: '\uD83C\uDDEC\uD83C\uDDE7', label: 'EN' };
   };
 
   if (variant === 'dropdown') {
@@ -99,6 +102,22 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
                   <span className="ml-auto text-primary-600 dark:text-primary-400">✓</span>
                 )}
               </button>
+
+              <button
+                onClick={() => handleLanguageChange('es')}
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-left transition-colors ${
+                  currentLanguage === 'es'
+                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
+                    : 'hover:bg-gray-50 dark:hover:bg-dark-300 text-gray-700 dark:text-gray-300'
+                }`}
+                aria-label="Switch to Spanish"
+              >
+                <span className="text-2xl" role="img" aria-label="Spain flag">🇪🇸</span>
+                <span className="text-sm font-medium">Espa&ntilde;ol</span>
+                {currentLanguage === 'es' && (
+                  <span className="ml-auto text-primary-600 dark:text-primary-400">✓</span>
+                )}
+              </button>
             </div>
           </>
         )}
@@ -139,6 +158,21 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className = '', var
         >
           <span role="img" aria-label="UK flag">🇬🇧</span>
           <span>EN</span>
+        </button>
+        <button
+          onClick={() => handleLanguageChange('es')}
+          className={`
+            flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200
+            ${currentLanguage === 'es'
+              ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 scale-105'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-dark-300/50'
+            }
+          `}
+          aria-label="Switch to Spanish"
+          aria-pressed={currentLanguage === 'es'}
+        >
+          <span role="img" aria-label="Spain flag">🇪🇸</span>
+          <span>ES</span>
         </button>
       </div>
     </div>

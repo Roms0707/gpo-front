@@ -32,7 +32,7 @@ const LegalContentLayout: React.FC<LegalContentLayoutProps> = ({
                 </h1>
               </div>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('footer.lastUpdated')} {lastUpdated.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
+                {t('footer.lastUpdated')} {lastUpdated.toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US', {
                   month: 'long',
                   year: 'numeric'
                 })}

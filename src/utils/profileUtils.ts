@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import i18n from '../locales/i18n';
 
 // Group registrations by tournament status
@@ -30,7 +30,7 @@ export const groupRegistrationsByStatus = (registrations: any[]) => {
 export const formatDate = (dateString: string) => {
   try {
     const currentLanguage = i18n.language || 'en';
-    const locale = currentLanguage.startsWith('fr') ? fr : enUS;
+    const locale = currentLanguage.startsWith('fr') ? fr : currentLanguage.startsWith('es') ? es : enUS;
     return format(new Date(dateString), 'dd MMMM yyyy', { locale });
   } catch (error) {
     return i18n.t('common.unknownDate');

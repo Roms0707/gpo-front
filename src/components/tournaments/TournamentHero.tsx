@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { format, isValid, differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Users, Trophy, ArrowLeft, Loader, Video, Clock, CheckCircle, MessageSquare, ExternalLink } from 'lucide-react';
 import { Tournament, TournamentPrize } from '../../types';
@@ -103,8 +103,8 @@ const TournamentHero = forwardRef<HTMLDivElement, TournamentHeroProps>(({
         return t('tournamentHero.dateToConfirm');
       }
       const currentLanguage = i18n.language || 'en';
-      const locale = currentLanguage.startsWith('fr') ? fr : enUS;
-      const formatStr = currentLanguage.startsWith('fr') ? 'dd MMMM yyyy à HH:mm' : 'dd MMMM yyyy \'at\' HH:mm';
+      const locale = currentLanguage.startsWith('fr') ? fr : currentLanguage.startsWith('es') ? es : enUS;
+      const formatStr = currentLanguage.startsWith('fr') ? 'dd MMMM yyyy à HH:mm' : currentLanguage.startsWith('es') ? "dd 'de' MMMM yyyy 'a las' HH:mm" : 'dd MMMM yyyy \'at\' HH:mm';
       const formattedDate = format(date, formatStr, { locale });
       const timezone = getUserTimezoneAbbreviation();
       return timezone ? `${formattedDate} ${timezone}` : formattedDate;

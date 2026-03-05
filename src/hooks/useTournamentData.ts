@@ -5,6 +5,7 @@ import { fetchTournamentById, fetchTournamentPrizes, checkTournamentRegistration
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 import { calculateTotalPrizePool } from '../utils/prizePoolUtils';
+import i18n from '../locales/i18n';
 
 export const useTournamentData = (user: any) => {
   const { id } = useParams<{ id: string }>();
@@ -97,7 +98,7 @@ export const useTournamentData = (user: any) => {
         const { data } = await fetchTournamentById(id);
 
         if (!data) {
-          toast.error('Tournoi non trouvé');
+          toast.error(i18n.t('toast.tournamentNotFoundError'));
           navigate('/');
           return;
         }
@@ -164,7 +165,7 @@ export const useTournamentData = (user: any) => {
         }
       } catch (err) {
         console.error('Error loading tournament:', err);
-        toast.error('Erreur lors du chargement du tournoi');
+        toast.error(i18n.t('toast.tournamentLoadError'));
         navigate('/');
       } finally {
         setIsLoading(false);

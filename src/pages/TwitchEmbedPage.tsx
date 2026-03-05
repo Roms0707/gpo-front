@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Users, Calendar, Trophy, Volume2, VolumeX, Maximize2, Minimize2, RefreshCw } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 import { extractTwitchChannelName } from '../services/api';
 import { formatDate } from '../utils/formatters';
@@ -20,6 +21,7 @@ interface Tournament {
 const TwitchEmbedPage: React.FC = () => {
   const { channelName } = useParams<{ channelName: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -97,7 +99,7 @@ const TwitchEmbedPage: React.FC = () => {
 
       if (error) {
         console.error('Error loading tournament:', error);
-        setError('Erreur lors du chargement du tournoi');
+        setError(t('toast.tournamentLoadError'));
         return;
       }
 
@@ -115,11 +117,11 @@ const TwitchEmbedPage: React.FC = () => {
           description: tournamentData.description || ''
         });
       } else {
-        setError('Tournoi non trouvé pour ce canal Twitch');
+        setError(t('errors.tournamentNotFoundForTwitch'));
       }
     } catch (error) {
       console.error('Error loading tournament:', error);
-      setError('Erreur lors du chargement du tournoi');
+      setError(t('toast.tournamentLoadError'));
     } finally {
       setIsLoading(false);
     }
@@ -246,9 +248,9 @@ const TwitchEmbedPage: React.FC = () => {
                               Vérification du statut...
                             </span>
                           ) : streamStatus === 'online' ? (
-                            <span className="text-red-500 font-medium">🔴 EN DIRECT</span>
+                            <span className="text-red-500 font-medium">{'🔴 ' + t('twitch.live')}</span>
                           ) : (
-                            <span className="text-gray-500">Hors ligne</span>
+                            <span className="text-gray-500">{t('twitch.offline')}</span>
                           )}
                           <span className="text-xs text-gray-500">
                             Vérifié {formatLastCheck()}
@@ -400,13 +402,13 @@ const TwitchEmbedPage: React.FC = () => {
                         streamStatus === 'loading' ? 'text-gray-500 dark:text-gray-400' :
                         'text-gray-600 dark:text-gray-400'
                       }`}>
-                        {streamStatus === 'loading' ? 'VÉRIFICATION...' :
-                         streamStatus === 'online' ? '🔴 EN DIRECT' : 'HORS LIGNE'}
+                        {streamStatus === 'loading' ? t('twitch.checking') :
+                         streamStatus === 'online' ? '🔴 ' + t('twitch.live') : t('twitch.offline')}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {streamStatus === 'loading' ? 'Connexion au stream...' :
-                         streamStatus === 'online' ? 'Le stream est en direct' :
-                         'Le stream est actuellement hors ligne'}
+                        {streamStatus === 'loading' ? t('twitch.connectingToStream') :
+                         streamStatus === 'online' ? t('twitch.streamIsLive') :
+                         t('twitch.streamIsOffline')}
                       </div>
                     </div>
 

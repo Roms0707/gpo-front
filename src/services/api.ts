@@ -334,6 +334,8 @@ export const fetchTournamentById = async (id: string) => {
         private_server_code,
         game_id,
         created_at,
+        bracket_status,
+        bracket_launched_at,
         games:game_id (
           id,
           name,
@@ -387,7 +389,9 @@ export const fetchTournamentById = async (id: string) => {
     discord_url: tournament.discord_url,
     discord_server_id: tournament.discord_server_id,
     twitch_url: tournament.twitch_url,
-    created_at: tournament.created_at
+    created_at: tournament.created_at,
+    bracket_status: tournament.bracket_status,
+    bracket_launched_at: tournament.bracket_launched_at
   };
 
   return { data: transformedTournament };
@@ -1707,7 +1711,13 @@ export const fetchFeaturedTournamentTrailers = async (limit: number = 2) => {
       } : null
     }));
 
-    return transformedData;
+    const now = new Date();
+    return transformedData.filter(trailer => {
+      if (!trailer.tournament) return false;
+      if (trailer.tournament.status === 'past' || trailer.tournament.status === 'completed') return false;
+      if (trailer.tournament.endDate && new Date(trailer.tournament.endDate) < now) return false;
+      return true;
+    });
   } catch (error) {
     console.error('Error in fetchFeaturedTournamentTrailers:', error);
     return [];

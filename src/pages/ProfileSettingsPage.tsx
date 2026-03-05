@@ -9,22 +9,27 @@ import {
   Gamepad2,
   CheckCircle,
   Loader,
-  AlertCircle,
   Settings,
   Link2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Shield,
+  Globe,
+  Compass,
+  MessageSquare,
+  ChevronRight
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { validateRiotId } from '../services/api';
 import toast from 'react-hot-toast';
 import SteamAccountIntegration from '../components/profile/SteamAccountIntegration';
 import FortniteAccountIntegration from '../components/profile/FortniteAccountIntegration';
 import RiotAccountIntegration from '../components/profile/RiotAccountIntegration';
 import DiscordOAuthIntegration from '../components/profile/DiscordOAuthIntegration';
 import { usePlayerPrimaryGame } from '../hooks/usePlayerPrimaryGame';
+import { useProfileVisibility } from '../hooks/useProfileVisibility';
 import { getGameTheme } from '../utils/gameThemes';
 import { Game } from '../types';
+import LanguageSwitcher from '../components/ui/LanguageSwitcher';
 
 interface GamePublisherField {
   id: string;
@@ -133,7 +138,6 @@ const ProfileSettingsPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [gamePublisherFields, setGamePublisherFields] = useState<GamePublisherField[]>([]);
   const [isLoadingFields, setIsLoadingFields] = useState(false);
@@ -145,6 +149,13 @@ const ProfileSettingsPage: React.FC = () => {
     validationData: user?.fortnite_validation_data || null
   });
   const [favoriteGame, setFavoriteGame] = useState<Game | null>(null);
+  const [ticketCount, setTicketCount] = useState(0);
+
+  const {
+    isProfilePublic,
+    isUpdatingVisibility,
+    handleVisibilityToggle
+  } = useProfileVisibility();
 
   useEffect(() => {
     const loadFavoriteGame = async () => {
@@ -152,20 +163,17 @@ const ProfileSettingsPage: React.FC = () => {
         setFavoriteGame(null);
         return;
       }
-
       try {
         const { data } = await supabase
           .from('games')
           .select('*')
           .eq('id', user.favorite_game_id)
           .maybeSingle();
-
         setFavoriteGame(data);
       } catch (error) {
         console.error('Error loading favorite game:', error);
       }
     };
-
     loadFavoriteGame();
   }, [user?.favorite_game_id]);
 
@@ -200,9 +208,9 @@ const ProfileSettingsPage: React.FC = () => {
       navigate('/login');
       return;
     }
-
     loadGamePublisherFields();
     loadSteamId64();
+    loadTicketCount();
   }, [user, navigate]);
 
   useEffect(() => {
@@ -215,34 +223,40 @@ const ProfileSettingsPage: React.FC = () => {
     }
   }, [user]);
 
+  const loadTicketCount = async () => {
+    if (!user?.id) return;
+    try {
+      const { count } = await supabase
+        .from('support_tickets')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .in('status', ['open', 'pending']);
+      setTicketCount(count || 0);
+    } catch { /* ignore */ }
+  };
+
   const loadSteamId64 = async () => {
     if (!user?.id) return;
-
     try {
       const { data: steamGame } = await supabase
         .from('games')
         .select('id')
         .ilike('name', '%steam%')
         .maybeSingle();
-
       if (!steamGame) return;
-
       const { data: steamPublisher } = await supabase
         .from('game_publisher_ids')
         .select('id')
         .eq('game_id', steamGame.id)
         .ilike('label', '%steam%')
         .maybeSingle();
-
       if (!steamPublisher) return;
-
       const { data: userSteamData } = await supabase
         .from('game_publisher_id_for_users')
         .select('value, is_validated, validation_data')
         .eq('user_id', user.id)
         .eq('game_publisher_id', steamPublisher.id)
         .maybeSingle();
-
       if (userSteamData) {
         setSteamData({
           value: userSteamData.value,
@@ -257,41 +271,20 @@ const ProfileSettingsPage: React.FC = () => {
 
   const loadGamePublisherFields = async () => {
     if (!user?.id) return;
-
     try {
       setIsLoadingFields(true);
-
       const { data: publisherIds, error: publisherError } = await supabase
         .from('game_publisher_ids')
-        .select(`
-          id,
-          label,
-          id_name,
-          required,
-          game_id,
-          games:game_id (
-            name,
-            has_an_api
-          )
-        `)
+        .select(`id, label, id_name, required, game_id, games:game_id (name, has_an_api)`)
         .order('label', { ascending: true });
-
       if (publisherError || !publisherIds) {
         setGamePublisherFields([]);
         return;
       }
-
       const { data: userValues } = await supabase
         .from('game_publisher_id_for_users')
-        .select(`
-          game_publisher_id,
-          value,
-          is_validated,
-          validation_data,
-          validation_date
-        `)
+        .select(`game_publisher_id, value, is_validated, validation_data, validation_date`)
         .eq('user_id', user.id);
-
       const existingValues = new Map();
       (userValues || []).forEach((item) => {
         existingValues.set(item.game_publisher_id, {
@@ -301,7 +294,6 @@ const ProfileSettingsPage: React.FC = () => {
           validation_date: item.validation_date
         });
       });
-
       const fields: GamePublisherField[] = publisherIds.map((item) => {
         const existing = existingValues.get(item.id);
         return {
@@ -318,7 +310,6 @@ const ProfileSettingsPage: React.FC = () => {
           publisherLabel: item.label
         };
       });
-
       setGamePublisherFields(fields);
     } catch (error) {
       console.error('Error loading game publisher fields:', error);
@@ -329,38 +320,31 @@ const ProfileSettingsPage: React.FC = () => {
 
   const saveSteamId64 = async () => {
     if (!user?.id || !steamData.value) return;
-
     try {
       const { data: steamGame } = await supabase
         .from('games')
         .select('id')
         .ilike('name', '%steam%')
         .maybeSingle();
-
       if (!steamGame) return;
-
       const { data: steamPublisher } = await supabase
         .from('game_publisher_ids')
         .select('id')
         .eq('game_id', steamGame.id)
         .ilike('label', '%steam%')
         .maybeSingle();
-
       if (!steamPublisher) return;
-
       await supabase.from('game_publisher_id_for_users').upsert(
-        [
-          {
-            user_id: user.id,
-            game_id: steamGame.id,
-            game_publisher_id: steamPublisher.id,
-            value: steamData.value,
-            is_validated: steamData.isValidated,
-            validation_data: steamData.validationData,
-            validation_date: steamData.isValidated ? new Date().toISOString() : null,
-            validation_source: steamData.isValidated ? 'steam_api' : null
-          }
-        ],
+        [{
+          user_id: user.id,
+          game_id: steamGame.id,
+          game_publisher_id: steamPublisher.id,
+          value: steamData.value,
+          is_validated: steamData.isValidated,
+          validation_data: steamData.validationData,
+          validation_date: steamData.isValidated ? new Date().toISOString() : null,
+          validation_source: steamData.isValidated ? 'steam_api' : null
+        }],
         { onConflict: 'user_id,game_publisher_id' }
       );
     } catch (error) {
@@ -371,40 +355,32 @@ const ProfileSettingsPage: React.FC = () => {
 
   const saveGamePublisherAccounts = async () => {
     if (!user?.id) return;
-
     const fieldsWithValues = gamePublisherFields.filter(
       (field) => field.value && field.value.trim() !== ''
     );
-
     for (const field of fieldsWithValues) {
       const { error } = await supabase.from('game_publisher_id_for_users').upsert(
-        [
-          {
-            user_id: user.id,
-            game_id: field.game_id,
-            game_publisher_id: field.id,
-            value: field.value.trim(),
-            is_validated: field.isValidated || false,
-            validation_date: field.validation_date || null,
-            validation_data: field.validation_data || null,
-            validation_source: field.validation_data ? 'riot_api' : null
-          }
-        ],
+        [{
+          user_id: user.id,
+          game_id: field.game_id,
+          game_publisher_id: field.id,
+          value: field.value.trim(),
+          is_validated: field.isValidated || false,
+          validation_date: field.validation_date || null,
+          validation_data: field.validation_data || null,
+          validation_source: field.validation_data ? 'riot_api' : null
+        }],
         { onConflict: 'user_id,game_publisher_id' }
       );
-
       if (error) throw error;
     }
   };
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user?.id) return;
-
     try {
       setIsSubmitting(true);
-
       const { error: updateError } = await supabase
         .from('users')
         .update({
@@ -413,18 +389,13 @@ const ProfileSettingsPage: React.FC = () => {
           fortnite_validation_data: fortniteData.validationData
         })
         .eq('id', user.id);
-
       if (updateError) throw updateError;
-
       await saveGamePublisherAccounts();
-
       if (steamData.value) {
         await saveSteamId64();
       }
-
       const checkSession = useAuthStore.getState().checkSession;
       await checkSession();
-
       toast.success(t('profile.settingsSavedSuccess', 'Settings saved successfully!'));
       navigate('/profile');
     } catch (error) {
@@ -458,8 +429,7 @@ const ProfileSettingsPage: React.FC = () => {
         background: `linear-gradient(180deg, ${theme.colors.primary}08 0%, transparent 30%)`
       }}
     >
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto px-4">
           <Link
             to="/profile"
             className="inline-flex items-center text-gray-400 hover:text-white mb-6 transition-colors"
@@ -481,10 +451,7 @@ const ProfileSettingsPage: React.FC = () => {
                   {t('profile.settingsTitle', 'Account Settings')}
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  {t(
-                    'profile.settingsDescription',
-                    'Manage your gaming account connections and integrations'
-                  )}
+                  {t('profile.settingsDescription', 'Manage your gaming account connections and integrations')}
                 </p>
               </div>
             </div>
@@ -585,60 +552,60 @@ const ProfileSettingsPage: React.FC = () => {
                   />
                 </SettingsCard>
               ) : null}
-            </div>
 
-            {otherFields.length > 0 && (
-              <SettingsCard
-                title={t('profile.otherGameAccounts', 'Other Games')}
-                icon={<Gamepad2 className="h-6 w-6 text-green-500" />}
-                isExpanded={expandedCard === 'other'}
-                onToggle={() => toggleCard('other')}
-                accentColor="#22c55e"
-                validatedCount={countValidated(otherFields)}
-                totalCount={otherFields.filter((f) => f.value).length}
-              >
-                <div className="space-y-4">
-                  {otherFields.map((field) => (
-                    <div key={field.id}>
-                      <label
-                        htmlFor={`other_${field.id}`}
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                      >
-                        {field.label}
-                      </label>
-                      <input
-                        type="text"
-                        id={`other_${field.id}`}
-                        value={field.value || ''}
-                        onChange={(e) => {
-                          setGamePublisherFields((prev) =>
-                            prev.map((f) =>
-                              f.id === field.id
-                                ? { ...f, value: e.target.value, isValidated: false }
-                                : f
-                            )
-                          );
-                        }}
-                        className="w-full bg-white dark:bg-dark-300 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        placeholder={`Your ${field.id_name}`}
-                        disabled={isSubmitting}
-                      />
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {t('profile.game')}: {field.gameName}
-                      </p>
-                      {field.isValidated && (
-                        <div className="mt-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
-                          <div className="flex items-center text-green-500 text-sm">
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            <span>{t('profile.accountValidated')}</span>
+              {otherFields.length > 0 && (
+                <SettingsCard
+                  title={t('profile.otherGameAccounts', 'Other Games')}
+                  icon={<Gamepad2 className="h-6 w-6 text-green-500" />}
+                  isExpanded={expandedCard === 'other'}
+                  onToggle={() => toggleCard('other')}
+                  accentColor="#22c55e"
+                  validatedCount={countValidated(otherFields)}
+                  totalCount={otherFields.filter((f) => f.value).length}
+                >
+                  <div className="space-y-4">
+                    {otherFields.map((field) => (
+                      <div key={field.id}>
+                        <label
+                          htmlFor={`other_${field.id}`}
+                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                        >
+                          {field.label}
+                        </label>
+                        <input
+                          type="text"
+                          id={`other_${field.id}`}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            setGamePublisherFields((prev) =>
+                              prev.map((f) =>
+                                f.id === field.id
+                                  ? { ...f, value: e.target.value, isValidated: false }
+                                  : f
+                              )
+                            );
+                          }}
+                          className="w-full bg-white dark:bg-dark-300 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder={`Your ${field.id_name}`}
+                          disabled={isSubmitting}
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {t('profile.game')}: {field.gameName}
+                        </p>
+                        {field.isValidated && (
+                          <div className="mt-2 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <div className="flex items-center text-green-500 text-sm">
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              <span>{t('profile.accountValidated')}</span>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </SettingsCard>
-            )}
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </SettingsCard>
+              )}
+            </div>
 
             <div
               className="p-4 rounded-xl border flex items-start gap-3"
@@ -686,7 +653,103 @@ const ProfileSettingsPage: React.FC = () => {
               </button>
             </div>
           </form>
-        </div>
+
+          <div className="mt-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div
+                className="p-2.5 rounded-xl"
+                style={{ backgroundColor: `${theme.colors.primary}15` }}
+              >
+                <Settings className="h-5 w-5" style={{ color: theme.colors.primary }} />
+              </div>
+              <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
+                {t('profile.quickSettings', 'Quick Settings')}
+              </h2>
+            </div>
+
+            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-dark-100 divide-y divide-gray-100 dark:divide-gray-800">
+              <div className="px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {t('profile.visibility', 'Profile Visibility')}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {isProfilePublic
+                        ? t('profile.publicDesc', 'Others can view your profile')
+                        : t('profile.privateDesc', 'Only you can view your profile')}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleVisibilityToggle}
+                  disabled={isUpdatingVisibility}
+                  className="flex items-center gap-2"
+                >
+                  {isUpdatingVisibility ? (
+                    <Loader className="w-4 h-4 animate-spin text-gray-400" />
+                  ) : (
+                    <>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        isProfilePublic
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      }`}>
+                        {isProfilePublic ? t('profile.public', 'Public') : t('profile.private', 'Private')}
+                      </span>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${isProfilePublic ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                        <div className={`w-5 h-5 rounded-full bg-white shadow-sm transform transition-transform mt-0.5 ${isProfilePublic ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                      </div>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="px-5 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-gray-500" />
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('profile.language', 'Language')}
+                  </p>
+                </div>
+                <LanguageSwitcher />
+              </div>
+
+              <Link
+                to="/profile/guided-tours"
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-dark-200 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <Compass className="w-5 h-5 text-gray-500" />
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('profile.guidedTours', 'Guided Tours')}
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </Link>
+
+              <Link
+                to="/profile/support"
+                className="flex items-center justify-between px-5 py-4 hover:bg-gray-50 dark:hover:bg-dark-200 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-gray-500" />
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('profile.supportTickets', 'Support Tickets')}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {ticketCount > 0 && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                      {ticketCount}
+                    </span>
+                  )}
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                </div>
+              </Link>
+            </div>
+          </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Clock, Trophy, Target, Users, ChevronDown, ChevronUp, Sword, Shield, MapPin } from 'lucide-react';
 import { ValorantMatch } from '../../types';
 
@@ -22,6 +23,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
   onLoadMore,
   hasMore = false
 }) => {
+  const { t } = useTranslation();
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
 
   const toggleMatchDetails = (matchId: string) => {
@@ -58,7 +60,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
       <div className="bg-white dark:bg-dark-100 p-6 rounded-xl border border-gray-200 dark:border-gray-800">
         <div className="flex justify-center items-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-400">Chargement de l'historique...</span>
+          <span className="ml-3 text-gray-600 dark:text-gray-400">{t('gaming.loadingHistory')}</span>
         </div>
       </div>
     );
@@ -69,10 +71,10 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
       <div className="flex items-center justify-between mb-6">
         <h3 className="font-heading font-semibold text-lg flex items-center text-gray-900 dark:text-white">
           <Trophy className="h-5 w-5 text-red-500 mr-2" />
-          Historique des matchs Valorant
+          {t('gaming.valorantMatchHistoryTitle')}
         </h3>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {matches.length} matchs récents
+          {t('gaming.recentMatchesCount', { count: matches.length })}
         </span>
       </div>
 
@@ -113,7 +115,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                       <div>
                         <div className="flex items-center space-x-2">
                           <span className={`font-medium ${match.stats.won ? 'text-success-400' : 'text-error-400'}`}>
-                            {match.stats.won ? 'VICTOIRE' : 'DÉFAITE'}
+                            {match.stats.won ? t('gaming.victory').toUpperCase() : t('gaming.defeat').toUpperCase()}
                           </span>
                           <span className="text-gray-500 dark:text-gray-400">•</span>
                           <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -141,14 +143,14 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                         <div className="font-bold text-gray-900 dark:text-white">
                           {match.stats.score}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Score</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{t('gaming.score')}</div>
                       </div>
 
                       <div className="text-center">
                         <div className="font-bold text-warning-400">
                           {match.stats.roundsPlayed}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">Rounds</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{t('gaming.rounds')}</div>
                       </div>
 
                       <ChevronDown
@@ -166,7 +168,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Map and Rounds */}
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">Détails du match</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">{t('gaming.matchDetails')}</h4>
                         <div className="space-y-2">
                           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <MapPin className="h-4 w-4 mr-2" />
@@ -174,18 +176,18 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                           </div>
                           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Clock className="h-4 w-4 mr-2" />
-                            <span>Durée: {formatGameDuration(match.gameLengthMillis)}</span>
+                            <span>{t('gaming.durationLabel')}: {formatGameDuration(match.gameLengthMillis)}</span>
                           </div>
                           <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                             <Trophy className="h-4 w-4 mr-2" />
-                            <span>Rounds joués: {match.stats.roundsPlayed}</span>
+                            <span>{t('gaming.roundsPlayed')}: {match.stats.roundsPlayed}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Teammates */}
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">Coéquipiers</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-3">{t('gaming.teammates')}</h4>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {match.teammates.map((teammate, index) => (
                             <div key={index} className="flex items-center justify-between text-sm">
@@ -225,7 +227,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
                 disabled={isLoading}
                 className="bg-primary-600 hover:bg-primary-700 disabled:bg-primary-600/50 text-white px-6 py-2 rounded-lg transition-colors"
               >
-                {isLoading ? 'Chargement...' : 'Charger plus de matchs'}
+                {isLoading ? t('common.loading') : t('gaming.loadMoreMatches')}
               </button>
             </div>
           )}
@@ -233,7 +235,7 @@ const ValorantMatchHistoryCard: React.FC<ValorantMatchHistoryCardProps> = ({
       ) : (
         <div className="text-center py-8">
           <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Aucun match trouvé</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('gaming.noMatchesFound')}</p>
         </div>
       )}
     </div>

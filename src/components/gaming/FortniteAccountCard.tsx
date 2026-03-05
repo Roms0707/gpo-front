@@ -50,7 +50,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
   };
 
   const formatNumber = (num: number) => {
-    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    const locale = i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US';
     return new Intl.NumberFormat(locale).format(num);
   };
 
@@ -204,7 +204,7 @@ const FortniteAccountCard: React.FC<FortniteAccountCardProps> = ({
                 {t('gaming.platform')}: {platform.toUpperCase()}
               </p>
               <p className="text-xs" style={{ color: theme.colors.border }}>
-                {t('gaming.lastUpdated')} {new Date().toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')}
+                {t('gaming.lastUpdated')} {new Date().toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US')}
               </p>
             </div>
           </div>

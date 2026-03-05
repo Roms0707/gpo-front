@@ -5,6 +5,7 @@ import { checkUserSession } from '../services/sessionService';
 import { clearStoredCredentials, getSavedUserData } from '../services/userDataService';
 import { loginWithKliento, setKlientoSession, clearKlientoSession, getKlientoSession, verifyTransactionUser, sendKlientoOtp, verifyKlientoOtp, checkKlientoSubscription, CheckSubscriptionResult } from '../services/klientoAuthService';
 import { supabase } from '../lib/supabase';
+import { trackDvLogin } from '../services/snowplowService';
 
 interface TransactionVerificationResult {
   user: User | null;
@@ -35,6 +36,7 @@ const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
     country: dbUser.country as string | undefined,
     bio: dbUser.bio as string | null | undefined,
     avatar_url: dbUser.avatar_url as string | null | undefined,
+    banner_url: dbUser.banner_url as string | null | undefined,
     is_profile_public: dbUser.is_profile_public as boolean | undefined,
     is_profile_completed: dbUser.is_profile_completed as boolean | undefined,
     riot_game_name: dbUser.riot_game_name as string | null | undefined,
@@ -52,7 +54,7 @@ const mapDatabaseUserToUser = (dbUser: Record<string, unknown>): User => {
     phone_number: dbUser.phone_number as string | undefined,
     kliento_user_id: dbUser.kliento_user_id as string | undefined,
     auth_provider: dbUser.auth_provider as string | undefined,
-    preferred_language: dbUser.preferred_language as 'en' | 'fr' | undefined,
+    preferred_language: dbUser.preferred_language as 'en' | 'fr' | 'es' | undefined,
     has_completed_onboarding: dbUser.has_completed_onboarding as boolean | undefined,
     favorite_game_id: dbUser.favorite_game_id as string | undefined,
     created_at: dbUser.created_at as string | undefined,
@@ -122,6 +124,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const result = await loginUser(credentials);
 
+    trackDvLogin({
+      type_of_action: 'login',
+      method: 'manual',
+      status: result.user ? 'ok' : 'ko',
+      type: 'email',
+    });
+
     set({
       user: result.user,
       error: result.error,
@@ -133,6 +142,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
 
     const result = await loginWithKliento(phone, password, productId);
+
+    trackDvLogin({
+      type_of_action: 'login',
+      method: 'manual',
+      status: result.user ? 'ok' : 'ko',
+      type: 'login',
+    });
 
     if (result.user) {
       setKlientoSession(result.user);
@@ -164,6 +180,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const result = await verifyKlientoOtp(phone, otpCode, projectConfigId, defaultCountryCode, klientoUserId);
 
+    trackDvLogin({
+      type_of_action: 'login',
+      method: 'auto_token',
+      status: result.user ? 'ok' : 'ko',
+      type: 'msisdn',
+    });
+
     if (result.user) {
       setKlientoSession(result.user);
     }
@@ -193,11 +216,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     if (result.user) {
+      trackDvLogin({
+        type_of_action: 'login',
+        method: 'auto_token',
+        status: 'ok',
+        type: 'msisdn',
+      });
+
       setKlientoSession(result.user);
       set({
         user: result.user,
         error: null,
         isLoading: false,
+      });
+    } else if (result.error && result.error !== 'pending') {
+      trackDvLogin({
+        type_of_action: 'login',
+        method: 'auto_token',
+        status: 'ko',
+        type: 'msisdn',
       });
     }
 
@@ -222,6 +259,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     const result = await signupUser(signupData);
 
+    trackDvLogin({
+      type_of_action: 'account_creation',
+      method: 'manual',
+      status: result.user ? 'ok' : 'ko',
+      type: 'email',
+    });
+
     set({
       user: result.user,
       error: result.error,
@@ -231,6 +275,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     set({ isLoading: true });
+
+    trackDvLogin({
+      type_of_action: 'logout',
+      method: 'manual',
+      status: 'ok',
+      type: null,
+    });
 
     clearStoredCredentials();
     clearKlientoSession();
@@ -257,10 +308,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (freshUser) {
         console.log('[AuthStore] Fresh Kliento user data retrieved:', freshUser.username, 'is_profile_completed:', freshUser.is_profile_completed);
+        trackDvLogin({ type_of_action: 'login', method: 'auto_token', status: 'ok', type: 'msisdn' });
         setKlientoSession(freshUser);
         set({ user: freshUser, isLoading: false, error: null });
       } else {
         console.log('[AuthStore] Could not fetch fresh data, using cached Kliento session');
+        trackDvLogin({ type_of_action: 'login', method: 'auto_token', status: 'ok', type: 'msisdn' });
         set({ user: klientoUser, isLoading: false, error: null });
       }
       return;
@@ -271,6 +324,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (result.user) {
       console.log('[AuthStore] Session check complete - User authenticated:', result.user.username, '(ID:', result.user.id + ')');
       console.log('[AuthStore] User configuration will be loaded for:', result.user.country || 'auto-detect');
+      trackDvLogin({ type_of_action: 'login', method: 'auto_cookie', status: 'ok', type: null });
+    } else if (result.error) {
+      console.log('[AuthStore] Session check complete - No authenticated user');
+      trackDvLogin({ type_of_action: 'login', method: 'auto_cookie', status: 'ko', type: null });
     } else {
       console.log('[AuthStore] Session check complete - No authenticated user');
     }

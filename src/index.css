@@ -1396,6 +1396,15 @@ a:focus, button:focus, [tabindex="0"]:focus {
   animation: slide-up 0.35s ease-out forwards;
 }
 
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out forwards;
+}
+
 /* Thin scrollbar for video suggestions */
 .scrollbar-thin {
   scrollbar-width: thin;
@@ -1422,7 +1431,8 @@ a:focus, button:focus, [tabindex="0"]:focus {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-scale-in,
-  .animate-slide-up {
+  .animate-slide-up,
+  .animate-slide-in-right {
     animation: none;
     opacity: 1;
     transform: none;

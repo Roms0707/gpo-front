@@ -41,6 +41,9 @@ const CommunitiesPage = React.lazy(() => import('./pages/CommunitiesPage'));
 const VideoPlayerPage = React.lazy(() => import('./pages/VideoPlayerPage'));
 const TransactionWaitingPage = React.lazy(() => import('./pages/TransactionWaitingPage'));
 const GameHubPage = React.lazy(() => import('./pages/GameHubPage'));
+const MasterclassesPage = React.lazy(() => import('./pages/MasterclassesPage'));
+const MasterclassDetailPage = React.lazy(() => import('./pages/MasterclassDetailPage'));
+const GrindZonePage = React.lazy(() => import('./pages/GrindZonePage'));
 // Store pages - hidden for future use
 // const StorePage = React.lazy(() => import('./pages/StorePage'));
 // const VoucherDetailPage = React.lazy(() => import('./pages/VoucherDetailPage'));
@@ -135,6 +138,11 @@ const AppContent = () => {
           } />
 
           {/* Video Player */}
+          <Route path="video/:rubricId/:contentId" element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <VideoPlayerPage />
+            </Suspense>
+          } />
           <Route path="video/:contentId" element={
             <Suspense fallback={<PageLoadingFallback />}>
               <VideoPlayerPage />
@@ -147,6 +155,13 @@ const AppContent = () => {
              <CommunitiesPage />
            </Suspense>
          } />
+
+          {/* Grind Zone */}
+          <Route path="grind-zone" element={
+            <Suspense fallback={<PageLoadingFallback />}>
+              <GrindZonePage />
+            </Suspense>
+          } />
 
           {/* Game Hub */}
           <Route path="hub" element={
@@ -174,6 +189,16 @@ const AppContent = () => {
           */}
 
           <Route element={<ProtectedRoute />}>
+            <Route path="masterclasses" element={
+              <Suspense fallback={<PageLoadingFallback />}>
+                <MasterclassesPage />
+              </Suspense>
+            } />
+            <Route path="masterclasses/:rubricId" element={
+              <Suspense fallback={<PageLoadingFallback />}>
+                <MasterclassDetailPage />
+              </Suspense>
+            } />
             <Route path="tournaments/:id/register" element={
               <Suspense fallback={<PageLoadingFallback />}>
                 <RegisterPage />

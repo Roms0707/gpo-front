@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { X, Swords, Trophy, Award, User, ChevronDown, ChevronUp, XCircle } from 'lucide-react';
 import { PlayerMatchNotification } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 
 interface MatchNotificationPanelProps {
   notifications: PlayerMatchNotification[];
@@ -53,7 +53,7 @@ const MatchNotificationPanel: React.FC<MatchNotificationPanelProps> = ({
   const formatTimeAgo = (dateString: string) => {
     try {
       const currentLanguage = i18n.language || 'en';
-      const locale = currentLanguage.startsWith('fr') ? fr : enUS;
+      const locale = currentLanguage.startsWith('fr') ? fr : currentLanguage.startsWith('es') ? es : enUS;
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
         locale

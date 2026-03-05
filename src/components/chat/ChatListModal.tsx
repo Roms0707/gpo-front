@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { fetchFriends } from '../../services/api';
 import { UserRelationship } from '../../types';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 import ChatModal from './ChatModal';
 import ChannelModal from './ChannelModal';
@@ -52,7 +52,7 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
   onContactSelectForShare,
   shareTargetType = 'friend'
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [friends, setFriends] = useState<UserRelationship[]>([]);
   const [recentChats, setRecentChats] = useState<ChatPreview[]>([]);
@@ -342,9 +342,10 @@ const ChatListModal: React.FC<ChatListModalProps> = ({
 
   const formatTimeAgo = (dateString: string) => {
     try {
+      const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
-        locale: fr
+        locale: dateFnsLocale
       });
     } catch (error) {
       return t('chat.unknownDate');

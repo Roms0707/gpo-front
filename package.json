@@ -12,6 +12,7 @@
     "check-translations": "node scripts/check-translations.cjs"
   },
   "dependencies": {
+    "@snowplow/browser-tracker": "^4.6.8",
     "@supabase/supabase-js": "^2.39.7",
     "date-fns": "^3.3.1",
     "emoji-picker-react": "^4.12.3",

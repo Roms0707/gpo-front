@@ -80,6 +80,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
     messages,
     videoRecommendations,
     isSending,
+    error: coachingError,
     sessions,
     sendMessage,
     loadSession,
@@ -508,6 +509,7 @@ const GameHubCoachingTab: React.FC<GameHubCoachingTabProps> = ({
               onSendMessage={sendMessage}
               onVideoClick={handleVideoClick}
               quickPrompts={localizedQuickPrompts}
+              error={coachingError}
             />
           </div>
 

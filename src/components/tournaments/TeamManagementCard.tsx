@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Crown, UserPlus, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, Crown, UserPlus, MessageSquare, ChevronDown, ChevronUp, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import ChannelModal from '../chat/ChannelModal';
 import { getGameTheme } from '../../utils/gameThemes';
+import { createChannel, joinChannel } from '../../services/channelService';
+import toast from 'react-hot-toast';
 
 interface TeamManagementCardProps {
   userTeamId: string;
@@ -40,8 +42,53 @@ const TeamManagementCard: React.FC<TeamManagementCardProps> = ({
   const [showTeamChatModal, setShowTeamChatModal] = useState(false);
   const [teamChatChannelId, setTeamChatChannelId] = useState<string | null>(null);
   const [teamChatChannelName, setTeamChatChannelName] = useState<string>('');
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
 
   const gameTheme = getGameTheme(gameName);
+
+  const handleCreateTeamChat = async () => {
+    if (isCreatingChat || !userTeamId) return;
+    setIsCreatingChat(true);
+
+    try {
+      const channelName = `Team ${userTeamName || 'Chat'}`;
+      const channel = await createChannel(channelName, '', true, false);
+      if (!channel) {
+        toast.error(t('tournamentPage.sidebar.chatCreateError'));
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('teams')
+        .update({ chat_channel_id: channel.id })
+        .eq('id', userTeamId);
+
+      if (updateError) {
+        console.error('Error updating team chat_channel_id:', updateError);
+        toast.error(t('tournamentPage.sidebar.chatCreateError'));
+        return;
+      }
+
+      for (const member of teamMembers) {
+        if (!member.is_captain) {
+          try {
+            await joinChannel(channel.id, member.id);
+          } catch (err) {
+            console.error(`Error adding member ${member.id} to channel:`, err);
+          }
+        }
+      }
+
+      setTeamChatChannelId(channel.id);
+      setTeamChatChannelName(channelName);
+      toast.success(t('tournamentPage.sidebar.chatCreated'));
+    } catch (error) {
+      console.error('Error creating team chat:', error);
+      toast.error(t('tournamentPage.sidebar.chatCreateError'));
+    } finally {
+      setIsCreatingChat(false);
+    }
+  };
 
   useEffect(() => {
     const loadTeamData = async () => {
@@ -83,30 +130,43 @@ const TeamManagementCard: React.FC<TeamManagementCardProps> = ({
 
       setIsLoadingMembers(true);
       try {
+        const { data: teamData } = await supabase
+          .from('teams')
+          .select('captain_id')
+          .eq('id', userTeamId)
+          .maybeSingle();
+
         const { data, error } = await supabase
           .from('team_members')
           .select(`
             user_id,
-            is_captain,
+            role,
             users:user_id (
               id,
               username,
               avatar_url
             )
           `)
-          .eq('team_id', userTeamId);
+          .eq('team_id', userTeamId)
+          .eq('status', 'accepted');
 
         if (error) {
           console.error('Error loading team members:', error);
           return;
         }
 
-        const members: TeamMember[] = data?.map(member => ({
-          id: member.users?.id || '',
-          username: member.users?.username || 'Unknown',
-          avatar_url: member.users?.avatar_url || null,
-          is_captain: member.is_captain
-        })) || [];
+        const members: TeamMember[] = (data || [])
+          .map(member => ({
+            id: member.users?.id || '',
+            username: member.users?.username || 'Unknown',
+            avatar_url: member.users?.avatar_url || null,
+            is_captain: member.role === 'captain' || member.user_id === teamData?.captain_id
+          }))
+          .sort((a, b) => {
+            if (a.is_captain && !b.is_captain) return -1;
+            if (!a.is_captain && b.is_captain) return 1;
+            return a.username.localeCompare(b.username);
+          });
 
         setTeamMembers(members);
       } catch (error) {
@@ -214,7 +274,7 @@ const TeamManagementCard: React.FC<TeamManagementCardProps> = ({
             )}
 
             <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-              {teamChatChannelId && (
+              {teamChatChannelId ? (
                 <button
                   onClick={() => setShowTeamChatModal(true)}
                   className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
@@ -226,7 +286,26 @@ const TeamManagementCard: React.FC<TeamManagementCardProps> = ({
                   <MessageSquare className="h-4 w-4" />
                   {t('tournamentPage.sidebar.teamChat')}
                 </button>
-              )}
+              ) : isTeamCaptain ? (
+                <button
+                  onClick={handleCreateTeamChat}
+                  disabled={isCreatingChat}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                  style={{
+                    backgroundColor: `${gameTheme.colors.primary}15`,
+                    color: gameTheme.colors.primary
+                  }}
+                >
+                  {isCreatingChat ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  {isCreatingChat
+                    ? t('tournamentPage.sidebar.creatingChat')
+                    : t('tournamentPage.sidebar.createTeamChat')}
+                </button>
+              ) : null}
               {isTeamCaptain && (
                 <button
                   onClick={onTeamInvite}

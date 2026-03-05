@@ -90,7 +90,7 @@ const MyGamingStatsModal: React.FC<MyGamingStatsModalProps> = ({
 
     } catch (error) {
       console.error('Tracker.gg test error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      const errorMessage = error instanceof Error ? error.message : t('errors.unknownError');
       setTrackerGGTestError(errorMessage);
       toast.error(t('gaming.trackerGGTestFailed', { error: errorMessage }));
     } finally {

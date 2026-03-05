@@ -187,7 +187,7 @@ const TeamProfileModal: React.FC<TeamProfileModalProps> = ({
                     <h3 className="font-heading font-bold text-xl text-gray-900 dark:text-white">{teamProfile.name}</h3>
                     <div className="flex items-center text-gray-600 dark:text-gray-300 mt-1">
                       <Trophy className="h-4 w-4 mr-1 text-warning-400" />
-                      {teamProfile.tournaments?.title || 'Tournoi'}
+                      {teamProfile.tournaments?.title || t('common.tournament')}
                     </div>
                     <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mt-1">
                       <Calendar className="h-4 w-4 mr-1" />

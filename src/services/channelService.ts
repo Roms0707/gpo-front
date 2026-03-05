@@ -539,12 +539,12 @@ export const getChannelMessages = async (channelId: string, page: number = 1, li
 
     const userId = userData.user.id;
 
-    // Check if user is a member of the channel
     const { data: membership, error: membershipError } = await supabase
       .from('channel_members')
       .select('id')
       .eq('channel_id', channelId)
       .eq('user_id', userId)
+      .eq('status', 'accepted')
       .maybeSingle();
 
     if (membershipError) {

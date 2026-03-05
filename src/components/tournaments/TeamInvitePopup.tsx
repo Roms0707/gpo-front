@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { X, Trophy, Share2, Copy, Mail, CheckCircle, Link as LinkIcon, Users, XCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Trophy, Share2, Copy, Mail, CheckCircle, Link as LinkIcon, Users, XCircle, Search, Loader2, UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { APP_CONFIG } from '../../constants';
+
+interface SearchResult {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  country: string | null;
+}
 
 interface TeamInvitePopupProps {
   isOpen: boolean;
@@ -23,16 +31,146 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
   tournamentName
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [copied, setCopied] = useState(false);
   const [isTeamLfp, setIsTeamLfp] = useState(false);
   const [isUpdatingLfp, setIsUpdatingLfp] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [invitedPlayerIds, setInvitedPlayerIds] = useState<Set<string>>(new Set());
+  const [teamMemberIds, setTeamMemberIds] = useState<Set<string>>(new Set());
+  const [sendingInviteId, setSendingInviteId] = useState<string | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (isOpen && teamId) {
       checkTeamLfpStatus();
+      loadTeamMemberIds();
+      setSearchQuery('');
+      setSearchResults([]);
+      setInvitedPlayerIds(new Set());
     }
   }, [isOpen, teamId]);
+
+  const loadTeamMemberIds = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', teamId)
+        .eq('status', 'accepted');
+
+      if (error) {
+        console.error('Error loading team member IDs:', error);
+        return;
+      }
+
+      setTeamMemberIds(new Set((data || []).map(m => m.user_id)));
+    } catch (error) {
+      console.error('Error loading team member IDs:', error);
+    }
+  };
+
+  const searchPlayers = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const excludeIds = [...teamMemberIds];
+      if (user?.id) excludeIds.push(user.id);
+
+      let q = supabase
+        .from('users')
+        .select('id, username, avatar_url, country')
+        .ilike('username', `%${query.trim()}%`)
+        .limit(10);
+
+      if (excludeIds.length > 0) {
+        q = q.not('id', 'in', `(${excludeIds.map(id => `"${id}"`).join(',')})`);
+      }
+
+      const { data, error } = await q;
+
+      if (error) {
+        console.error('Error searching players:', error);
+        return;
+      }
+
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Error searching players:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [teamMemberIds, user?.id]);
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    if (value.length < 2) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(() => {
+      searchPlayers(value);
+    }, 300);
+  };
+
+  const handleInvitePlayer = async (player: SearchResult) => {
+    if (!user?.id || sendingInviteId) return;
+    setSendingInviteId(player.id);
+
+    try {
+      const { data: captainData } = await supabase
+        .from('users')
+        .select('username')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const captainUsername = captainData?.username || 'Captain';
+
+      const { error } = await supabase
+        .from('notifications')
+        .insert([{
+          user_id: player.id,
+          title: 'notif.team_invite',
+          message: `${captainUsername} vous invite a rejoindre l'equipe "${teamName}" pour le tournoi ${tournamentName}`,
+          type: 'team_invite',
+          link: `/tournaments/${tournamentId}?teamId=${teamId}`,
+          related_id: teamId,
+          read: false,
+          metadata: {
+            captain_username: captainUsername,
+            team_name: teamName,
+            tournament_name: tournamentName
+          }
+        }]);
+
+      if (error) {
+        console.error('Error sending invite notification:', error);
+        toast.error(t('teamInvite.inviteError'));
+        return;
+      }
+
+      setInvitedPlayerIds(prev => new Set([...prev, player.id]));
+      toast.success(t('teamInvite.inviteSent', { username: player.username }));
+    } catch (error) {
+      console.error('Error sending invite:', error);
+      toast.error(t('teamInvite.inviteError'));
+    } finally {
+      setSendingInviteId(null);
+    }
+  };
 
   const checkTeamLfpStatus = async () => {
     try {
@@ -74,7 +212,7 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
       toast.success(newStatus ? t('teamInvite.teamNowSearching') : t('teamInvite.teamNoLongerSearching'));
     } catch (error) {
       console.error('Error updating LFP status:', error);
-      toast.error('Erreur lors de la mise à jour du statut');
+      toast.error(t('toast.statusUpdateError'));
     } finally {
       setIsUpdatingLfp(false);
     }
@@ -245,6 +383,90 @@ const TeamInvitePopup: React.FC<TeamInvitePopupProps> = ({
                   <Mail className="h-5 w-5" />
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Player search section */}
+          <div className="bg-gray-100 dark:bg-dark-200 p-4 rounded-lg">
+            <label className="text-sm text-gray-700 dark:text-gray-300 block mb-2">
+              <Search className="h-4 w-4 inline mr-1" />
+              {t('teamInvite.searchPlayer')}
+            </label>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder={t('teamInvite.searchPlaceholder')}
+              className="w-full bg-gray-200 dark:bg-dark-300 border border-gray-300 dark:border-gray-700 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 mb-2"
+            />
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {isSearching && (
+                <div className="flex items-center justify-center py-3 text-gray-500 dark:text-gray-400 text-sm">
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  {t('teamInvite.searching')}
+                </div>
+              )}
+              {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-3">
+                  {t('teamInvite.noResults')}
+                </p>
+              )}
+              {!isSearching && searchQuery.length > 0 && searchQuery.length < 2 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
+                  {t('teamInvite.searchMinChars')}
+                </p>
+              )}
+              {searchResults.map((player) => {
+                const alreadyInvited = invitedPlayerIds.has(player.id);
+                const isSending = sendingInviteId === player.id;
+                return (
+                  <div
+                    key={player.id}
+                    className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-dark-300/50 hover:bg-gray-50 dark:hover:bg-dark-300"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex-shrink-0">
+                      {player.avatar_url ? (
+                        <img
+                          src={player.avatar_url}
+                          alt={player.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm font-medium">
+                          {player.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                        {player.username}
+                      </p>
+                      {player.country && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{player.country}</p>
+                      )}
+                    </div>
+                    {alreadyInvited ? (
+                      <span className="text-xs text-success-500 flex items-center gap-1 flex-shrink-0">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        {t('teamInvite.alreadyInvited')}
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleInvitePlayer(player)}
+                        disabled={isSending}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 transition-colors flex-shrink-0"
+                      >
+                        {isSending ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <UserPlus className="h-3.5 w-3.5" />
+                        )}
+                        {t('teamInvite.invitePlayer')}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

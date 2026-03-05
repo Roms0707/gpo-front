@@ -4,7 +4,7 @@ import { X, Send, User, Clock, Smile, Paperclip, File, Download, MessageSquare, 
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { formatDistanceToNow, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 
 // Lazy load emoji picker to reduce initial bundle size
@@ -71,7 +71,7 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
   initialSharedVideoThumbnail,
   initialMessageContent
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [members, setMembers] = useState<ChannelMember[]>([]);
@@ -486,7 +486,8 @@ const ChannelModal: React.FC<ChannelModalProps> = ({
 
       // If it's within the last week, show relative time
       if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
-        return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+        const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
+        return formatDistanceToNow(date, { addSuffix: true, locale: dateFnsLocale });
       }
 
       // Otherwise show the date

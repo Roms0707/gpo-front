@@ -10,6 +10,7 @@ import ErrorMessage from '../../components/ui/ErrorMessage';
 import InfoMessage from '../../components/ui/InfoMessage';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { useAuthRedirect } from '../../hooks/useAuthRedirect';
+import { trackDvLogin } from '../../services/snowplowService';
 
 const LoginDiscordPage: React.FC = () => {
   const { t } = useTranslation();
@@ -45,6 +46,7 @@ const LoginDiscordPage: React.FC = () => {
       });
 
       if (error) {
+        trackDvLogin({ type_of_action: 'login', method: 'manual', status: 'ko', type: 'login' });
         let errorMessage = t('loginPage.errors.discordLoginError');
         if (error.message.includes('cancelled')) {
           errorMessage = t('loginPage.errors.discordCancelled');
@@ -55,6 +57,7 @@ const LoginDiscordPage: React.FC = () => {
         toast.error(errorMessage);
       }
     } catch (err) {
+      trackDvLogin({ type_of_action: 'login', method: 'manual', status: 'ko', type: 'login' });
       console.error('Discord login error:', err);
       const errorMessage = t('loginPage.errors.unexpectedDiscordError');
       setError(errorMessage);

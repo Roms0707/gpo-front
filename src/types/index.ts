@@ -33,6 +33,8 @@ export interface Tournament {
   twitch_last_checked?: string;
   created_at?: string;
   prizes?: TournamentPrize[];
+  bracket_status?: 'pending' | 'live' | 'completed';
+  bracket_launched_at?: string;
 }
 
 export type AuthProvider = 'email' | 'discord' | 'kliento';
@@ -64,10 +66,11 @@ export interface User {
   phone_number?: string;
   kliento_user_id?: string;
   auth_provider?: AuthProvider;
-  preferred_language?: 'en' | 'fr';
+  preferred_language?: 'en' | 'fr' | 'es';
   has_completed_onboarding?: boolean;
   discord_user_id?: string;
   favorite_game_id?: string;
+  banner_url?: string;
   created_at?: string;
 }
 
@@ -515,17 +518,20 @@ export interface UserProfileCustomization {
   avatar_badge_id?: string;
   selected_avatar_id?: string;
   use_preset_avatar?: boolean;
+  selected_banner_id?: string;
+  use_preset_banner?: boolean;
   updated_at: string;
   avatar_frame?: ProfileFrame;
   modal_frame?: ProfileFrame;
   avatar_badge?: ProfileBadge;
   selected_avatar?: ProfileAvatar;
+  selected_banner?: ProfileBanner;
 }
 
 export interface UserUnlockedItem {
   id: string;
   user_id: string;
-  item_type: 'frame' | 'badge' | 'avatar';
+  item_type: 'frame' | 'badge' | 'avatar' | 'banner';
   item_id: string;
   unlocked_at: string;
   unlock_source?: string;
@@ -568,8 +574,52 @@ export interface ProfileAvatarWithUnlockStatus extends ProfileAvatar {
   is_unlocked: boolean;
 }
 
+export interface ProfileBanner {
+  id: string;
+  name: string;
+  description?: string;
+  image_url: string;
+  game_affinity: AvatarGameAffinity;
+  rarity: ItemRarity;
+  unlock_type: 'free' | 'xp';
+  unlock_requirement: UnlockRequirement;
+  sort_order: number;
+  is_available: boolean;
+  created_at: string;
+}
+
+export interface ProfileBannerWithUnlockStatus extends ProfileBanner {
+  is_unlocked: boolean;
+}
+
 export interface UserAvatarCustomization {
   selected_avatar_id: string | null;
   use_preset_avatar: boolean;
   selected_avatar?: ProfileAvatar | null;
+}
+
+export interface Masterclass {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  cover_image_url: string;
+  theme_tag: string;
+  is_featured: boolean;
+  sort_order: number;
+  galaxy_rubric_id?: string;
+  created_at: string;
+  masterclass_episodes?: MasterclassEpisode[];
+}
+
+export interface MasterclassEpisode {
+  id: string;
+  masterclass_id: string;
+  episode_number: number;
+  title: string;
+  description: string;
+  thumbnail_url: string;
+  duration_seconds: number;
+  video_placeholder: string;
+  created_at: string;
 }

@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAuthStore } from '../stores/authStore';
 import { updateUserProfileVisibility } from '../services/api';
 import toast from 'react-hot-toast';
+import i18n from '../locales/i18n';
 
 export const useProfileVisibility = () => {
   const { user } = useAuth();
@@ -59,15 +60,15 @@ export const useProfileVisibility = () => {
 
         toast.success(
           newVisibility
-            ? 'Votre profil est maintenant public'
-            : 'Votre profil est maintenant privé'
+            ? i18n.t('profile.profileNowPublic')
+            : i18n.t('profile.profileNowPrivate')
         );
       } else {
-        toast.error(result.error || 'Erreur lors de la mise à jour de la visibilité');
+        toast.error(result.error || i18n.t('toast.visibilityUpdateError'));
       }
     } catch (error) {
       console.error('Error updating profile visibility:', error);
-      toast.error('Erreur lors de la mise à jour de la visibilité');
+      toast.error(i18n.t('toast.visibilityUpdateError'));
     } finally {
       setIsUpdatingVisibility(false);
     }

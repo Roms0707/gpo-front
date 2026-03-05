@@ -6,12 +6,13 @@ import {
   Crown,
   Play,
   Crosshair,
-  Brain
+  Brain,
+  Flame
 } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
 import { useSubscriptionGuard } from '../../hooks/useSubscriptionGuard';
 
-export type GameHubTabId = 'overview' | 'tournaments' | 'leaderboard' | 'training' | 'skillLab' | 'coaching';
+export type GameHubTabId = 'overview' | 'tournaments' | 'leaderboard' | 'training' | 'grindZone' | 'skillLab' | 'coaching';
 
 interface Tab {
   id: GameHubTabId;
@@ -24,6 +25,7 @@ const tabs: Tab[] = [
   { id: 'tournaments', labelKey: 'gameHub.tabs.tournaments', icon: Trophy },
   { id: 'leaderboard', labelKey: 'gameHub.tabs.leaderboard', icon: Crown },
   { id: 'training', labelKey: 'gameHub.tabs.training', icon: Play },
+  { id: 'grindZone', labelKey: 'gameHub.tabs.grindZone', icon: Flame },
   { id: 'skillLab', labelKey: 'gameHub.tabs.skillLab', icon: Crosshair },
   { id: 'coaching', labelKey: 'gameHub.tabs.coaching', icon: Brain },
 ];
@@ -32,13 +34,16 @@ interface GameHubTabsProps {
   activeTab: GameHubTabId;
   onTabChange: (tab: GameHubTabId) => void;
   theme: GameTheme;
+  hiddenTabs?: GameHubTabId[];
 }
 
-const PROTECTED_TABS: GameHubTabId[] = ['training', 'skillLab', 'coaching'];
+const PROTECTED_TABS: GameHubTabId[] = ['training', 'grindZone', 'skillLab', 'coaching'];
 
-const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme }) => {
+const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme, hiddenTabs }) => {
   const { t } = useTranslation();
   const { checkAccess, isKliento } = useSubscriptionGuard();
+
+  const visibleTabs = hiddenTabs?.length ? tabs.filter(tab => !hiddenTabs.includes(tab.id)) : tabs;
 
   const handleTabClick = async (tabId: GameHubTabId) => {
     if (isKliento && PROTECTED_TABS.includes(tabId)) {
@@ -52,7 +57,7 @@ const GameHubTabs: React.FC<GameHubTabsProps> = ({ activeTab, onTabChange, theme
     <div id="walkthrough-gamehub-tabs" className="relative">
       <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
         <div className="flex items-center gap-1 min-w-max px-4 sm:px-6 lg:px-8 py-3 bg-white/80 dark:bg-dark-200/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
-          {tabs.map((tab) => {
+          {visibleTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
 

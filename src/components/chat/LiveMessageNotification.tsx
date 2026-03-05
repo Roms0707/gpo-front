@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, MessageSquare, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 
 interface Message {
   id: string;
@@ -29,7 +29,7 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
   onClose,
   onClick
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -51,9 +51,10 @@ const LiveMessageNotification: React.FC<LiveMessageNotificationProps> = ({
 
   const formatTimeAgo = (dateString: string) => {
     try {
+      const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
-        locale: fr
+        locale: dateFnsLocale
       });
     } catch (error) {
       return t('chat.justNow');

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { fetchTournaments, fetchGames, extractTwitchChannelName } from '../services/api';
+import { fetchTournaments, extractTwitchChannelName } from '../services/api';
 import { Tournament } from '../types';
 import TournamentList from '../components/tournaments/TournamentList';
 import MobileGameGrid from '../components/games/MobileGameGrid';
@@ -13,6 +13,7 @@ import { useAppConfig } from '../contexts/AppConfigContext';
 import { calculateTournamentStatus } from '../utils/tournamentUtils';
 import WhitelistBadge from '../components/ui/WhitelistBadge';
 import OnboardingWalkthrough from '../components/onboarding/OnboardingWalkthrough';
+import { useConfigGames } from '../hooks/useConfigGames';
 
 const HomePage: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -22,7 +23,6 @@ const HomePage: React.FC = () => {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [gameFilterName, setGameFilterName] = useState<string | null>(null);
-  const [games, setGames] = useState<any[]>([]);
   const [sqlQuery, setSqlQuery] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
@@ -41,6 +41,7 @@ const HomePage: React.FC = () => {
 
   const { user } = useAuth();
   const { configId, brandName } = useAppConfig();
+  const { games: configGames } = useConfigGames();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -185,28 +186,10 @@ const HomePage: React.FC = () => {
     loadTournaments();
   }, [user?.country, visitorCountry]); // Re-run when user's country or visitor country changes
 
-  // Load games for mapping game IDs to names
-  useEffect(() => {
-    const loadGames = async () => {
-      try {
-        console.log('[HomePage] Loading games...');
-        const data = await fetchGames();
-        console.log('[HomePage] Games loaded:', data?.length || 0);
-        setGames(data || []);
-      } catch (error) {
-        console.error('[HomePage] Error loading games:', error);
-        // Set empty array on error to prevent crashes
-        setGames([]);
-      }
-    };
-
-    loadGames();
-  }, []);
-
   // When a game is selected, update the game filter name and filter tournaments
   useEffect(() => {
     if (selectedGameId) {
-      const selectedGame = games.find(game => game.id === selectedGameId);
+      const selectedGame = configGames.find(game => game.id === selectedGameId);
       if (selectedGame) {
         setGameFilterName(selectedGame.name);
       }
@@ -225,7 +208,7 @@ const HomePage: React.FC = () => {
       const filtered = filterByCountry(tournaments);
       setFilteredTournaments(filtered);
     }
-  }, [selectedGameId, games, tournaments, user?.country, visitorCountry, isWhitelisted]);
+  }, [selectedGameId, configGames, tournaments, user?.country, visitorCountry, isWhitelisted]);
 
   // Check which tournaments have live streams
   useEffect(() => {
@@ -336,7 +319,7 @@ const HomePage: React.FC = () => {
             const endDate = new Date(tournament.endDate);
             return now <= endDate;
           }).length}
-          gamesCount={games.length}
+          gamesCount={configGames.length}
           liveTournamentsCount={liveTournaments.filter(tournament => {
             const now = new Date();
             const endDate = new Date(tournament.endDate);

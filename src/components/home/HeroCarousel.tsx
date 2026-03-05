@@ -60,10 +60,14 @@ export const HeroCarousel: React.FC<HeroCarouselProps> = ({
         };
         carouselSlides.push(homeSlide);
 
+        const now = new Date();
         featuredTrailers.forEach((trailer: any) => {
           if (trailer.tournament_id) {
             const tournamentId = trailer.tournament?.id || trailer.tournament_id;
             const tournamentStatus = trailer.tournament?.status;
+
+            if (tournamentStatus === 'past' || tournamentStatus === 'completed') return;
+            if (trailer.tournament?.endDate && new Date(trailer.tournament.endDate) < now) return;
             const twitchUrl = trailer.tournament?.twitch_url;
             const isTwitchLive = trailer.tournament?.is_twitch_live;
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Target, Award, BookOpen, FileText, Users, Gift, Zap } from 'lucide-react';
+import { Home, Target, Award, BookOpen, FileText, Users, Gift, Zap, Brain } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubscriptionGuard } from '../../hooks/useSubscriptionGuard';
@@ -14,7 +14,7 @@ interface TournamentTabsProps {
   tournamentGameId?: string;
 }
 
-const SUBSCRIPTION_PROTECTED_TABS = ['training', 'training-games'];
+const SUBSCRIPTION_PROTECTED_TABS = ['training', 'training-games', 'coaching'];
 
 const TournamentTabs: React.FC<TournamentTabsProps> = ({
   activeTab,
@@ -45,6 +45,13 @@ const TournamentTabs: React.FC<TournamentTabsProps> = ({
   // Add training tab only if user is logged in
   if (user) {
     tabs.splice(4, 0, { id: 'training', label: t('tournamentTabs.training'), icon: BookOpen });
+  }
+
+  // Add coaching tab only if user is logged in
+  if (user) {
+    const trainingIndex = tabs.findIndex(tab => tab.id === 'training');
+    const insertIndex = trainingIndex >= 0 ? trainingIndex + 1 : tabs.length;
+    tabs.splice(insertIndex, 0, { id: 'coaching', label: t('tournamentTabs.coaching'), icon: Brain });
   }
 
   // Add training games tab for specific games

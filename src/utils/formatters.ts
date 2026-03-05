@@ -1,12 +1,14 @@
 import { format, isValid } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import { formatCountryDisplay } from '../utils/countries';
 import i18n from '../locales/i18n';
 import { getUserTimezoneAbbreviation } from './timezoneUtils';
 
 const getDateFnsLocale = () => {
   const currentLanguage = i18n.language || 'en';
-  return currentLanguage.startsWith('fr') ? fr : enUS;
+  if (currentLanguage.startsWith('fr')) return fr;
+  if (currentLanguage.startsWith('es')) return es;
+  return enUS;
 };
 
 export const formatDate = (dateString: string) => {
@@ -16,7 +18,7 @@ export const formatDate = (dateString: string) => {
       return i18n.t('common.dateToBeConfirmed');
     }
     const locale = getDateFnsLocale();
-    const pattern = locale === fr ? 'dd MMMM yyyy à HH:mm' : 'MMMM dd, yyyy \'at\' HH:mm';
+    const pattern = locale === fr ? 'dd MMMM yyyy à HH:mm' : locale === es ? "dd 'de' MMMM yyyy 'a las' HH:mm" : 'MMMM dd, yyyy \'at\' HH:mm';
     const formattedDate = format(date, pattern, { locale });
     const timezone = getUserTimezoneAbbreviation();
     return timezone ? `${formattedDate} ${timezone}` : formattedDate;

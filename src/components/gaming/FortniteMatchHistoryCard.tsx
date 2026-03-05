@@ -132,7 +132,7 @@ const FortniteMatchHistoryCard: React.FC<FortniteMatchHistoryCardProps> = ({
                 </div>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                {match.dateCollected ? new Date(match.dateCollected).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US') : t('gaming.unknownDate')}
+                {match.dateCollected ? new Date(match.dateCollected).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : i18n.language === 'es' ? 'es-ES' : 'en-US') : t('gaming.unknownDate')}
               </div>
             </div>
 

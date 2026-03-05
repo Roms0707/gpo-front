@@ -165,7 +165,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
       }
     } catch (error) {
       console.error('Error creating channel:', error);
-      toast.error('Erreur lors de la création du canal');
+      toast.error(t('toast.createChannelError'));
     } finally {
       setIsCreating(false);
     }

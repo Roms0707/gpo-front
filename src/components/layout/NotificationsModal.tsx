@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X, Bell, CheckCircle, XCircle, Clock, Trophy, Users, Calendar, Info, User, Video, Target, Award, UserPlus, Heart, MessageSquare } from 'lucide-react';
+import { X, Bell, CheckCircle, XCircle, Clock, Trophy, Users, Calendar, Info, User, Video, Target, Award, UserPlus, Heart, MessageSquare, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import ChatModal from '../chat/ChatModal';
+import { getTranslatedNotification } from '../../utils/notificationTranslation';
 
 interface Notification {
   id: string;
@@ -20,6 +21,7 @@ interface Notification {
   link?: string;
   related_id?: string;
   start_date?: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 interface NotificationsModalProps {
@@ -28,7 +30,7 @@ interface NotificationsModalProps {
 }
 
 const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -287,7 +289,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
       toast.success(t('notifications.allNotificationsDeleted'));
     } catch (error) {
       console.error('Error deleting all notifications:', error);
-      toast.error('Erreur lors de la suppression des notifications');
+      toast.error(t('notifications.errorDeletingNotifications'));
     } finally {
       setIsDeletingAll(false);
     }
@@ -352,10 +354,16 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
         return <UserPlus className="h-5 w-5 text-info-400" aria-hidden="true" />;
       case 'friend_accepted':
         return <Heart className="h-5 w-5 text-success-400" aria-hidden="true" />;
+      case 'team_invite':
+        return <UserPlus className="h-5 w-5 text-primary-500" aria-hidden="true" />;
       case 'tournament_join_now':
         return <Video className="h-5 w-5 text-red-500" aria-hidden="true" />;
       case 'new_message':
         return <MessageSquare className="h-5 w-5 text-primary-500" aria-hidden="true" />;
+      case 'quest_completed':
+        return <Sparkles className="h-5 w-5 text-success-400" aria-hidden="true" />;
+      case 'quest_assigned':
+        return <Target className="h-5 w-5 text-primary-500" aria-hidden="true" />;
       default:
         return <Info className="h-5 w-5 text-gray-400" aria-hidden="true" />;
     }
@@ -365,7 +373,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
     try {
       return formatDistanceToNow(new Date(dateString), {
         addSuffix: true,
-        locale: fr
+        locale: i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS
       });
     } catch (error) {
       return t('notifications.unknownDate');
@@ -572,13 +580,13 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between">
-                              <h3 className="font-medium text-gray-900 dark:text-white">{notification.title}</h3>
+                              <h3 className="font-medium text-gray-900 dark:text-white">{getTranslatedNotification(notification, t).title}</h3>
                               <span className="text-xs text-gray-600 dark:text-gray-300">
                                 {formatTimeAgo(notification.created_at)}
                               </span>
                             </div>
                             <p className="text-sm text-gray-700 dark:text-gray-200 mt-1">
-                              {notification.message}
+                              {getTranslatedNotification(notification, t).message}
                             </p>
 
                             {notification.link && (
@@ -589,7 +597,7 @@ const NotificationsModal: React.FC<NotificationsModalProps> = ({ isOpen, onClose
                                 aria-label={`${notification.type === 'friend_request' ? t('notifications.viewRequest') :
                                 notification.type === 'friend_accepted' ? t('notifications.viewMyFriends') :
                                 notification.type === 'new_message' ? t('notifications.reply') :
-                                t('notifications.viewDetails')} pour ${notification.title}`}
+                                t('notifications.viewDetails')} - ${getTranslatedNotification(notification, t).title}`}
                               >
                                 {notification.type === 'friend_request' ? t('notifications.viewRequest') :
                                 notification.type === 'friend_accepted' ? t('notifications.viewMyFriends') :

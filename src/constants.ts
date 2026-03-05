@@ -97,6 +97,7 @@ export const LIVE_NOTIFICATION_TYPES = [
   'team_accepted',
   'team_rejected',
   'team_member_joined',
+  'team_invite',
   'bracket_advance',
   'bracket_eliminated',
   'friend_request',

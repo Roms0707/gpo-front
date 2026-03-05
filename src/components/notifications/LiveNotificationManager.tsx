@@ -12,6 +12,7 @@ interface Notification {
   link?: string;
   related_id?: string;
   created_at: string;
+  metadata?: Record<string, unknown> | null;
 }
 
 const LiveNotificationManager: React.FC = () => {
@@ -27,12 +28,15 @@ const LiveNotificationManager: React.FC = () => {
     'team_accepted',
     'team_rejected',
     'team_member_joined',
+    'team_invite',
     'bracket_advance',
     'bracket_eliminated',
     'friend_request',
     'friend_accepted',
     'tournament_join_now',
-    'registration_cancelled'
+    'registration_cancelled',
+    'quest_completed',
+    'quest_assigned'
   ];
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import { X, Send, User, Clock, CheckCircle, Image, Smile, Paperclip, File, Downl
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 
 // Lazy load emoji picker to reduce initial bundle size
@@ -52,7 +52,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
   initialSharedVideoThumbnail,
   initialMessageContent
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -518,7 +518,7 @@ const ChatModal: React.FC<ChatModalProps> = ({
       toast.success(t('chat.messageEdited'));
     } catch (error) {
       console.error('Error saving edited message:', error);
-      toast.error('Erreur lors de la modification du message');
+      toast.error(t('toast.editMessageError'));
     }
   };
 
@@ -551,7 +551,8 @@ const ChatModal: React.FC<ChatModalProps> = ({
 
       // If it's within the last week, show relative time
       if (now.getTime() - date.getTime() < 7 * 24 * 60 * 60 * 1000) {
-        return formatDistanceToNow(date, { addSuffix: true, locale: fr });
+        const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
+        return formatDistanceToNow(date, { addSuffix: true, locale: dateFnsLocale });
       }
 
       // Otherwise show the date

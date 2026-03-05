@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { getSupportTicketWithMessages, addTicketMessage, updateTicketStatus } from '../../services/api';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import toast from 'react-hot-toast';
 
 interface TicketMessage {
@@ -42,7 +42,7 @@ interface Ticket {
 }
 
 const TicketDetail: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { ticketId } = useParams<{ ticketId: string }>();
   const { user } = useAuth();
   const location = useLocation();
@@ -105,7 +105,8 @@ const TicketDetail: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: fr });
+      const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
+      return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: dateFnsLocale });
     } catch (error) {
       return t('support.unknownDate');
     }

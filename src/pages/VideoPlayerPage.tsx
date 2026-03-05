@@ -1,13 +1,22 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Pause, Volume2, VolumeX, Maximize, Minimize, RotateCcw, Clock, Calendar, Globe, ExternalLink, Loader, AlertTriangle, Trophy, Share2, PlayCircle } from 'lucide-react';
 import { fetchVideoContentById, fetchRelatedGameContent } from '../services/api';
 import { GameContent } from '../types';
+import { GalaxyContentItem } from '../types/galaxy';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import VideoCard from '../components/ui/VideoCard';
 import ShareVideoModal from '../components/ui/ShareVideoModal';
+import AutoPlayToggle, { getAutoPlayPreference } from '../components/ui/AutoPlayToggle';
+import AutoPlayOverlay from '../components/ui/AutoPlayOverlay';
+import { ContentBadgeStack } from '../components/ui/ContentBadge';
 import { useAuth } from '../contexts/AuthContext';
 import { saveVideoProgress, getVideoProgress } from '../services/playlistService';
+import { useAppConfig } from '../contexts/AppConfigContext';
+import { resolveVideoUrl, fetchRubricContents, formatGalaxyDuration } from '../services/galaxyContentService';
+import { getBadgesForContent, computeBadgeCounts, BadgeType } from '../services/badgeService';
+import BadgeFilterBar from '../components/ui/BadgeFilterBar';
 
 const loadHls = () => import('hls.js');
 
@@ -15,9 +24,12 @@ const MAX_RETRIES = 3;
 const PROGRESS_SAVE_INTERVAL = 10000;
 
 const VideoPlayerPage: React.FC = () => {
-  const { contentId } = useParams<{ contentId: string }>();
+  const { contentId, rubricId } = useParams<{ contentId: string; rubricId?: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const { configId } = useAppConfig();
+  const isGalaxyContent = Boolean(rubricId);
   const [content, setContent] = useState<GameContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +51,11 @@ const VideoPlayerPage: React.FC = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [savedProgress, setSavedProgress] = useState<number>(0);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
+  const [rubricVideos, setRubricVideos] = useState<GalaxyContentItem[]>([]);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(getAutoPlayPreference);
+  const [showAutoPlayOverlay, setShowAutoPlayOverlay] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
+  const [suggestedBadgeFilter, setSuggestedBadgeFilter] = useState<Set<BadgeType>>(new Set());
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,8 +65,8 @@ const VideoPlayerPage: React.FC = () => {
   const lastSavedTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    // Scroll to top when component mounts
     window.scrollTo(0, 0);
+    setSuggestedBadgeFilter(new Set());
 
     if (contentId) {
       loadVideoContent();
@@ -57,10 +74,10 @@ const VideoPlayerPage: React.FC = () => {
   }, [contentId]);
 
   useEffect(() => {
-    if (content && content.game_id && content.galaxy_rubric_id) {
+    if (!isGalaxyContent && content && content.game_id && content.galaxy_rubric_id) {
       loadRelatedVideos();
     }
-  }, [content]);
+  }, [content, isGalaxyContent]);
 
   useEffect(() => {
     const loadSavedProgress = async () => {
@@ -182,7 +199,7 @@ const VideoPlayerPage: React.FC = () => {
                     }, 2000);
                   } else {
                     console.error('Max retries reached, giving up');
-                    setVideoError('Erreur réseau lors du chargement de la vidéo. Veuillez réessayer plus tard.');
+                    setVideoError(t('errors.videoNetworkError'));
                     setRetryCount(0);
                     hls.destroy();
                     hlsRef.current = null;
@@ -190,12 +207,12 @@ const VideoPlayerPage: React.FC = () => {
                   break;
                 case Hls.ErrorTypes.MEDIA_ERROR:
                   console.log('Fatal media error encountered, trying to recover...');
-                  setVideoError('Erreur de décodage de la vidéo');
+                  setVideoError(t('errors.videoDecodingError'));
                   hls.recoverMediaError();
                   break;
                 default:
                   console.log('Fatal error, cannot recover');
-                  setVideoError('Erreur fatale lors de la lecture de la vidéo');
+                  setVideoError(t('errors.videoFatalError'));
                   hls.destroy();
                   hlsRef.current = null;
                   break;
@@ -213,12 +230,12 @@ const VideoPlayerPage: React.FC = () => {
             setIsVideoLoading(false);
           });
         } else {
-          setVideoError('Format vidéo HLS non supporté par ce navigateur');
+          setVideoError(t('errors.hlsNotSupported'));
           setIsVideoLoading(false);
         }
       }).catch(error => {
         console.error('Error loading HLS.js:', error);
-        setVideoError('Erreur lors du chargement du lecteur vidéo');
+        setVideoError(t('errors.videoPlayerLoadError'));
         setIsVideoLoading(false);
       });
 
@@ -231,7 +248,7 @@ const VideoPlayerPage: React.FC = () => {
     } else if (isHLS) {
       // HLS not supported
       console.error('HLS not supported in this browser');
-      setVideoError('Format vidéo HLS non supporté par ce navigateur');
+      setVideoError(t('errors.hlsNotSupported'));
       setIsVideoLoading(false);
     } else {
       // Regular video file
@@ -249,11 +266,33 @@ const VideoPlayerPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
 
-      const data = await fetchVideoContentById(contentId);
-      setContent(data);
+      if (rubricId && configId) {
+        const [resolved, contents] = await Promise.all([
+          resolveVideoUrl(configId, rubricId, contentId),
+          fetchRubricContents(configId, rubricId),
+        ]);
+        setRubricVideos(contents);
+        const item = contents.find(c => c.content_id === contentId);
+        const galaxyContent: GameContent = {
+          id: contentId,
+          title: item?.title || 'Video',
+          description: item?.description || '',
+          content_type: 'video',
+          content_url: resolved.delivery_url,
+          game_id: '',
+          created_at: new Date().toISOString(),
+          duration: item?.duration || undefined,
+          theme_label: item?.theme_label || undefined,
+          playlist_image_url: item?.thumbnail_url || undefined,
+        };
+        setContent(galaxyContent);
+      } else {
+        const data = await fetchVideoContentById(contentId);
+        setContent(data);
+      }
     } catch (err) {
       console.error('Error loading video content:', err);
-      setError('Erreur lors du chargement de la vidéo');
+      setError(t('errors.videoLoadError'));
     } finally {
       setIsLoading(false);
     }
@@ -405,7 +444,7 @@ const VideoPlayerPage: React.FC = () => {
 
     // Don't override HLS-specific errors
     if (!hlsRef.current) {
-      setVideoError('Erreur lors du chargement de la vidéo');
+      setVideoError(t('errors.videoLoadError'));
     }
     setIsVideoLoading(false);
   };
@@ -421,16 +460,60 @@ const VideoPlayerPage: React.FC = () => {
     videoRef.current.currentTime = 0;
     videoRef.current.play().catch(error => {
       console.error('Error playing video:', error);
-      setVideoError('Erreur lors de la lecture de la vidéo');
+      setVideoError(t('errors.videoPlaybackError'));
     });
   };
+
+  const currentVideoIndex = rubricVideos.findIndex(v => v.content_id === contentId);
+  const nextGalaxyVideo = currentVideoIndex >= 0 && currentVideoIndex < rubricVideos.length - 1
+    ? rubricVideos[currentVideoIndex + 1]
+    : null;
+  const suggestedGalaxyVideos = rubricVideos.filter(v => v.content_id !== contentId);
+
+  const suggestedBadgeCounts = useMemo(
+    () => computeBadgeCounts(suggestedGalaxyVideos, (v) => getBadgesForContent(v.content_id)),
+    [suggestedGalaxyVideos]
+  );
+
+  const filteredSuggestedVideos = useMemo(() => {
+    const sliced = suggestedGalaxyVideos.slice(0, 8);
+    if (suggestedBadgeFilter.size === 0) return sliced;
+    return sliced.filter((v) => {
+      const badges = getBadgesForContent(v.content_id);
+      return badges.some((b) => suggestedBadgeFilter.has(b));
+    });
+  }, [suggestedGalaxyVideos, suggestedBadgeFilter]);
+
+  const handleToggleSuggestedBadge = useCallback((badge: BadgeType) => {
+    setSuggestedBadgeFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(badge)) {
+        next.delete(badge);
+      } else {
+        next.add(badge);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleAutoPlayNext = useCallback(() => {
+    if (nextGalaxyVideo && rubricId) {
+      setShowAutoPlayOverlay(false);
+      setVideoEnded(false);
+      navigate(`/video/${rubricId}/${nextGalaxyVideo.content_id}`);
+    }
+  }, [nextGalaxyVideo, rubricId, navigate]);
+
+  const handleCancelAutoPlay = useCallback(() => {
+    setShowAutoPlayOverlay(false);
+  }, []);
 
   if (isLoading) {
     return (
       <div className="min-h-screen pt-28 pb-16 flex items-center justify-center">
         <div className="text-center">
           <Loader className="h-12 w-12 text-primary-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Chargement de la vidéo...</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('common.loadingVideo')}</p>
         </div>
       </div>
     );
@@ -509,6 +592,10 @@ const VideoPlayerPage: React.FC = () => {
                 if (user?.id && contentId && duration > 0) {
                   saveVideoProgress(user.id, contentId, Math.floor(duration), Math.floor(duration));
                 }
+                setVideoEnded(true);
+                if (isGalaxyContent && nextGalaxyVideo) {
+                  setShowAutoPlayOverlay(true);
+                }
               }}
               poster={content.playlist_image_url}
               preload="metadata"
@@ -525,7 +612,7 @@ const VideoPlayerPage: React.FC = () => {
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <div className="text-center text-white">
                   <Loader className="h-12 w-12 animate-spin mx-auto mb-4" />
-                  <p>Chargement de la vidéo...</p>
+                  <p>{t('common.loadingVideo')}</p>
                 </div>
               </div>
             )}
@@ -547,6 +634,42 @@ const VideoPlayerPage: React.FC = () => {
                   >
                     Réessayer
                   </button>
+                </div>
+              </div>
+            )}
+
+            {showAutoPlayOverlay && autoPlayEnabled && nextGalaxyVideo && (
+              <AutoPlayOverlay
+                nextVideo={nextGalaxyVideo}
+                badges={getBadgesForContent(nextGalaxyVideo.content_id)}
+                onPlay={handleAutoPlayNext}
+                onCancel={handleCancelAutoPlay}
+              />
+            )}
+
+            {showAutoPlayOverlay && !autoPlayEnabled && nextGalaxyVideo && (
+              <div
+                className="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+                onClick={handleAutoPlayNext}
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {t('videoPlayer.upNext', 'Up Next')}
+                  </p>
+                  <div className="flex items-center gap-3 bg-white/5 rounded-xl p-3 border border-white/10 hover:bg-white/10 transition-colors max-w-sm">
+                    {nextGalaxyVideo.thumbnail_url && (
+                      <div className="relative w-20 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src={nextGalaxyVideo.thumbnail_url} alt={nextGalaxyVideo.title} className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                          <Play className="w-4 h-4 text-white" fill="currentColor" />
+                        </div>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-sm font-semibold text-white line-clamp-1">{nextGalaxyVideo.title}</h4>
+                      <p className="text-xs text-primary-400 mt-0.5">{t('videoPlayer.clickToPlay', 'Click to play')}</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -615,7 +738,13 @@ const VideoPlayerPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
+                  {isGalaxyContent && nextGalaxyVideo && (
+                    <AutoPlayToggle
+                      enabled={autoPlayEnabled}
+                      onChange={setAutoPlayEnabled}
+                    />
+                  )}
                   <button
                     onClick={toggleFullscreen}
                     className="text-white hover:text-primary-400 transition-colors"
@@ -734,6 +863,84 @@ const VideoPlayerPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {isGalaxyContent && suggestedGalaxyVideos.length > 0 && (
+                <div className="bg-white dark:bg-dark-100 rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <PlayCircle className="h-6 w-6 text-primary-500 mr-2" />
+                      <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white">
+                        {t('videoPlayer.suggestedVideos', 'Suggested Videos')}
+                      </h2>
+                      <span className="ml-2 text-sm bg-primary-600/20 text-primary-400 px-3 py-1 rounded-full">
+                        {filteredSuggestedVideos.length} {filteredSuggestedVideos.length === 1 ? 'video' : 'videos'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <BadgeFilterBar
+                    selectedBadges={suggestedBadgeFilter}
+                    onToggleBadge={handleToggleSuggestedBadge}
+                    badgeCounts={suggestedBadgeCounts}
+                    className="mb-6"
+                  />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {filteredSuggestedVideos.map((video) => {
+                      const badges = getBadgesForContent(video.content_id);
+                      return (
+                        <div
+                          key={video.content_id}
+                          onClick={() => {
+                            setShowAutoPlayOverlay(false);
+                            setVideoEnded(false);
+                            navigate(`/video/${rubricId}/${video.content_id}`);
+                          }}
+                          className="group cursor-pointer"
+                        >
+                          <div className="relative rounded-xl overflow-hidden mb-2 bg-gray-200 dark:bg-dark-400">
+                            {video.thumbnail_url ? (
+                              <img
+                                src={video.thumbnail_url}
+                                alt={video.title}
+                                className="w-full h-40 object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className="w-full h-40 flex items-center justify-center bg-dark-300">
+                                <Play className="w-8 h-8 text-gray-400" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="p-3 rounded-full bg-primary-500 transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                                <Play className="w-5 h-5 text-white fill-white" />
+                              </div>
+                            </div>
+                            {video.duration != null && video.duration > 0 && (
+                              <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 rounded text-xs text-white flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {formatGalaxyDuration(video.duration)}
+                              </div>
+                            )}
+                            {badges.length > 0 && (
+                              <div className="absolute top-2 right-2">
+                                <ContentBadgeStack badges={badges} size="sm" />
+                              </div>
+                            )}
+                            {nextGalaxyVideo?.content_id === video.content_id && (
+                              <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-primary-500/90 text-white backdrop-blur-sm">
+                                {t('videoPlayer.upNext', 'Up Next')}
+                              </div>
+                            )}
+                          </div>
+                          <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 group-hover:text-opacity-80 transition-colors">
+                            {video.title}
+                          </h4>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Related Videos Section */}
               {(relatedVideos.length > 0 || isLoadingRelated || totalRelatedVideos > 0) && (

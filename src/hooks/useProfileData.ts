@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAuthStore } from '../stores/authStore';
 import { fetchFriends, getUserSupportTickets } from '../services/api';
 import { UserRelationship } from '../types';
+import i18n from '../locales/i18n';
 
 export const useProfileData = () => {
   const { user } = useAuth();
@@ -74,7 +75,7 @@ export const useProfileData = () => {
         setRegistrations(profileData.tournament_registrations || []);
       } catch (err) {
         console.error('Error loading tournament registrations:', err);
-        setError('Erreur lors du chargement des tournois');
+        setError(i18n.t('errors.tournamentsLoadError'));
       } finally {
         setIsLoading(false);
       }

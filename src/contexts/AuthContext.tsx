@@ -3,6 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
 import { User, AuthContextType } from '../types';
 import { translationService } from '../services/translationService';
+import { trackDvLogin } from '../services/snowplowService';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -53,6 +54,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (event === 'SIGNED_IN' && session) {
         console.log('[AuthContext] User signed in via auth state change:', session.user.id, session.user.email);
         translationService.applyUserLanguagePreference(session.user.id);
+
+        if (session.user.app_metadata?.provider === 'discord') {
+          trackDvLogin({ type_of_action: 'login', method: 'manual', status: 'ok', type: 'login' });
+        }
       }
     });
 

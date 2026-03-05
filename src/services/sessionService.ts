@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import i18n from '../locales/i18n';
 import { User } from '../types';
 import {
   createUserFromData,
@@ -205,7 +206,7 @@ export const checkUserSession = async (): Promise<SessionCheckResult> => {
 
       return {
         user: null,
-        error: 'Erreur lors de la vérification de session'
+        error: i18n.t('errors.sessionVerificationError')
       };
     }
 

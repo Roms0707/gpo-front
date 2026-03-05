@@ -6,6 +6,8 @@ import { Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { cancelTournamentRegistration } from '../services/api';
 import TrainingGamesContainer from '../components/tournaments/TrainingGamesContainer';
+import GameHubCoachingTab from '../components/games/tabs/GameHubCoachingTab';
+import { getGameTheme } from '../utils/gameThemes';
 import { useTranslation } from 'react-i18next';
 import { APP_CONFIG } from '../constants';
 import { DiscordConnectionRequired } from '../components/tournaments/DiscordConnectionRequired';
@@ -127,7 +129,7 @@ const TournamentPage: React.FC = () => {
 
   // Set active tab from URL parameter if present
   useEffect(() => {
-    if (tabParam && ['home', 'rewards', 'bracket', 'classement', 'training', 'rules', 'lfp'].includes(tabParam)) {
+    if (tabParam && ['home', 'rewards', 'bracket', 'classement', 'training', 'coaching', 'rules', 'lfp'].includes(tabParam)) {
       setActiveTab(tabParam);
 
       // If it's the LFP tab, also show the LFP modal
@@ -244,9 +246,11 @@ const TournamentPage: React.FC = () => {
     return now >= startDate; // Tournament has started or finished
   };
 
-  // Determine tournament status for bracket display
   const getTournamentStatus = () => {
     if (!tournament) return 'upcoming';
+
+    if (tournament.bracket_status === 'live') return 'ongoing';
+    if (tournament.bracket_status === 'completed') return 'completed';
 
     const now = new Date();
     const startDate = new Date(tournament.startDate);
@@ -458,7 +462,7 @@ const TournamentPage: React.FC = () => {
   const isTeamTournament = tournament?.mode?.toLowerCase().includes('team');
 
   // Define all possible tabs in order
-  const allTabs = ['home', 'rewards', 'bracket', 'classement', 'rules', 'training', 'training-games', 'lfp'];
+  const allTabs = ['home', 'rewards', 'bracket', 'classement', 'rules', 'training', 'coaching', 'training-games', 'lfp'];
 
   // Swipe gesture handlers
   const handleSwipeLeft = () => {
@@ -468,12 +472,14 @@ const TournamentPage: React.FC = () => {
       // Only navigate to tabs that should be shown
       if (
         nextTab === 'training' && !user ||
+        nextTab === 'coaching' && !user ||
         nextTab === 'training-games' && !shouldShowTrainingGames() ||
         nextTab === 'lfp' && !isTeamTournament
       ) {
         // Skip to the next valid tab
         const validNextTab = allTabs.slice(currentIndex + 2).find(tab => {
           if (tab === 'training') return !!user;
+          if (tab === 'coaching') return !!user;
           if (tab === 'training-games') return shouldShowTrainingGames();
           if (tab === 'lfp') return isTeamTournament;
           return true;
@@ -492,12 +498,14 @@ const TournamentPage: React.FC = () => {
       // Only navigate to tabs that should be shown
       if (
         prevTab === 'training' && !user ||
+        prevTab === 'coaching' && !user ||
         prevTab === 'training-games' && !shouldShowTrainingGames() ||
         prevTab === 'lfp' && !isTeamTournament
       ) {
         // Skip to the previous valid tab
         const validPrevTab = allTabs.slice(0, currentIndex - 1).reverse().find(tab => {
           if (tab === 'training') return !!user;
+          if (tab === 'coaching') return !!user;
           if (tab === 'training-games') return shouldShowTrainingGames();
           if (tab === 'lfp') return isTeamTournament;
           return true;
@@ -645,6 +653,14 @@ const TournamentPage: React.FC = () => {
                 gameId={tournament?.game_id || null}
               />
             )}
+          </div>
+        ) : activeTab === 'coaching' ? (
+          <div className="w-full">
+            <GameHubCoachingTab
+              gameId={tournament?.game_id || ''}
+              gameName={gameName || tournament?.game || ''}
+              theme={getGameTheme(gameName)}
+            />
           </div>
         ) : activeTab === 'lfp' ? (
           // Only show LFP modal for team tournaments

@@ -1,22 +1,24 @@
+import i18n from '../locales/i18n';
+
 // Handle authentication errors with user-friendly messages
 export const handleAuthError = (error: any): string => {
-  let errorMessage = 'Erreur de connexion. Veuillez réessayer.';
+  let errorMessage = i18n.t('errors.connectionRetry');
 
   if (!error.message) return errorMessage;
 
   switch (error.message) {
     case 'Invalid login credentials':
     case 'Invalid email or password':
-      return 'Email ou mot de passe incorrect.';
+      return i18n.t('errors.invalidCredentials');
     case 'Email not confirmed':
-      return 'Veuillez confirmer votre email avant de vous connecter.';
+      return i18n.t('errors.emailNotConfirmed');
     case 'Too many requests':
-      return 'Trop de tentatives. Veuillez attendre quelques minutes.';
+      return i18n.t('errors.tooManyAttempts');
     default:
       if (error.message.includes('invalid_credentials')) {
-        return 'Email ou mot de passe incorrect.';
+        return i18n.t('errors.invalidCredentials');
       } else if (error.message.includes('email_not_confirmed')) {
-        return 'Veuillez confirmer votre email avant de vous connecter.';
+        return i18n.t('errors.emailNotConfirmed');
       }
       return errorMessage;
   }
@@ -24,16 +26,16 @@ export const handleAuthError = (error: any): string => {
 
 // Handle signup-specific errors
 export const handleSignupError = (error: any): string => {
-  let errorMessage = "Erreur lors de l'inscription";
+  let errorMessage = i18n.t('errors.signupError');
 
   if (!error.message) return errorMessage;
 
   if (error.message.includes('User already registered')) {
-    return 'Un compte avec cet email existe déjà';
+    return i18n.t('errors.accountAlreadyExists');
   } else if (error.message.includes('Password should be at least')) {
-    return 'Le mot de passe doit contenir au moins 6 caractères';
+    return i18n.t('validation.passwordTooShort');
   } else if (error.message.includes('Invalid email')) {
-    return 'Adresse email invalide';
+    return i18n.t('validation.invalidEmail');
   }
 
   return errorMessage;

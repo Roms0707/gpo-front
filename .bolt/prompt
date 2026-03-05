@@ -1,5 +1,303 @@
-For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+# Frontend Knowledge — White-Label Esports Competitive Platform
 
-By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+You are working in the FRONTEND project.
 
-Use icons from lucide-react for logos.
+This project is the user-facing application of a multi-tenant, DNS-based white-label esports ecosystem.
+
+It connects to a Supabase backend.
+You do NOT control schema or migrations.
+You only consume existing backend resources.
+
+====================================================
+1) CORE RESPONSIBILITY
+====================================================
+
+The frontend is responsible for:
+
+- UI / UX
+- State management
+- Supabase client queries (anon key only)
+- Calling existing Edge Functions
+- Real-time subscriptions
+- Responsive layout
+- Animations
+- Gamification visuals
+- Branding per config_id
+- Internationalization (EN / FR / ES)
+
+The frontend is NOT allowed to:
+
+- Create or modify database schema
+- Generate migrations
+- Create SQL files
+- Modify RLS
+- Deploy Edge Functions
+- Use service_role
+- Execute Supabase CLI
+
+If a feature requires schema changes:
+→ Generate a backend request Markdown file
+→ Do NOT implement the schema directly
+
+====================================================
+2) PLATFORM CONTEXT
+====================================================
+
+This platform is:
+
+- White-label
+- Multi-game
+- AI-enhanced
+- Tournament-based
+- Training-focused
+- Social
+- Gamified
+- Mobile-first
+
+It must feel:
+- Competitive
+- Premium
+- Modern
+- Engaging
+- Performance-oriented
+
+This is NOT a generic SaaS dashboard.
+This is an esports ecosystem.
+
+====================================================
+3) DESIGN INTELLIGENCE (VERY IMPORTANT)
+====================================================
+
+Every UI you generate must draw inspiration from:
+
+- Riot Games ecosystem (LoL / Valorant UI)
+- ESL tournament interfaces
+- FACEIT competitive dashboards
+- Discord interaction patterns
+- Twitch streaming layouts
+- Fortnite / Apex Legends UI styling
+- Modern gaming launcher interfaces
+- Challengermode comportement
+
+Design characteristics to apply:
+
+- Bold typography
+- High contrast sections
+- Dark mode dominance
+- Neon / accent glow highlights
+- Clean card-based layouts
+- Soft gradients
+- Subtle glassmorphism when relevant
+- Competitive stat blocks
+- Animated micro-interactions
+- Confident spacing
+- Premium feel
+
+Avoid:
+- Corporate SaaS look
+- Flat boring layouts
+- Overly minimalist generic UI
+- Bootstrap-like styling
+
+====================================================
+4) COMPONENT REUSE RULE (CRITICAL)
+====================================================
+
+Before creating a new component:
+
+1) Check if an existing design system component can be reused.
+2) Extend existing components instead of duplicating.
+3) Maintain visual consistency across:
+   - Cards
+   - Buttons
+   - Modals
+   - Tooltips
+   - Tabs
+   - Dropdowns
+   - Navigation elements
+
+Never rebuild a Button if one exists.
+Never restyle inconsistently.
+
+Always:
+- Follow existing spacing system
+- Follow existing color tokens
+- Follow typography scale
+- Respect animation patterns
+
+Consistency > novelty.
+
+====================================================
+5) MULTI-TENANT (config_id AWARE)
+====================================================
+
+The UI must adapt to:
+
+- Brand colors
+- Logo
+- Game catalog
+- Feature toggles
+
+Theme must dynamically reflect the active config_id.
+
+Never hardcode brand-specific values.
+
+====================================================
+6) FEATURE IMPLEMENTATION WORKFLOW
+====================================================
+
+When implementing a feature:
+
+---------------------------------
+STEP 1 — Backend Awareness
+---------------------------------
+
+If new data structure is required:
+→ Generate `/backend-requests/feature-name.md`
+→ Describe schema changes
+→ Provide SQL
+→ Provide edge function spec
+→ Stop schema implementation
+
+---------------------------------
+STEP 2 — UI Implementation
+---------------------------------
+
+Assume backend changes will exist.
+Implement:
+
+- UI components
+- Hooks
+- Loading states
+- Error states
+- Optimistic updates (if safe)
+- Real-time updates (if applicable)
+
+---------------------------------
+STEP 3 — UX Polish
+---------------------------------
+
+Add:
+- Skeleton loaders
+- Empty states
+- Animated transitions
+- Clear CTA buttons
+- Competitive visual cues
+
+====================================================
+7) UX STANDARDS
+====================================================
+
+Always include:
+
+- Loading states
+- Empty states
+- Error states
+- Disabled states
+- Success feedback
+- Responsive behavior
+
+Use:
+- Motion for transitions
+- Smooth micro-animations
+- Progressive disclosure
+- Clear hierarchy
+
+Think:
+Would a competitive gamer enjoy this interface?
+
+====================================================
+8) TOURNAMENT UI EXPECTATIONS
+====================================================
+
+Tournament pages must feel:
+
+- Live
+- Intense
+- Structured
+- Competitive
+
+Include:
+
+- Bracket visualization
+- Status indicators
+- Prize highlights
+- Country flags (if relevant)
+- Countdown timers
+- Clear join buttons
+
+====================================================
+9) TRAINING EXPERIENCE EXPECTATION
+====================================================
+
+Grind Zone must feel:
+
+- Netflix-style layout
+- Scrollable playlists
+- Clear difficulty badges
+- Progress bars
+- Resume buttons
+
+Quiz experience:
+- Interactive
+- Immediate feedback
+- Clean transitions
+- Progress persistence
+
+====================================================
+10) GAMIFICATION VISUAL LANGUAGE
+====================================================
+
+XP, levels, rarity tiers must feel:
+
+- Rewarding
+- Visual
+- Collectible
+- Status-driven
+
+Rarity tiers must visually differ:
+
+- Common → subtle
+- Rare → slight glow
+- Epic → animated accent
+- Legendary → strong glow or effect
+
+Profile page must feel like a showcase.
+
+====================================================
+11) OUTPUT FORMAT REQUIREMENT
+====================================================
+
+When responding with implementation:
+
+---------------------------------
+FRONTEND IMPLEMENTATION
+---------------------------------
+- Components created or extended
+- Hooks used
+- API calls
+- UI behavior
+- State management
+
+---------------------------------
+BACKEND REQUEST (if needed)
+---------------------------------
+- Markdown file content
+- Schema changes required
+- Edge function description
+
+====================================================
+12) MINDSET
+====================================================
+
+You are building:
+
+- A competitive arena
+- A training dojo
+- A social gaming hub
+- A progression system
+- A white-label esports brand
+
+Design like a game studio.
+Implement like a production engineer.
+Never like a generic SaaS builder.

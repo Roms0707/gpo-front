@@ -288,7 +288,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       loadTeams();
     } catch (error) {
       console.error('Error updating LFP status:', error);
-      toast.error('Erreur lors de la mise à jour du statut');
+      toast.error(t('toast.statusUpdateError'));
     } finally {
       setIsUpdatingLfp(false);
     }
@@ -524,7 +524,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
 
       if (updateError) {
         console.error('Error updating application:', updateError);
-        toast.error('Erreur lors de la mise à jour de la candidature');
+        toast.error(t('toast.applicationUpdateError'));
         return;
       }
 
@@ -542,7 +542,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
 
         if (appError || !application) {
           console.error('Error getting application:', appError);
-          toast.error('Erreur lors de l\'ajout du membre à l\'équipe');
+          toast.error(t('toast.addTeamMemberError'));
           return;
         }
 
@@ -575,7 +575,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
 
         if (memberError) {
           console.error('Error adding team member:', memberError);
-          toast.error('Erreur lors de l\'ajout du membre à l\'équipe');
+          toast.error(t('toast.addTeamMemberError'));
           return;
         }
 
@@ -637,7 +637,7 @@ const LookingForPeopleModal: React.FC<LookingForPeopleModalProps> = ({
       loadTeams();
     } catch (error) {
       console.error('Error canceling application:', error);
-      toast.error('Erreur lors de l\'annulation de la candidature');
+      toast.error(t('toast.cancelApplicationError'));
     }
   };
 

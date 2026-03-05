@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { AppConfigProvider } from './contexts/AppConfigContext';
 import { SubscriptionProvider } from './contexts/SubscriptionContext';
 import { SidebarProvider } from './contexts/SidebarContext';
+import { SnowplowProvider } from './contexts/SnowplowContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
 import './index.css';
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
       <AppConfigProvider>
         <ThemeProvider>
           <BrowserRouter>
+            <SnowplowProvider>
             <AuthProvider>
               <SubscriptionProvider>
                 <SidebarProvider>
@@ -36,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
                 </SidebarProvider>
               </SubscriptionProvider>
             </AuthProvider>
+            </SnowplowProvider>
           </BrowserRouter>
         </ThemeProvider>
       </AppConfigProvider>

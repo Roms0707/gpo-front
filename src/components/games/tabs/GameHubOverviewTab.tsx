@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -10,18 +10,22 @@ import {
   Calendar,
   Users,
   Sparkles,
-  Clock,
   Newspaper,
-  ExternalLink,
   User,
   Radio,
-  CheckCircle2
+  CheckCircle2,
+  Flame
 } from 'lucide-react';
-import { fetchTournaments, fetchGameContent, fetchLeaderboardByGameId } from '../../../services/api';
+import { fetchTournaments, fetchLeaderboardByGameId } from '../../../services/api';
 import { GameTheme } from '../../../utils/gameThemes';
 import { GameHubTabId } from '../GameHubTabs';
 import { getLatestNews, EsportsNewsItem } from '../../../data/mockEsportsNews';
 import TiltedCard from '../../ui/TiltedCard';
+import { useGalaxyRubrics } from '../../../hooks/useGalaxyRubrics';
+import { fetchRubricContents } from '../../../services/galaxyContentService';
+import { GalaxyContentItem } from '../../../types/galaxy';
+import GrindPlaylistCard from '../../grindzone/GrindPlaylistCard';
+import GalaxyVideoCard from '../GalaxyVideoCard';
 
 interface Tournament {
   id: string;
@@ -35,11 +39,8 @@ interface Tournament {
   registration_count?: number;
 }
 
-interface GameContent {
-  id: string;
-  title: string;
-  playlist_image_url?: string;
-  duration?: number;
+interface TrainingVideo extends GalaxyContentItem {
+  _rubricId: string;
 }
 
 interface PlayerRanking {
@@ -73,25 +74,26 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
   const [allTournaments, setAllTournaments] = useState<Tournament[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>('upcoming');
-  const [videos, setVideos] = useState<GameContent[]>([]);
+  const [trainingVideos, setTrainingVideos] = useState<TrainingVideo[]>([]);
   const [players, setPlayers] = useState<PlayerRanking[]>([]);
   const [news] = useState<EsportsNewsItem[]>(getLatestNews(3));
+  const { tipsForGame, grindZoneForGame, configId } = useGalaxyRubrics();
+  const grindRubrics = useMemo(() => grindZoneForGame(gameId).slice(0, 3), [grindZoneForGame, gameId]);
+  const tipsRubrics = useMemo(() => tipsForGame(gameId), [tipsForGame, gameId]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        const [tournamentsData, contentData, leaderboardData] = await Promise.all([
+        const [tournamentsData, leaderboardData] = await Promise.all([
           fetchTournaments(),
-          fetchGameContent(gameId, { contentType: 'video', limit: 3 }),
           fetchLeaderboardByGameId(gameId),
         ]);
 
         const gameTournaments = (tournamentsData || [])
           .filter((t: any) => t.game_id === gameId);
         setAllTournaments(gameTournaments);
-        setVideos((contentData?.data || []).slice(0, 3));
         setPlayers((leaderboardData?.players || []).slice(0, 3));
       } catch (error) {
         console.error('Error loading overview data:', error);
@@ -102,6 +104,44 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
 
     loadData();
   }, [gameId]);
+
+  useEffect(() => {
+    if (!configId || tipsRubrics.length === 0) {
+      setTrainingVideos([]);
+      return;
+    }
+
+    let cancelled = false;
+    const loadGalaxyVideos = async () => {
+      try {
+        const results = await Promise.allSettled(
+          tipsRubrics.map(async (rubric) => {
+            const contents = await fetchRubricContents(configId, rubric.rubric_id);
+            return contents.map((item) => ({
+              ...item,
+              _rubricId: rubric.rubric_id,
+            }));
+          })
+        );
+
+        if (cancelled) return;
+
+        const allVids: TrainingVideo[] = [];
+        results.forEach((result) => {
+          if (result.status === 'fulfilled') {
+            allVids.push(...result.value);
+          }
+        });
+
+        setTrainingVideos(allVids.slice(0, 3));
+      } catch (err) {
+        console.error('Error loading Galaxy training videos:', err);
+      }
+    };
+
+    loadGalaxyVideos();
+    return () => { cancelled = true; };
+  }, [configId, tipsRubrics]);
 
   useEffect(() => {
     let filtered = allTournaments;
@@ -150,13 +190,6 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
           borderColor: 'border-gray-500/30'
         };
     }
-  };
-
-  const formatDuration = (seconds?: number): string => {
-    if (!seconds) return '';
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const getRankBadgeStyle = (rank: number) => {
@@ -348,45 +381,55 @@ const GameHubOverviewTab: React.FC<GameHubOverviewTabProps> = ({
           </button>
         </div>
 
-        {videos.length === 0 ? (
+        {trainingVideos.length === 0 ? (
           <div className="bg-gray-50 dark:bg-dark-200/50 border border-gray-200 dark:border-gray-800 rounded-xl p-8 text-center">
             <Play className="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-600" />
             <p className="text-gray-500 dark:text-gray-400">{t('gameHub.noTrainingContent')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {videos.map((video) => (
-              <div
-                key={video.id}
-                onClick={() => navigate(`/video/${video.id}`)}
-                className="group cursor-pointer"
-              >
-                <div className="relative rounded-xl overflow-hidden mb-2">
-                  <img
-                    src={video.playlist_image_url || 'https://images.pexels.com/photos/7915311/pexels-photo-7915311.jpeg?auto=compress&cs=tinysrgb&w=600'}
-                    alt={video.title}
-                    className="w-full h-32 object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="p-2 rounded-full" style={{ backgroundColor: theme.colors.primary }}>
-                      <Play className="w-5 h-5 text-white fill-white" />
-                    </div>
-                  </div>
-                  {video.duration && (
-                    <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 rounded text-xs text-white flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {formatDuration(video.duration)}
-                    </div>
-                  )}
-                </div>
-                <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 group-hover:text-primary-500 dark:group-hover:text-primary-400 transition-colors">
-                  {video.title}
-                </h4>
-              </div>
+            {trainingVideos.map((video) => (
+              <GalaxyVideoCard
+                key={`${video._rubricId}-${video.content_id}`}
+                video={video}
+                rubricId={video._rubricId}
+                theme={theme}
+              />
             ))}
           </div>
         )}
       </section>
+
+      {grindRubrics.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg" style={{ backgroundColor: `${theme.colors.primary}20` }}>
+                <Flame className="w-5 h-5" style={{ color: theme.colors.primary }} />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('grindZone.title')}</h2>
+            </div>
+            <button
+              onClick={() => onNavigateToTab('grindZone')}
+              className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              {t('gameHub.viewAll')}
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+            {grindRubrics.map((rubric) => (
+              <GrindPlaylistCard
+                key={rubric.rubric_id}
+                rubric={rubric}
+                theme={theme}
+                compact
+                onClick={() => onNavigateToTab('grindZone')}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section>
         <div className="flex items-center justify-between mb-4">

@@ -99,11 +99,11 @@ const MatchNotificationModal: React.FC<MatchNotificationModalProps> = ({
   };
 
   const handleSendFriendRequest = async () => {
-    if (!user?.id || !notification.opponent_user_id) return;
+    if (!user?.id || !opponentUserId) return;
 
     try {
       setIsSendingRequest(true);
-      await sendFriendRequest(user.id, notification.opponent_user_id);
+      await sendFriendRequest(user.id, opponentUserId);
 
       setFriendshipStatus({
         areFriends: false,

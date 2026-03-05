@@ -2,13 +2,13 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Video, FileText } from 'lucide-react';
 import { GameTheme } from '../../utils/gameThemes';
-import { RubricInfo } from '../../services/othersService';
+import { GalaxyRubric } from '../../types/galaxy';
 import { useSubscriptionGuard } from '../../hooks/useSubscriptionGuard';
 
 export type OthersTabId = string;
 
 interface OthersHubDynamicTabsProps {
-  rubrics: RubricInfo[];
+  rubrics: GalaxyRubric[];
   activeTab: OthersTabId;
   onTabChange: (tabId: OthersTabId) => void;
   theme: GameTheme;
@@ -53,7 +53,7 @@ const OthersHubDynamicTabs: React.FC<OthersHubDynamicTabsProps> = ({
   const allTabs = [
     ...rubrics.map((rubric) => ({
       id: rubric.rubric_id,
-      label: rubric.rubric_name || rubric.rubric_id,
+      label: rubric.name || rubric.rubric_id,
       icon: Video,
     })),
     {

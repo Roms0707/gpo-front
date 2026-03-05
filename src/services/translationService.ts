@@ -1,7 +1,7 @@
 import i18n from '../locales/i18n';
 import { supabase } from '../lib/supabase';
 
-export type SupportedLanguage = 'en' | 'fr';
+export type SupportedLanguage = 'en' | 'fr' | 'es';
 
 export interface LanguageConfig {
   code: SupportedLanguage;
@@ -11,7 +11,8 @@ export interface LanguageConfig {
 
 export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
   { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'fr', name: 'French', nativeName: 'Français' }
+  { code: 'fr', name: 'French', nativeName: 'Fran\u00e7ais' },
+  { code: 'es', name: 'Spanish', nativeName: 'Espa\u00f1ol' }
 ];
 
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'en';
@@ -49,6 +50,9 @@ export class TranslationService {
 
     if (langCode === 'fr') {
       return 'fr';
+    }
+    if (langCode === 'es') {
+      return 'es';
     }
 
     return DEFAULT_LANGUAGE;
@@ -132,6 +136,8 @@ export class TranslationService {
         return 'en';
       case 'fr':
         return 'fr';
+      case 'es':
+        return 'es';
       default:
         console.log(`[TranslationService] Unknown locale ${locale}, defaulting to ${DEFAULT_LANGUAGE}`);
         return DEFAULT_LANGUAGE;
@@ -151,15 +157,15 @@ export class TranslationService {
       'CA': 'en',
       'AU': 'en',
       'DE': 'en',
-      'ES': 'en',
+      'ES': 'es',
       'IT': 'en',
       'PT': 'en',
       'BR': 'en',
-      'MX': 'en',
-      'AR': 'en',
-      'CL': 'en',
-      'CO': 'en',
-      'PE': 'en',
+      'MX': 'es',
+      'AR': 'es',
+      'CL': 'es',
+      'CO': 'es',
+      'PE': 'es',
       'DEFAULT': DEFAULT_LANGUAGE
     };
 

@@ -289,7 +289,7 @@ const RegisterPage: React.FC = () => {
         setGamePublisherFields(prev =>
           prev.map(f => {
             if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
-              return { ...f, validationError: 'Veuillez remplir le nom de jeu et le tagline' };
+              return { ...f, validationError: t('gaming.fillGameNameAndTagline') };
             }
             return f;
           })
@@ -329,7 +329,7 @@ const RegisterPage: React.FC = () => {
           setGamePublisherFields(prev =>
             prev.map(f => {
               if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
-                return { ...f, isValidating: false, isValidated: false, validationError: result.error || 'Erreur de validation' };
+                return { ...f, isValidating: false, isValidated: false, validationError: result.error || t('errors.validationError') };
               }
               return f;
             })
@@ -344,7 +344,7 @@ const RegisterPage: React.FC = () => {
         setGamePublisherFields(prev =>
           prev.map(f => {
             if (f.id_name.includes('riot_game_name') || f.id_name.includes('riot_tagline')) {
-              return { ...f, isValidating: false, isValidated: false, validationError: 'Erreur lors de la validation' };
+              return { ...f, isValidating: false, isValidated: false, validationError: t('errors.validationFailed') };
             }
             return f;
           })
@@ -376,7 +376,7 @@ const RegisterPage: React.FC = () => {
 
         setGamePublisherFields(prev =>
           prev.map(f =>
-            f.id === fieldId ? { ...f, isValidating: false, isValidated: false, validationError: 'Erreur lors de la validation' } : f
+            f.id === fieldId ? { ...f, isValidating: false, isValidated: false, validationError: t('errors.validationFailed') } : f
           )
         );
 
@@ -597,7 +597,7 @@ const RegisterPage: React.FC = () => {
         toast.error(t('toast.registrationError'));
       }
     } catch (error) {
-      toast.error('Erreur lors de l\'inscription');
+      toast.error(t('toast.registrationError'));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -741,12 +741,12 @@ const RegisterPage: React.FC = () => {
                             </span>
                           ) : (
                             <span className="text-gray-400">
-                              Date de naissance non définie
+                              {t('profile.dateOfBirthNotDefined')}
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
-                          La date de naissance est définie dans votre profil et ne peut pas être modifiée.
+                          {t('profile.dateOfBirthCannotBeChanged')}
                         </p>
                       </div>
 

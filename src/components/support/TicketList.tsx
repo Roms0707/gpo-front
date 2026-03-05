@@ -4,7 +4,7 @@ import { LifeBuoy, Clock, CheckCircle, XCircle, ChevronRight, Loader } from 'luc
 import { getUserSupportTickets } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS, es } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 
 interface Ticket {
@@ -20,7 +20,7 @@ interface Ticket {
 }
 
 const TicketList: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +45,8 @@ const TicketList: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: fr });
+      const dateFnsLocale = i18n.language.startsWith('fr') ? fr : i18n.language.startsWith('es') ? es : enUS;
+      return format(new Date(dateString), 'dd MMMM yyyy à HH:mm', { locale: dateFnsLocale });
     } catch (error) {
       return t('support.unknownDate');
     }

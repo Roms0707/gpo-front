@@ -18,11 +18,12 @@ interface SteamProfileCardProps {
 }
 
 const SteamProfileCard: React.FC<SteamProfileCardProps> = ({ profile }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const formatDate = (timestamp?: number) => {
     if (!timestamp) return t('gaming.notAvailable');
-    return new Date(timestamp * 1000).toLocaleDateString('fr-FR');
+    const localeMap: Record<string, string> = { fr: 'fr-FR', es: 'es-ES', en: 'en-US' };
+    return new Date(timestamp * 1000).toLocaleDateString(localeMap[i18n.language] || 'en-US');
   };
 
   const getVisibilityStatus = (state: number) => {
